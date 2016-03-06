@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	StartDir string
+	StartDir string // Directory to read
 )
 
 func init() {
@@ -21,8 +21,8 @@ func init() {
 	StartDir = os.Getenv("HOME")
 }
 
-// shouldI returns true/false with 50/50 probability
-func shouldI() bool {
+// tossCoin returns true/false with 50/50 probability
+func tossCoin() bool {
 	i := rand.Intn(2)
 	return i == 1
 }
@@ -32,6 +32,7 @@ func readDir(dirpath string) []string {
 	paths := []string{}
 	files, _ := ioutil.ReadDir(dirpath)
 	for _, fi := range files {
+		// Ignore files and hidden files
 		if !fi.IsDir() || strings.HasPrefix(fi.Name(), ".") {
 			continue
 		}
@@ -42,10 +43,13 @@ func readDir(dirpath string) []string {
 
 // run runs the workflow
 func run() {
+	log.Printf("bundleId=%v", workflow.GetBundleId())
 	root := workflow.GetWorkflowDir()
-	log.Printf("workflow root=%v", root)
+	log.Printf("workflowdir=%v", root)
+	log.Printf("datadir=%v", workflow.GetDataDir())
+	log.Printf("cachedir=%v", workflow.GetCacheDir())
 	for i, path := range readDir(StartDir) {
-		log.Printf("i=%v, f=%v", i, path)
+		log.Printf("i=%02d, f=%v", i, path)
 		it := workflow.NewFileItem(path)
 		it.SetSubtitle("cmd", "Open in your underpants")
 	}
@@ -53,5 +57,6 @@ func run() {
 }
 
 func main() {
+	// Call workflow via `Run` wrapper to catch errors.
 	workflow.Run(run)
 }

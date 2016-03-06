@@ -28,13 +28,22 @@ func GetWorkflowRoot() (string, error) {
 	for _, dir := range candidateDirs {
 		p, err := FindFile("info.plist", dir)
 		if err == nil {
-			return "", err
 			dirpath, _ := filepath.Split(p)
 			log.Printf("info.plist found in %v", dirpath)
 			return dirpath, nil
 		}
 	}
 	return "", fmt.Errorf("info.plist not found")
+}
+
+// EnsureExists takes and returns a directory path, creating the directory if necessary.
+// Any created directories have permission set to 700.
+func EnsureExists(dirpath string) string {
+	err := os.MkdirAll(dirpath, 0700)
+	if err != nil {
+		panic(fmt.Errorf("Couldn't create directory `%s` : %v", dirpath, err))
+	}
+	return dirpath
 }
 
 // Exists checks for the existence of path.
@@ -45,13 +54,13 @@ func Exists(path string) bool {
 	return false
 }
 
-// FindFile searches for a file matching filename up the directory
-// tree starting at startdir.
+// FindFile searches for a file matching filename up the directory tree starting at startdir.
 func FindFile(filename string, startdir string) (string, error) {
-	dirpath := startdir
+	dirpath, _ := filepath.Abs(startdir)
 	for dirpath != "/" {
 		p := path.Join(dirpath, filename)
 		if Exists(p) {
+			// log.Printf("%v found at %v", filename, p)
 			return p, nil
 		}
 		dirpath = path.Dir(dirpath)

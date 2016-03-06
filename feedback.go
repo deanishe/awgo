@@ -2,10 +2,15 @@ package workflow
 
 import (
 	"encoding/xml"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
+)
+
+var (
+	validModifiers = []string{"cmd", "opt", "ctrl", "shift", "fn"}
 )
 
 // Item is a single Alfred result. Add them to a Feedback struct to
@@ -50,29 +55,41 @@ type Item struct {
 }
 
 // SetSubtitle sets custom subtitles for modifier keys.
-func (this *Item) SetSubtitle(modifier string, value string) {
+// `modifier` must be one of "cmd", "opt", "ctrl", "shift", "fn".
+func (this *Item) SetSubtitle(modifier string, value string) error {
+	modifier = strings.ToLower(modifier)
+	valid := false
+	for _, m := range validModifiers {
+		if modifier == m {
+			valid = true
+			break
+		}
+	}
+	if !valid {
+		return fmt.Errorf("modifier must be one of %v not %v", validModifiers, modifier)
+	}
 	sub := Subtitle{}
 	sub.Value = value
 	sub.Modifier = modifier
 	this.AlternateSubtitles = append(this.AlternateSubtitles, sub)
+	return nil
 }
 
-// SetIcon sets the icon for a result item. Pass "" for kind if value
-// is the path to an icon
+// SetIcon sets the icon for a result item.
+// Pass "" for `kind` if `value` is the path to an icon file.
 func (this *Item) SetIcon(value string, kind string) {
-	if kind != "" {
-		if kind != "fileicon" && kind != "filetype" {
-			log.Printf(
-				"Icon kind must be 'fileicon', filetype' or nil, not %v",
-				kind)
-		}
+	if kind != "" && kind != "fileicon" && kind != "filetype" {
+		log.Printf(
+			"Icon kind must be \"fileicon\", \"filetype\" or \"\", not %v",
+			kind)
+
 	}
 	this.Icon.Value = value
 	this.Icon.Type = kind
 }
 
 // SetValid sets Valid using a boolean.
-// The actual value must be "yes" or "no"
+// The actual value must be the string "yes" or "no"
 func (this *Item) SetValid(value bool) {
 	if value == true {
 		this.Valid = "YES"
@@ -81,8 +98,8 @@ func (this *Item) SetValid(value bool) {
 	}
 }
 
-// ItemIcon represents the icon for an Item. Type must be "fileicon",
-// "filetype" or ""
+// ItemIcon represents the icon for an Item.
+// Type must be "fileicon", "filetype" or ""
 type ItemIcon struct {
 	Value   string   `xml:",chardata"`
 	Type    string   `xml:"type,attr,omitempty"`
@@ -103,7 +120,7 @@ type Feedback struct {
 	XMLName xml.Name `xml:"items"`
 }
 
-// NewItem adds a new Item and returns it.
+// NewItem adds a new Item and returns a pointer to it.
 func (this *Feedback) NewItem() *Item {
 	item := Item{}
 	item.Icon = ItemIcon{}
@@ -111,7 +128,7 @@ func (this *Feedback) NewItem() *Item {
 	return &item
 }
 
-// NewFileItem adds and returns a new item pre-populated from path.
+// NewFileItem adds and returns a pointer to a new item pre-populated from path.
 // Title is the base name of the file
 // Subtitle is the path to the file (using "~" for $HOME)
 // Valid is "YES"
@@ -131,11 +148,21 @@ func (this *Feedback) NewFileItem(path string) *Item {
 	return item
 }
 
+// Send generates XML from this struct and sends it to Alfred.
+func (this *Feedback) Send() error {
+	output, err := xml.MarshalIndent(this, "", "  ")
+	if err != nil {
+		return fmt.Errorf("Error generating XML : %v", err)
+	}
+	os.Stdout.Write([]byte(xml.Header))
+	os.Stdout.Write(output)
+	return nil
+}
+
 func init() {
 }
 
 // shortenPath replaces $HOME with ~ in path
 func shortenPath(path string) string {
-	home := os.Getenv("HOME")
-	return strings.Replace(path, home, "~", -1)
+	return strings.Replace(path, os.Getenv("HOME"), "~", -1)
 }

@@ -6,7 +6,8 @@ You need Alfred's Powerpack to be able to use workflows.
 
 This library provides an API for communicating with Alfred and several
 convenience methods for common workflow tasks, such as caching data,
-storing settings and credentials, fuzzy-filtering results.
+storing settings and credentials, fuzzy-filtering results, running
+background processes and making simple web requests.
 
 
 */
