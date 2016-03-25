@@ -2,7 +2,6 @@ package util
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -18,7 +17,7 @@ func GetWorkflowRoot() (string, error) {
 	dir, err := os.Getwd()
 	if err == nil {
 		dir, _ = filepath.Abs(dir)
-		log.Printf("cwd=%v", dir)
+		// log.Printf("cwd=%v", dir)
 		candidateDirs = append(candidateDirs, dir)
 	}
 	dir, err = filepath.Abs(filepath.Dir(os.Args[0]))
@@ -29,7 +28,7 @@ func GetWorkflowRoot() (string, error) {
 		p, err := FindFile("info.plist", dir)
 		if err == nil {
 			dirpath, _ := filepath.Split(p)
-			log.Printf("info.plist found in %v", dirpath)
+			// log.Printf("info.plist found in %v", dirpath)
 			return dirpath, nil
 		}
 	}

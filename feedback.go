@@ -54,9 +54,9 @@ type Item struct {
 	XMLName xml.Name `xml:"item"`
 }
 
-// SetSubtitle sets custom subtitles for modifier keys.
+// SetAlternateSubtitle sets custom subtitles for modifier keys.
 // `modifier` must be one of "cmd", "opt", "ctrl", "shift", "fn".
-func (this *Item) SetSubtitle(modifier string, value string) error {
+func (it *Item) SetAlternateSubtitle(modifier string, value string) error {
 	modifier = strings.ToLower(modifier)
 	valid := false
 	for _, m := range validModifiers {
@@ -71,35 +71,57 @@ func (this *Item) SetSubtitle(modifier string, value string) error {
 	sub := Subtitle{}
 	sub.Value = value
 	sub.Modifier = modifier
-	this.AlternateSubtitles = append(this.AlternateSubtitles, sub)
+	it.AlternateSubtitles = append(it.AlternateSubtitles, sub)
 	return nil
 }
 
 // SetIcon sets the icon for a result item.
-// Pass "" for `kind` if `value` is the path to an icon file.
-func (this *Item) SetIcon(value string, kind string) {
+// Pass "" for kind if value is the path to an icon file.
+func (it *Item) SetIcon(value string, kind string) {
 	if kind != "" && kind != "fileicon" && kind != "filetype" {
 		log.Printf(
 			"Icon kind must be \"fileicon\", \"filetype\" or \"\", not %v",
 			kind)
 
 	}
-	this.Icon.Value = value
-	this.Icon.Type = kind
+	it.Icon.Value = value
+	it.Icon.Type = kind
 }
 
 // SetValid sets Valid using a boolean.
 // The actual value must be the string "yes" or "no"
-func (this *Item) SetValid(value bool) {
+func (it *Item) SetValid(value bool) {
 	if value == true {
-		this.Valid = "YES"
+		it.Valid = "YES"
 	} else {
-		this.Valid = "NO"
+		it.Valid = "NO"
 	}
 }
 
 // ItemIcon represents the icon for an Item.
-// Type must be "fileicon", "filetype" or ""
+//
+// Alfred supports PNG or ICNS files, UTIs (e.g. "public.folder") or
+// can use the icon of a specified file (e.g. "/Applications/Safari.app"
+// to use Safari's icon.
+//
+// Type = "" (the default) will treat Value as the path to a PNG or ICNS
+// file.
+//
+// Type = "fileicon" will treat Value as the path to a file or directory
+// and use that file's icon, e.g:
+//
+//    icon := ItemIcon{"/Applications/Mail.app", "fileicon"}
+//
+// will display Mail.app's icon.
+//
+// Type = "filetype" will treat Value as a UTI, such as "public.movie"
+// or "com.microsoft.word.doc". UTIs are useful when you don't have
+// a local path to point to.
+//
+// You can find out the UTI of a filetype by dragging one of the files
+// to a File Filter's File Types list in Alfred, or in a shell with:
+//
+//    mdls /path/to/the/file
 type ItemIcon struct {
 	Value   string   `xml:",chardata"`
 	Type    string   `xml:"type,attr,omitempty"`
@@ -121,10 +143,10 @@ type Feedback struct {
 }
 
 // NewItem adds a new Item and returns a pointer to it.
-func (this *Feedback) NewItem() *Item {
+func (fb *Feedback) NewItem() *Item {
 	item := Item{}
 	item.Icon = ItemIcon{}
-	this.Items = append(this.Items, &item)
+	fb.Items = append(fb.Items, &item)
 	return &item
 }
 
@@ -135,8 +157,8 @@ func (this *Feedback) NewItem() *Item {
 // UID, Arg and Autocomplete are set to path
 // Type is "file"
 // Icon is the icon of the file at path
-func (this *Feedback) NewFileItem(path string) *Item {
-	item := this.NewItem()
+func (fb *Feedback) NewFileItem(path string) *Item {
+	item := fb.NewItem()
 	item.Title = filepath.Base(path)
 	item.Subtitle = shortenPath(path)
 	item.Arg = path
@@ -149,8 +171,8 @@ func (this *Feedback) NewFileItem(path string) *Item {
 }
 
 // Send generates XML from this struct and sends it to Alfred.
-func (this *Feedback) Send() error {
-	output, err := xml.MarshalIndent(this, "", "  ")
+func (fb *Feedback) Send() error {
+	output, err := xml.MarshalIndent(fb, "", "  ")
 	if err != nil {
 		return fmt.Errorf("Error generating XML : %v", err)
 	}
