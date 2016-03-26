@@ -48,12 +48,12 @@ func run() {
 	log.Printf("workflowdir=%v", root)
 	log.Printf("datadir=%v", workflow.GetDataDir())
 	log.Printf("cachedir=%v", workflow.GetCacheDir())
-	for i, path := range readDir(StartDir) {
-		log.Printf("i=%02d, f=%v", i, path)
-		it := workflow.NewFileItem(path)
-		it.SetSubtitle("cmd", "Open in your underpants")
-	}
-	workflow.SendFeedback()
+	// for i, path := range readDir(StartDir) {
+	// 	log.Printf("i=%02d, f=%v", i, path)
+	// 	it := workflow.NewFileItem(path)
+	// 	it.SetAlternateSubtitle("cmd", "Open in your underpants")
+	// }
+	// workflow.SendFeedback()
 }
 
 func main() {
