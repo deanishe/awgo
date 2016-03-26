@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"runtime/debug"
 	"time"
 
 	"github.com/mkrautz/plist"
@@ -18,9 +19,13 @@ const (
 )
 
 // The workflow object operated on by top-level functions.
+// It can be retrieved/replaced with GetDefaultWorkflow() and
+// SetDefaultWorkflow() respectively.
 var defaultWorkflow *Workflow
 
-// Info contains some of the information extracted from info.plist.
+// Info contains meta information extracted from info.plist.
+// Use Workflow.GetInfo() to retrieve the Info for the running
+// workflow (it is lazily loaded).
 type Info struct {
 	BundleId    string `plist:"bundleid"`
 	Author      string `plist:"createdby"`
@@ -69,9 +74,11 @@ type Workflow struct {
 	// Set this to your workflow's version (used in logging)
 	Version string
 
+	// Populated by readInfoPlist()
 	info       Info
 	infoLoaded bool
 
+	// Set from environment or info.plist
 	bundleId    string
 	name        string
 	cacheDir    string
@@ -254,7 +261,8 @@ func (wf *Workflow) Run(fn func()) {
 	// SendError(Msg) will terminate the process (via log.Fatal).
 	defer func() {
 		if r := recover(); r != nil {
-			log.Printf("Recovered : %x", r)
+			log.Printf("%s : %s", r, debug.Stack())
+			// log.Printf("Recovered : %x", r)
 			err, ok := r.(error)
 			if ok {
 				wf.SendError(err)
@@ -379,6 +387,8 @@ func SendFeedback() {
 }
 
 // Run runs your workflow function, catching any errors.
+// If the workflow panics, Run rescues and displays an error
+// message in Alfred.
 func Run(fn func()) {
 	defaultWorkflow.Run(fn)
 }
