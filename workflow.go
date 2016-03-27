@@ -162,7 +162,8 @@ func (wf *Workflow) initializeLogging() {
 
 	multi := io.MultiWriter(file, os.Stderr)
 	log.SetOutput(multi)
-	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	// log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	log.SetFlags(log.Lshortfile)
 	// log.New(multi, "", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
