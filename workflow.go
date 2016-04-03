@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	Version = 0.1
+	Version = 0.2
 )
 
 // The workflow object operated on by top-level functions.
@@ -26,8 +26,11 @@ var defaultWorkflow *Workflow
 // Info contains meta information extracted from info.plist.
 // Use Workflow.GetInfo() to retrieve the Info for the running
 // workflow (it is lazily loaded).
+//
+// TODO: Remove info.plist parsing? Everything is in envvars, but
+// won't run from a shell w/out fiddling with the environment first.
 type Info struct {
-	BundleId    string `plist:"bundleid"`
+	BundleID    string `plist:"bundleid"`
 	Author      string `plist:"createdby"`
 	Description string `plist:"description"`
 	Name        string `plist:"name"`
@@ -79,7 +82,7 @@ type Workflow struct {
 	infoLoaded bool
 
 	// Set from environment or info.plist
-	bundleId    string
+	bundleID    string
 	name        string
 	cacheDir    string
 	dataDir     string
@@ -92,7 +95,7 @@ func (wf *Workflow) readInfoPlist() error {
 		return nil
 	}
 
-	p := path.Join(wf.GetWorkflowDir(), "info.plist")
+	p := path.Join(wf.WorkflowDir(), "info.plist")
 	buf, err := ioutil.ReadFile(p)
 	if err != nil {
 		return fmt.Errorf("Couldn't open `info.plist` (%s) :  %v", p, err)
@@ -103,7 +106,7 @@ func (wf *Workflow) readInfoPlist() error {
 		return fmt.Errorf("Error parsing `info.plist` (%s) : %v", p, err)
 	}
 
-	wf.bundleId = wf.info.BundleId
+	wf.bundleID = wf.info.BundleID
 	wf.name = wf.info.Name
 	wf.infoLoaded = true
 	return nil
@@ -142,7 +145,7 @@ func (wf *Workflow) loadEnv() {
 		} else if key == "workflow_data" {
 			wf.dataDir = val
 		} else if key == "workflow_bundleid" {
-			wf.bundleId = val
+			wf.bundleID = val
 		} else if key == "workflow_name" {
 			wf.name = val
 		}
@@ -153,11 +156,11 @@ func (wf *Workflow) loadEnv() {
 // workflow's log file.
 func (wf *Workflow) initializeLogging() {
 	// TODO: Rotate log file
-	file, err := os.OpenFile(wf.GetLogFile(),
+	file, err := os.OpenFile(wf.LogFile(),
 		os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 	if err != nil {
 		wf.SendErrorMsg(fmt.Sprintf("Couldn't open log file %s : %v",
-			wf.GetLogFile(), err))
+			wf.LogFile(), err))
 	}
 
 	multi := io.MultiWriter(file, os.Stderr)
@@ -167,30 +170,30 @@ func (wf *Workflow) initializeLogging() {
 	// log.New(multi, "", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
-// GetInfo returns the metadata read from the workflow's info.plist.
-func (wf *Workflow) GetInfo() Info {
+// Info returns the metadata read from the workflow's info.plist.
+func (wf *Workflow) Info() Info {
 	if err := wf.readInfoPlist(); err != nil {
 		wf.SendError(err)
 	}
 	return wf.info
 }
 
-// GetBundleID returns the workflow's bundle ID. This library will not
+// BundleID returns the workflow's bundle ID. This library will not
 // work without a bundle ID, which is set in info.plist.
-func (wf *Workflow) GetBundleId() string {
-	if wf.bundleId == "" { // Really old version of Alfred with no envvars?
+func (wf *Workflow) BundleID() string {
+	if wf.bundleID == "" { // Really old version of Alfred with no envvars?
 		if err := wf.readInfoPlist(); err != nil {
 			wf.SendError(err)
 		}
-		if wf.bundleId == "" {
+		if wf.bundleID == "" {
 			wf.SendErrorMsg("No bundle ID set in info.plist. You *must* set a bundle ID to use awgo.")
 		}
 	}
-	return wf.bundleId
+	return wf.bundleID
 }
 
-// GetName returns the workflow's name as specified in info.plist.
-func (wf *Workflow) GetName() string {
+// Name returns the workflow's name as specified in info.plist.
+func (wf *Workflow) Name() string {
 	if wf.name == "" { // Really old version of Alfred with no envvars?
 		if err := wf.readInfoPlist(); err != nil {
 			wf.SendError(err)
@@ -199,10 +202,10 @@ func (wf *Workflow) GetName() string {
 	return wf.name
 }
 
-// GetWorkflowDir returns the path to the workflow's root directory.
-func (wf *Workflow) GetWorkflowDir() string {
+// WorkflowDir returns the path to the workflow's root directory.
+func (wf *Workflow) WorkflowDir() string {
 	if wf.workflowDir == "" {
-		dir, err := util.GetWorkflowRoot()
+		dir, err := util.FindWorkflowRoot()
 		if err != nil {
 			wf.SendError(err)
 		}
@@ -211,31 +214,31 @@ func (wf *Workflow) GetWorkflowDir() string {
 	return wf.workflowDir
 }
 
-// GetCacheDir returns the path to the workflow's cache directory.
+// CacheDir returns the path to the workflow's cache directory.
 // The directory will be created if it does not already exist.
-func (wf *Workflow) GetCacheDir() string {
+func (wf *Workflow) CacheDir() string {
 	if wf.cacheDir == "" { // Really old version of Alfred with no envvars?
 		wf.cacheDir = os.ExpandEnv(fmt.Sprintf(
 			"$HOME/Library/Caches/com.runningwithcrayons.Alfred-2/Workflow Data/%s",
-			wf.GetBundleId()))
+			wf.BundleID()))
 	}
 	return util.EnsureExists(wf.cacheDir)
 }
 
-// GetDataDir returns the path to the workflow's data directory.
+// DataDir returns the path to the workflow's data directory.
 // The directory will be created if it does not already exist.
-func (wf *Workflow) GetDataDir() string {
+func (wf *Workflow) DataDir() string {
 	if wf.dataDir == "" { // Really old version of Alfred with no envvars?
 		wf.dataDir = os.ExpandEnv(fmt.Sprintf(
 			"$HOME/Library/Application Support/Alfred 2/Workflow Data/%s",
-			wf.GetBundleId()))
+			wf.BundleID()))
 	}
 	return util.EnsureExists(wf.dataDir)
 }
 
-// GetLogFile returns the path to the workflow's log file.
-func (wf *Workflow) GetLogFile() string {
-	return path.Join(wf.GetCacheDir(), fmt.Sprintf("%s.log", wf.GetBundleId()))
+// LogFile returns the path to the workflow's log file.
+func (wf *Workflow) LogFile() string {
+	return path.Join(wf.CacheDir(), fmt.Sprintf("%s.log", wf.BundleID()))
 }
 
 // NewItem adds and returns a new feedback Item.
@@ -250,10 +253,20 @@ func (wf *Workflow) NewFileItem(path string) *Item {
 	return wf.Feedback.NewFileItem(path)
 }
 
+// NewWarningItem adds and returns a new Feedback Item with the system
+// warning icon (exclamation mark on yellow triangle).
+func (wf *Workflow) NewWarningItem(title, subtitle string) *Item {
+	it := wf.Feedback.NewItem()
+	it.Title = title
+	it.Subtitle = subtitle
+	it.Icon = ICON_WARNING
+	return it
+}
+
 // Run runs your workflow function, catching any errors.
 func (wf *Workflow) Run(fn func()) {
 	startTime := time.Now()
-	log.Printf("-------- %s/%v (awgo/%v) --------", wf.GetName(),
+	log.Printf("-------- %s/%v (awgo/%v) --------", wf.Name(),
 		wf.Version, Version)
 	// log.Println("Workflow started -------------------------")
 	// log.Printf("awgo version %v", Version)
@@ -297,6 +310,16 @@ func (wf *Workflow) SendErrorMsg(errMsg string) {
 	log.Fatal(errMsg)
 }
 
+// SendWarning displays a warning message in Alfred immediately.
+func (wf *Workflow) SendWarning(title, subtitle string) {
+	var f Feedback
+	it := f.NewItem()
+	it.Title = title
+	it.Subtitle = subtitle
+	it.Icon = ICON_WARNING
+	wf.SendFeedback()
+}
+
 // SendFeedback generates and sends the XML response to Alfred.
 func (wf *Workflow) SendFeedback() {
 	if err := wf.Feedback.Send(); err != nil {
@@ -316,9 +339,9 @@ func init() {
 	defaultWorkflow = NewWorkflow()
 }
 
-// GetDefaultWorkflow returns the Workflow object used by the
+// DefaultWorkflow returns the Workflow object used by the
 // package-level functions.
-func GetDefaultWorkflow() *Workflow {
+func DefaultWorkflow() *Workflow {
 	return defaultWorkflow
 }
 
@@ -328,32 +351,32 @@ func SetDefaultWorkflow(wf *Workflow) {
 	defaultWorkflow = wf
 }
 
-// GetBundleId returns the bundle ID of the workflow.
-// It is retrieved from Alfred's environmental variables or `info.plist`.
-func GetBundleId() string {
-	return defaultWorkflow.GetBundleId()
+// BundleId returns the bundle ID of the workflow.
+// It is retrieved from Alfred's environmental variables.
+func BundleID() string {
+	return defaultWorkflow.BundleID()
 }
 
-// GetName returns the name of the workflow.
-func GetName() string {
-	return defaultWorkflow.GetName()
+// Name returns the name of the workflow.
+func Name() string {
+	return defaultWorkflow.Name()
 }
 
-// GetCacheDir returns the path to the workflow's cache directory.
+// CacheDir returns the path to the workflow's cache directory.
 // The directory will be created if it does not already exist.
-func GetCacheDir() string {
-	return defaultWorkflow.GetCacheDir()
+func CacheDir() string {
+	return defaultWorkflow.CacheDir()
 }
 
-// GetDataDir returns the path to the workflow's data directory.
+// DataDir returns the path to the workflow's data directory.
 // The directory will be created if it does not already exist.
-func GetDataDir() string {
-	return defaultWorkflow.GetDataDir()
+func DataDir() string {
+	return defaultWorkflow.DataDir()
 }
 
-// GetWorkflowDir returns the path to the workflow's root directory.
-func GetWorkflowDir() string {
-	return defaultWorkflow.GetWorkflowDir()
+// WorkflowDir returns the path to the workflow's root directory.
+func WorkflowDir() string {
+	return defaultWorkflow.WorkflowDir()
 }
 
 // NewItem adds and returns a new feedback Item.
@@ -368,6 +391,11 @@ func NewFileItem(path string) *Item {
 	return defaultWorkflow.NewFileItem(path)
 }
 
+// NewWarningItem adds and returns an Item with a warning icon.
+func NewWarningItem(title, subtitle string) *Item {
+	return defaultWorkflow.NewWarningItem(title, subtitle)
+}
+
 // SendError sends an error message to Alfred as XML feedback and
 // terminates the workflow.
 func SendError(err error) {
@@ -378,6 +406,14 @@ func SendError(err error) {
 // terminates the workflow.
 func SendErrorMsg(errMsg string) {
 	defaultWorkflow.SendErrorMsg(errMsg)
+}
+
+// SendWarning sends a warning message to Alfred as XML feedback. This
+// does not terminate the workflow process, but it sends the feedback
+// to Alfred, so you can't send any more data to Alfred after calling
+// this.
+func SendWarning(title, subtitle string) {
+	defaultWorkflow.SendWarning(title, subtitle)
 }
 
 // SendFeedback generates and sends the XML response to Alfred.

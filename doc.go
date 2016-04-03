@@ -38,6 +38,9 @@ program.go:
 
 	func run() {
 		// Your workflow starts here
+		it := workflow.NewItem()
+		it.Title = "First result!"
+		workflow.SendFeedback()
 	}
 
 	func main() {
@@ -58,6 +61,30 @@ SortFuzzy() implements Alfred-like fuzzy search, e.g. "of" will match
 To use SortFuzzy, your struct must implement the Fuzzy interface, which
 is sort.Interface plus a Keywords() method that returns the string
 the fuzzy filtering should be applied to.
+
+
+Sending results to Alfred
+
+Generally, you'll want to use workflow.NewItem() to create items,
+then workflow.SendFeedback() to generate the XML and send it to Alfred
+(i.e. print it to STDOUT).
+
+There are additional helper methods for specific situations.
+
+workflow.NewFileItem() returns an Item pre-populated from a
+filepath (title, subtitle, icon, arg etc.).
+
+workflow.SendError() and workflow.SendErrorMsg() will immediately
+send a single result to Alfred with an error message and then call
+log.Fatalf(), terminating the workflow.
+
+workflow.SendWarning() also immediately sends a single result to Alfred
+with a warning message (and icon), but does not terminate the workflow.
+However, because the XML has already been sent to Alfred, you can't
+send any more results after calling SendWarning().
+
+If you want to include a warning with other results, use workflow.NewWarningItem().
+
 
 */
 package workflow

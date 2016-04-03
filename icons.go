@@ -11,55 +11,55 @@ import "fmt"
 // http://www.deanishe.net/alfred-workflow/user-manual/icons.html#list-of-icons
 var (
 	// Accounts.icns
-	ICON_ACCOUNT ItemIcon
+	ICON_ACCOUNT *ItemIcon
 	// BurningIcon.icns
-	ICON_BURN ItemIcon
+	ICON_BURN *ItemIcon
 	// Clock.icns
-	ICON_CLOCK ItemIcon
+	ICON_CLOCK *ItemIcon
 	// ProfileBackgroundColor.icns
-	ICON_COLOR ItemIcon
+	ICON_COLOR *ItemIcon
 	// ProfileBackgroundColor.icns
-	ICON_COLOUR ItemIcon
+	ICON_COLOUR *ItemIcon
 	// EjectMediaIcon.icns
-	ICON_EJECT ItemIcon
+	ICON_EJECT *ItemIcon
 	// AlertStopIcon.icns
-	ICON_ERROR ItemIcon
+	ICON_ERROR *ItemIcon
 	// ToolbarFavoritesIcon.icns
-	ICON_FAVORITE ItemIcon
+	ICON_FAVORITE *ItemIcon
 	// ToolbarFavoritesIcon.icns
-	ICON_FAVOURITE ItemIcon
+	ICON_FAVOURITE *ItemIcon
 	// GroupIcon.icns
-	ICON_GROUP ItemIcon
+	ICON_GROUP *ItemIcon
 	// HelpIcon.icns
-	ICON_HELP ItemIcon
+	ICON_HELP *ItemIcon
 	// HomeFolderIcon.icns
-	ICON_HOME ItemIcon
+	ICON_HOME *ItemIcon
 	// ToolbarInfo.icns
-	ICON_INFO ItemIcon
+	ICON_INFO *ItemIcon
 	// GenericNetworkIcon.icns
-	ICON_NETWORK ItemIcon
+	ICON_NETWORK *ItemIcon
 	// AlertNoteIcon.icns
-	ICON_NOTE ItemIcon
+	ICON_NOTE *ItemIcon
 	// ToolbarAdvanced.icns
-	ICON_SETTINGS ItemIcon
+	ICON_SETTINGS *ItemIcon
 	// ErasingIcon.icns
-	ICON_SWIRL ItemIcon
+	ICON_SWIRL *ItemIcon
 	// General.icns
-	ICON_SWITCH ItemIcon
+	ICON_SWITCH *ItemIcon
 	// Sync.icns
-	ICON_SYNC ItemIcon
+	ICON_SYNC *ItemIcon
 	// TrashIcon.icns
-	ICON_TRASH ItemIcon
+	ICON_TRASH *ItemIcon
 	// UserIcon.icns
-	ICON_USER ItemIcon
+	ICON_USER *ItemIcon
 	// AlertCautionIcon.icns
-	ICON_WARNING ItemIcon
+	ICON_WARNING *ItemIcon
 	// BookmarkIcon.icns
-	ICON_WEB ItemIcon
+	ICON_WEB *ItemIcon
 )
 
-func systemIcon(filename string) ItemIcon {
-	var icon ItemIcon
+func systemIcon(filename string) *ItemIcon {
+	icon := &ItemIcon{}
 	var path string
 	path = fmt.Sprintf(
 		"/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/%s.icns", filename)

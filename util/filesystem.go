@@ -5,38 +5,40 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 )
 
-var ()
-
-// GetWorkflowRoot returns the workflow root directory.
+// FindWorkflowRoot returns the workflow root directory.
 // Tries to find info.plist in or above current working directory
 // and the executable's parent directory.
-func GetWorkflowRoot() (string, error) {
+func FindWorkflowRoot() (string, error) {
 	candidateDirs := []string{}
-	dir, err := os.Getwd()
+	// Current working directory
+	cwd, err := os.Getwd()
 	if err == nil {
-		dir, _ = filepath.Abs(dir)
+		cwd, _ = filepath.Abs(cwd)
 		// log.Printf("cwd=%v", dir)
+		candidateDirs = append(candidateDirs, cwd)
+	}
+
+	// Parent directory of running program
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err == nil && dir != cwd {
 		candidateDirs = append(candidateDirs, dir)
 	}
-	dir, err = filepath.Abs(filepath.Dir(os.Args[0]))
-	if err == nil {
-		candidateDirs = append(candidateDirs, dir)
-	}
+
 	for _, dir := range candidateDirs {
 		p, err := FindFile("info.plist", dir)
 		if err == nil {
 			dirpath, _ := filepath.Split(p)
-			// log.Printf("info.plist found in %v", dirpath)
 			return dirpath, nil
 		}
 	}
 	return "", fmt.Errorf("info.plist not found")
 }
 
-// EnsureExists takes and returns a directory path, creating the directory if necessary.
-// Any created directories have permission set to 700.
+// EnsureExists takes and returns a directory path, creating the directory
+// if necessary. Any created directories have permission set to 700.
 func EnsureExists(dirpath string) string {
 	err := os.MkdirAll(dirpath, 0700)
 	if err != nil {
@@ -53,7 +55,8 @@ func Exists(path string) bool {
 	return false
 }
 
-// FindFile searches for a file matching filename up the directory tree starting at startdir.
+// FindFile searches for a file named filename. It first looks in startdir,
+// then its parent directory and so on until it reaches /
 func FindFile(filename string, startdir string) (string, error) {
 	dirpath, _ := filepath.Abs(startdir)
 	for dirpath != "/" {
@@ -66,4 +69,9 @@ func FindFile(filename string, startdir string) (string, error) {
 	}
 	err := fmt.Errorf("File %v not found in or above %v", filename, startdir)
 	return "", err
+}
+
+// ShortenPath replaces $HOME with ~ in path
+func ShortenPath(path string) string {
+	return strings.Replace(path, os.Getenv("HOME"), "~", -1)
 }
