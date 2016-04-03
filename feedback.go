@@ -16,7 +16,7 @@ var (
 // Item is a single Alfred result. Add them to a Feedback struct to
 // generate valid XML.
 type Item struct {
-	// Result item
+	// Result title (only required field)
 	Title string `xml:"title"`
 
 	// Result subtitle
@@ -28,6 +28,12 @@ type Item struct {
 	// What the query will expand to when the user TABs it (or hits
 	// RETURN on an invalid result)
 	Autocomplete string `xml:"autocomplete,attr"`
+
+	// If true, send autocomplete="" to Alfred. If autocomplete is not
+	// specified, TAB will do nothing. If autocomplete is an empty
+	// string, TAB will autocomplete to an empty string, i.e. Alfred's
+	// query will be deleted.
+	KeepEmptyAutocomplete bool
 
 	// Used by Alfred to remember your choices. Use blank string
 	// to force results to appear in the order you generate them.
@@ -172,6 +178,16 @@ func (fb *Feedback) NewFileItem(path string) *Item {
 
 // Send generates XML from this struct and sends it to Alfred.
 func (fb *Feedback) Send() error {
+	// fb2 := Feedback{}
+	// for _, it := range fb.Items {
+	// 	if it.Autocomplete != "" || it.KeepEmptyAutocomplete == false {
+	// 		fb2.Items = append(fb2.Items, it)
+	// 	} else {
+	// 		a := &ItemAlias{Item: it, Autocomplete: it.Autocomplete}
+	// 		// TODO: Use different struct
+	// 		fb2.Items = append(fb2.Items, a)
+	// 	}
+	// }
 	output, err := xml.MarshalIndent(fb, "", "  ")
 	if err != nil {
 		return fmt.Errorf("Error generating XML : %v", err)
