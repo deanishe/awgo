@@ -84,6 +84,12 @@ func (fq fuzzyQuery) Less(i, j int) bool {
 // CalculateScore rates kw against fq.Query.
 func (fq *fuzzyQuery) CalculateScore(kw string) float64 {
 	kwLC := strings.ToLower(kw)
+	if kw == fq.Query {
+		return 1.0
+	}
+	if kwLC == fq.Query {
+		return 0.99
+	}
 	if s := fq.scoreCapitals(kw); s > 0.0 {
 		return s
 	}
@@ -117,7 +123,7 @@ func (fq *fuzzyQuery) scoreCapitals(kw string) float64 {
 	str := string(caps)
 	q := strings.ToLower(fq.Query)
 	if strings.EqualFold(str, q) {
-		return 1.0
+		return 0.98
 	} else if strings.HasPrefix(str, q) {
 		// TODO: Alter score based on relative length of match.
 		return 0.95

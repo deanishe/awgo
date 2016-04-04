@@ -2,15 +2,11 @@
 Package workflow provides utilities for building workflows for Alfred 2.
 https://www.alfredapp.com/
 
-You need Alfred's Powerpack to be able to use workflows.
-
-NOTE: This software is very alpha and not even half-finished.
+NOTE: This software is currently very alpha. I'm new to Go, and doubtless
+much will change as I figure out what I'm doing.
 
 To read this documentation on godoc.org, see
 http://godoc.org/gogs.deanishe.net/deanishe/awgo.git
-
-This library provides an API for communicating with Alfred and several
-convenience methods for common workflow tasks.
 
 
 Features
@@ -19,9 +15,10 @@ The current main features are:
 
 	- Easy access to Alfred context, such as data and cache directories.
 	- Simple generation of Alfred XML feedback.
-	- Fuzzy filtering.
+	- Fuzzy sorting.
 	- Catches panics, logs stack trace and shows user an error message.
 	- Log file for easier debugging.
+	- OS X system icons.
 
 
 Usage
@@ -52,8 +49,14 @@ In the Script Filter's Script box (Language = /bin/bash):
 
 	./program "{query}"
 
+The Item struct isn't intended to be used as the workflow's data model,
+just as a way to encapsulate search results for Alfred.
 
-Fuzzy filtering
+You may want your own data model to implement the Fuzzy interface to
+enable...
+
+
+Fuzzy sorting
 
 SortFuzzy() implements Alfred-like fuzzy search, e.g. "of" will match
 "OmniFocus" and "got" will match "Game of Thrones".
@@ -62,28 +65,42 @@ To use SortFuzzy, your struct must implement the Fuzzy interface, which
 is sort.Interface plus a Keywords() method that returns the string
 the fuzzy filtering should be applied to.
 
+The sorting algorithm uses multiple comparisons:
+
+	1. Exact match, e.g. "Safari" matches "Safari"
+	2. Case-insensitive exact match, e.g. "safari" matches "Safari"
+	3. Capital letters, e.g. "of" matches "OmniFocus"
+	4. Initials, e.g. "got" matches "Game of Thrones"
+	5. Prefix, e.g. "pho" matches "Photoshop"
+	6. Substring, e.g. "gator" matches "alligator"
+	7. Ordered subset, e.g. "hhg" matches "Hitchhiker's Guide to the Galaxy"
+
 
 Sending results to Alfred
 
-Generally, you'll want to use workflow.NewItem() to create items,
-then workflow.SendFeedback() to generate the XML and send it to Alfred
+Generally, you'll want to use NewItem() to create items, then
+SendFeedback() to generate the XML and send it to Alfred
 (i.e. print it to STDOUT).
+
+The Workflow struct (more precisely, its Feedback struct) retains the
+Item, so you don't need to. Just populate it and then call SendFeedback()
+when all your results are ready.
 
 There are additional helper methods for specific situations.
 
-workflow.NewFileItem() returns an Item pre-populated from a
-filepath (title, subtitle, icon, arg etc.).
+NewFileItem() returns an Item pre-populated from a filepath (title,
+subtitle, icon, arg etc.).
 
-workflow.SendError() and workflow.SendErrorMsg() will immediately
-send a single result to Alfred with an error message and then call
-log.Fatalf(), terminating the workflow.
+SendError() and SendErrorMsg() will immediately send a single result to
+Alfred with an error message and then call log.Fatalf(), terminating
+the workflow.
 
-workflow.SendWarning() also immediately sends a single result to Alfred
+SendWarning() also immediately sends a single result to Alfred
 with a warning message (and icon), but does not terminate the workflow.
 However, because the XML has already been sent to Alfred, you can't
 send any more results after calling SendWarning().
 
-If you want to include a warning with other results, use workflow.NewWarningItem().
+If you want to include a warning with other results, use NewWarningItem().
 
 
 */

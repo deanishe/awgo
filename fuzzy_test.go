@@ -71,6 +71,9 @@ func TestFuzzy(t *testing.T) {
 	allHosts := makeHosts(allHostnames)
 
 	tests := []hostTest{
+		// Search exact match
+		hostTest{simpleHosts, "two.example.com", "two.example.com"},
+		hostTest{simpleHosts, "TWO.EXAMPLE.COM", "two.example.com"},
 		// Search on prefix
 		hostTest{simpleHosts, "two", "two.example.com"},
 		hostTest{simpleHosts, "one", "one.example.com"},
