@@ -8,6 +8,7 @@ package main
 
 import (
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -64,6 +65,7 @@ func run() {
 	if query != "" {
 		// Filter results
 		for i, score := range workflow.SortFuzzy(paths, query) {
+			log.Printf("%v\t%v", score, paths[i])
 			if score < MinimumScore {
 				paths = paths[:i]
 				break

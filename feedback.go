@@ -3,6 +3,7 @@ package workflow
 import (
 	"encoding/xml"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,6 +25,8 @@ var (
 		"":         true,
 	}
 )
+
+// TODO: Add Options
 
 // Item is a single Alfred result. Add them to a Feedback struct to
 // generate valid XML.
@@ -82,7 +85,7 @@ type Item struct {
 }
 
 // SetAlternateSubtitle sets custom subtitles for modifier keys.
-// `modifier` must be one of "cmd", "opt", "ctrl", "shift", "fn".
+// modifier must be one of "cmd", "opt", "ctrl", "shift", "fn".
 func (it *Item) SetAlternateSubtitle(modifier string, value string) error {
 	modifier = strings.ToLower(modifier)
 	if _, valid := validModifiers[modifier]; !valid {
@@ -100,7 +103,8 @@ func (it *Item) SetAlternateSubtitle(modifier string, value string) error {
 }
 
 // SetIcon sets the icon for a result item.
-// Pass "" for kind if value is the path to an icon file.
+// Pass "" for kind if value is the path to an icon file. Other valid
+// values are "fileicon" and "filetype". See ItemIcon for more information.
 func (it *Item) SetIcon(value string, kind string) error {
 	kind = strings.ToLower(kind)
 	if _, valid := validIconTypes[kind]; !valid {
@@ -133,6 +137,10 @@ func (it *Item) addElement(name string, cdata string, attrs map[string]string) [
 
 // MarshalXML serializes Item to Alfred's XML format. You shouldn't
 // need to call this directly: use Feedback.Send() instead.
+//
+// A custom MarshalXML method is necessary to allow the autocomplete
+// attribute to be either absent or set to an empty string, which
+// tagging the struct's members doesn't permit.
 func (it *Item) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	// var attrs []xml.Attr
 	var attr xml.Attr
@@ -224,7 +232,7 @@ func (it *Item) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 // ItemIcon represents the icon for an Item.
 //
 // Alfred supports PNG or ICNS files, UTIs (e.g. "public.folder") or
-// can use the icon of a specified file (e.g. "/Applications/Safari.app"
+// can use the icon of a specific file (e.g. "/Applications/Safari.app"
 // to use Safari's icon.
 //
 // Type = "" (the default) will treat Value as the path to a PNG or ICNS
@@ -258,6 +266,15 @@ type ItemIcon struct {
 type Feedback struct {
 	Items   []*Item
 	XMLName xml.Name `xml:"items"`
+	// Set to true when feedback has been sent.
+	sent bool
+}
+
+// Clear removes any items.
+func (fb *Feedback) Clear() {
+	if len(fb.Items) > 0 {
+		fb.Items = nil
+	}
 }
 
 // NewItem adds a new Item and returns a pointer to it.
@@ -289,11 +306,16 @@ func (fb *Feedback) NewFileItem(path string) *Item {
 
 // Send generates XML from this struct and sends it to Alfred.
 func (fb *Feedback) Send() error {
+	if fb.sent {
+		log.Printf("Feedback already sent. Ignoring.")
+		return nil
+	}
 	output, err := xml.MarshalIndent(fb, "", "  ")
 	if err != nil {
 		return fmt.Errorf("Error generating XML : %v", err)
 	}
 	os.Stdout.Write([]byte(xml.Header))
 	os.Stdout.Write(output)
+	fb.sent = true
 	return nil
 }

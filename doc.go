@@ -2,7 +2,7 @@
 Package workflow provides utilities for building workflows for Alfred 2.
 https://www.alfredapp.com/
 
-NOTE: This software is currently very alpha. I'm new to Go, and doubtless
+NOTE: This library is currently very alpha. I'm new to Go, and doubtless
 much will change as I figure out what I'm doing.
 
 To read this documentation on godoc.org, see
@@ -19,6 +19,9 @@ The current main features are:
 	- Catches panics, logs stack trace and shows user an error message.
 	- Log file for easier debugging.
 	- OS X system icons.
+
+	TODO: Starting background processes
+	TODO: Caching and storing data
 
 
 Usage
@@ -48,6 +51,7 @@ program.go:
 In the Script Filter's Script box (Language = /bin/bash):
 
 	./program "{query}"
+
 
 The Item struct isn't intended to be used as the workflow's data model,
 just as a way to encapsulate search results for Alfred.
@@ -82,6 +86,10 @@ Generally, you'll want to use NewItem() to create items, then
 SendFeedback() to generate the XML and send it to Alfred
 (i.e. print it to STDOUT).
 
+You can only call Send* methods once: multiple calls would result in
+invalid XML, as there'd be multiple <?xml … ?> headers, so any subsequent
+calls to Send* methods are logged and ignored.
+
 The Workflow struct (more precisely, its Feedback struct) retains the
 Item, so you don't need to. Just populate it and then call SendFeedback()
 when all your results are ready.
@@ -102,6 +110,19 @@ send any more results after calling SendWarning().
 
 If you want to include a warning with other results, use NewWarningItem().
 
+
+Performance
+
+For smooth performance in Alfred, a Script Filter should ideally finish
+in under 0.1 seconds. 0.3 seconds is about the upper limit for your
+workflow not to feel slow.
+
+As a rough guideline, loading and sorting/filtering ~20K is about the
+limit before performance becomes noticeably sluggish.
+
+If you have a larger dataset, consider using something like sqlite,
+which can easily handle hundreds of thousands of items, for your
+datastore.
 
 */
 package workflow

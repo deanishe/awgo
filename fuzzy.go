@@ -6,6 +6,29 @@ import (
 	"unicode"
 )
 
+// Weightings for matching rules. Each match method returns
+// a score between 0.0 and 100.0, which is multiplied by the
+// corresponding weighting.
+//
+// Setting a weighting to 0.0 disables that match rule.
+var (
+	// Exact, case-sensitive match.
+	WeightingExact = 1.0
+	// Exact, case-insensitive match.
+	WeightingExactCaseless = 0.98
+	// Capital letters in keywords match query.
+	WeightingCaps = 0.95
+	// Initials of "words" in keywords match query.
+	// Keywords are split on non-letter characters.
+	WeightingInitials = 0.9
+	// Keywords starts with query (case-insensitive).
+	WeightingPrefix = 0.8
+	// Query is a substring of keywords (case-insensitive).
+	WeightingContains = 0.7
+	// All characters in query appear in order in keywords (case-insensitive).
+	WeightingOrderedSubset = 0.5
+)
+
 // Fuzzy makes a slice fuzzy-sortable.
 // The standard sort.Interface (i.e. Less()) is used as a fallback for
 // data with the same score.
@@ -84,26 +107,36 @@ func (fq fuzzyQuery) Less(i, j int) bool {
 // CalculateScore rates kw against fq.Query.
 func (fq *fuzzyQuery) CalculateScore(kw string) float64 {
 	kwLC := strings.ToLower(kw)
-	if kw == fq.Query {
-		return 1.0
+	if WeightingExact > 0.0 && kw == fq.Query {
+		return 100.0 * WeightingExact
 	}
-	if kwLC == fq.Query {
-		return 0.99
+	if WeightingExactCaseless > 0.0 && kwLC == fq.Query {
+		return 100.0 * WeightingExactCaseless
 	}
-	if s := fq.scoreCapitals(kw); s > 0.0 {
-		return s
+	if WeightingCaps > 0.0 {
+		if s := fq.scoreCapitals(kw); s > 0.0 {
+			return s * WeightingCaps
+		}
 	}
-	if s := fq.scoreInitials(kw); s > 0.0 {
-		return s
+	if WeightingInitials > 0.0 {
+		if s := fq.scoreInitials(kw); s > 0.0 {
+			return s * WeightingInitials
+		}
 	}
-	if s := fq.scorePrefix(kwLC); s > 0.0 {
-		return s
+	if WeightingPrefix > 0.0 {
+		if s := fq.scorePrefix(kwLC); s > 0.0 {
+			return s * WeightingPrefix
+		}
 	}
-	if s := fq.scoreContains(kwLC); s > 0.0 {
-		return s
+	if WeightingContains > 0.0 {
+		if s := fq.scoreContains(kwLC); s > 0.0 {
+			return s * WeightingContains
+		}
 	}
-	if s := fq.scoreContainsAll(kwLC); s > 0.0 {
-		return s
+	if WeightingOrderedSubset > 0.0 {
+		if s := fq.scoreContainsAll(kwLC); s > 0.0 {
+			return s * WeightingOrderedSubset
+		}
 	}
 	return 0.0
 }
@@ -123,10 +156,13 @@ func (fq *fuzzyQuery) scoreCapitals(kw string) float64 {
 	str := string(caps)
 	q := strings.ToLower(fq.Query)
 	if strings.EqualFold(str, q) {
-		return 0.98
+		return 100.0
 	} else if strings.HasPrefix(str, q) {
 		// TODO: Alter score based on relative length of match.
-		return 0.95
+		return 100.0 - float64(len(str)-len(str))
+		// j := float64(len(q)) / float64(len(str))
+		// log.Printf("%v prefix of %v : %v", q, str, j)
+		// return 0.95
 	}
 	return 0.0
 }
@@ -151,9 +187,10 @@ func (fq *fuzzyQuery) scoreInitials(kw string) float64 {
 	str := strings.ToLower(string(initials))
 	q := strings.ToLower(fq.Query)
 	if strings.EqualFold(str, q) {
-		return 0.99
+		return 100.0
 	} else if strings.HasPrefix(str, q) {
-		return 0.94
+		return 100.0 - float64(len(str)-len(q))
+		// return 94.0
 	}
 	return 0.0
 }
@@ -162,7 +199,8 @@ func (fq *fuzzyQuery) scoreInitials(kw string) float64 {
 func (fq *fuzzyQuery) scorePrefix(kw string) float64 {
 	q := strings.ToLower(fq.Query)
 	if strings.HasPrefix(kw, q) {
-		return 0.9
+		return 100.0 - float64(len(kw)-len(q))
+		// return 0.9
 	}
 	return 0.0
 }
@@ -171,21 +209,24 @@ func (fq *fuzzyQuery) scorePrefix(kw string) float64 {
 func (fq *fuzzyQuery) scoreContains(kw string) float64 {
 	q := strings.ToLower(fq.Query)
 	if strings.Contains(kw, q) {
-		return 0.7
+		i := len(kw) - len(q)
+		j := strings.Index(kw, q)
+		return float64(100 - i - j)
 	}
 	return 0.0
 }
 
 // scoreContainsAll | Whether kw contains all characters in fq.Query in order.
 func (fq *fuzzyQuery) scoreContainsAll(kw string) float64 {
-	var i int
+	var i, j int
 	q := strings.ToLower(fq.Query)
 	for _, c := range q {
 		i = strings.Index(kw, string(c))
 		if i < 0 {
 			return 0.0
 		}
+		j += i
 		kw = kw[i+1:]
 	}
-	return 0.3
+	return float64(100 - j)
 }

@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>bundleid</key>
-	<string>net.deanishe.awgo-example-filesystem</string>
+	<string>net.deanishe.awgo-example-fuzzy</string>
 	<key>connections</key>
 	<dict>
 		<key>D61073F1-262D-482D-800D-A788FD7B9F69</key>
@@ -41,7 +41,7 @@
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
-	<string>Awgo Filesystem Example</string>
+	<string>Awgo Fuzzy Sort Example</string>
 	<key>objects</key>
 	<array>
 		<dict>

@@ -265,9 +265,14 @@ func (wf *Workflow) NewWarningItem(title, subtitle string) *Item {
 
 // Run runs your workflow function, catching any errors.
 func (wf *Workflow) Run(fn func()) {
+	var vstr string
 	startTime := time.Now()
-	log.Printf("-------- %s/%v (awgo/%v) --------", wf.Name(),
-		wf.Version, Version)
+	if wf.Version != "" {
+		vstr = fmt.Sprintf("%s/%v", wf.Name(), wf.Version)
+	} else {
+		vstr = wf.Name()
+	}
+	log.Printf("-------- %s (awgo/%v) --------", vstr, Version)
 	// log.Println("Workflow started -------------------------")
 	// log.Printf("awgo version %v", Version)
 
@@ -292,28 +297,33 @@ func (wf *Workflow) Run(fn func()) {
 	log.Printf("------- %v --------", elapsed)
 }
 
-// SendError displays an error message in Alfred and quits.
+// SendError displays an error message in Alfred, then calls log.Fatal(),
+// terminating the workflow.
 func (wf *Workflow) SendError(err error) {
 	msg := fmt.Sprintf("%v", err)
 	wf.SendErrorMsg(msg)
 }
 
-// SendErrorMsg displays an error message in Alfred and quits.
+// SendErrorMsg displays an error message in Alfred, then calls log.Fatal(),
+// terminating the workflow.
 func (wf *Workflow) SendErrorMsg(errMsg string) {
-	var f Feedback
-	it := f.NewItem()
+	wf.Feedback.Clear()
+	it := wf.NewItem()
 	it.Title = errMsg
 	it.Icon = ICON_ERROR
-	if err := f.Send(); err != nil {
-		log.Fatalf("Error generating XML : %v", err)
-	}
+	wf.SendFeedback()
+	// if err := wf.Feedback.Send(); err != nil {
+	// 	log.Fatalf("Error generating XML : %v", err)
+	// }
 	log.Fatal(errMsg)
 }
 
-// SendWarning displays a warning message in Alfred immediately.
+// SendWarning displays a warning message in Alfred immediately. Unlike
+// SendError()/SendErrorMsg(), this does lot terminate the workflow,
+// but you can't send any more results to Alfred.
 func (wf *Workflow) SendWarning(title, subtitle string) {
-	var f Feedback
-	it := f.NewItem()
+	wf.Feedback.Clear()
+	it := wf.NewItem()
 	it.Title = title
 	it.Subtitle = subtitle
 	it.Icon = ICON_WARNING
@@ -349,6 +359,12 @@ func DefaultWorkflow() *Workflow {
 // package-level functions.
 func SetDefaultWorkflow(wf *Workflow) {
 	defaultWorkflow = wf
+}
+
+// SetVersion sets the version of your workflow. This is only
+// used for logging, but is helpful for bug reports.
+func SetVersion(v string) {
+	defaultWorkflow.Version = v
 }
 
 // BundleId returns the bundle ID of the workflow.
@@ -397,13 +413,13 @@ func NewWarningItem(title, subtitle string) *Item {
 }
 
 // SendError sends an error message to Alfred as XML feedback and
-// terminates the workflow.
+// terminates the workflow via log.Fatal().
 func SendError(err error) {
 	defaultWorkflow.SendError(err)
 }
 
 // SendErrorMsg sends an error message to Alfred as XML feedback and
-// terminates the workflow.
+// terminates the workflow via log.Fatal().
 func SendErrorMsg(errMsg string) {
 	defaultWorkflow.SendErrorMsg(errMsg)
 }
