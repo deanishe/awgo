@@ -38,6 +38,12 @@ type Info struct {
 	Website     string `plist:"webaddress"`
 }
 
+// Options contains the configuration options for a Workflow struct.
+type Options struct {
+	// The version of your workflow. Use semver.
+	Version string
+}
+
 // Workflow provides a simple, consolidated API for building Script
 // Filters and talking to Alfred.
 type Workflow struct {
@@ -338,15 +344,17 @@ func (wf *Workflow) SendFeedback() {
 }
 
 // NewWorkflow creates and initialises a new Workflow.
-func NewWorkflow() *Workflow {
+func NewWorkflow(opts Options) *Workflow {
 	var w Workflow
+	// Configure workflow
+	w.Version = opts.Version
 	w.loadEnv()
 	w.initializeLogging()
 	return &w
 }
 
 func init() {
-	defaultWorkflow = NewWorkflow()
+	defaultWorkflow = NewWorkflow(Options{})
 }
 
 // DefaultWorkflow returns the Workflow object used by the
@@ -382,6 +390,12 @@ func Name() string {
 // The directory will be created if it does not already exist.
 func CacheDir() string {
 	return defaultWorkflow.CacheDir()
+}
+
+// LogFile returns the path to the workflow's log file.
+// The file may or may not exist.
+func LogFile() string {
+	return defaultWorkflow.LogFile()
 }
 
 // DataDir returns the path to the workflow's data directory.
