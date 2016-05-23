@@ -1,5 +1,5 @@
 /*
-Package workflow provides utilities for building workflows for Alfred 2.
+Package workflow provides utilities for building workflows for Alfred 3.
 https://www.alfredapp.com/
 
 NOTE: This library is currently very alpha. I'm new to Go, and doubtless
