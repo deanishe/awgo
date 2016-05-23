@@ -46,3 +46,17 @@ func ExampleInfo_Var() {
 	fmt.Println(i.Var("exported_var"))
 	// Output: exported_value
 }
+
+func ExampleNewWorkflow() {
+	wf := NewWorkflow(&Options{})
+	// Version is read from info.plist
+	fmt.Println(wf.Version())
+	// Output: 0.2.1
+}
+
+func ExampleNewWorkflow_overrideVersion() {
+	// Override the version string read from info.plist (if present)
+	wf := NewWorkflow(&Options{Version: "1.1.0"})
+	fmt.Println(wf.Version())
+	// Output: 1.1.0
+}
