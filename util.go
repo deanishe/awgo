@@ -1,4 +1,4 @@
-package util
+package workflow
 
 import (
 	"fmt"
@@ -28,7 +28,7 @@ func FindWorkflowRoot() (string, error) {
 	}
 
 	for _, dir := range candidateDirs {
-		p, err := FindFile("info.plist", dir)
+		p, err := FindFileUpwards("info.plist", dir)
 		if err == nil {
 			dirpath, _ := filepath.Split(p)
 			return dirpath, nil
@@ -47,21 +47,21 @@ func EnsureExists(dirpath string) string {
 	return dirpath
 }
 
-// Exists checks for the existence of path.
-func Exists(path string) bool {
+// PathExists checks for the existence of path.
+func PathExists(path string) bool {
 	if _, err := os.Stat(path); err == nil {
 		return true
 	}
 	return false
 }
 
-// FindFile searches for a file named filename. It first looks in startdir,
+// FindFileUpwards searches for a file named filename. It first looks in startdir,
 // then its parent directory and so on until it reaches /
-func FindFile(filename string, startdir string) (string, error) {
+func FindFileUpwards(filename string, startdir string) (string, error) {
 	dirpath, _ := filepath.Abs(startdir)
 	for dirpath != "/" {
 		p := path.Join(dirpath, filename)
-		if Exists(p) {
+		if PathExists(p) {
 			// log.Printf("%v found at %v", filename, p)
 			return p, nil
 		}
@@ -74,4 +74,43 @@ func FindFile(filename string, startdir string) (string, error) {
 // ShortenPath replaces $HOME with ~ in path
 func ShortenPath(path string) string {
 	return strings.Replace(path, os.Getenv("HOME"), "~", -1)
+}
+
+// PadLeft pads str to length n by adding pad to its left.
+func PadLeft(str, pad string, n int) string {
+	if len(str) >= n {
+		return str
+	}
+	for {
+		str = pad + str
+		if len(str) >= n {
+			return str[len(str)-n:]
+		}
+	}
+}
+
+// PadRight pads str to length n by adding pad to its right.
+func PadRight(str, pad string, n int) string {
+	if len(str) >= n {
+		return str
+	}
+	for {
+		str = str + pad
+		if len(str) >= n {
+			return str[len(str)-n:]
+		}
+	}
+}
+
+// Pad pads str to length n by adding pad to both ends.
+func Pad(str, pad string, n int) string {
+	if len(str) >= n {
+		return str
+	}
+	for {
+		str = pad + str + pad
+		if len(str) >= n {
+			return str[len(str)-n:]
+		}
+	}
 }

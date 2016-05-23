@@ -6,7 +6,7 @@ NOTE: This library is currently very alpha. I'm new to Go, and doubtless
 much will change as I figure out what I'm doing.
 
 To read this documentation on godoc.org, see
-http://godoc.org/gogs.deanishe.net/deanishe/awgo.git
+http://godoc.org/gogs.deanishe.net/deanishe/awgo
 
 
 Features
@@ -14,7 +14,7 @@ Features
 The current main features are:
 
 	- Easy access to Alfred context, such as data and cache directories.
-	- Simple generation of Alfred XML feedback.
+	- Simple generation of Alfred JSON feedback.
 	- Fuzzy sorting.
 	- Catches panics, logs stack trace and shows user an error message.
 	- Log file for easier debugging.
@@ -83,12 +83,17 @@ The sorting algorithm uses multiple comparisons:
 Sending results to Alfred
 
 Generally, you'll want to use NewItem() to create items, then
-SendFeedback() to generate the XML and send it to Alfred
+SendFeedback() to generate the JSON and send it to Alfred
 (i.e. print it to STDOUT).
 
-You can only call Send* methods once: multiple calls would result in
-invalid XML, as there'd be multiple <?xml … ?> headers, so any subsequent
-calls to Send* methods are logged and ignored.
+You can only call a sending method once: multiple calls would result in
+invalid JSON, as there'd be multiple root objects, so any subsequent
+calls to Send* methods are logged and ignored. Sending methods are:
+
+	SendFeedback()
+	Fatal()
+	FatalError()
+	Warn()
 
 The Workflow struct (more precisely, its Feedback struct) retains the
 Item, so you don't need to. Just populate it and then call SendFeedback()
@@ -99,14 +104,14 @@ There are additional helper methods for specific situations.
 NewFileItem() returns an Item pre-populated from a filepath (title,
 subtitle, icon, arg etc.).
 
-SendError() and SendErrorMsg() will immediately send a single result to
+FatalError() and Fatal() will immediately send a single result to
 Alfred with an error message and then call log.Fatalf(), terminating
 the workflow.
 
-SendWarning() also immediately sends a single result to Alfred
+Warn() also immediately sends a single result to Alfred
 with a warning message (and icon), but does not terminate the workflow.
 However, because the XML has already been sent to Alfred, you can't
-send any more results after calling SendWarning().
+send any more results after calling Warn().
 
 If you want to include a warning with other results, use NewWarningItem().
 
@@ -115,10 +120,10 @@ Performance
 
 For smooth performance in Alfred, a Script Filter should ideally finish
 in under 0.1 seconds. 0.3 seconds is about the upper limit for your
-workflow not to feel slow.
+workflow not to feel sluggish.
 
 As a rough guideline, loading and sorting/filtering ~20K is about the
-limit before performance becomes noticeably sluggish.
+limit before performance becomes noticeably hesitant.
 
 If you have a larger dataset, consider using something like sqlite,
 which can easily handle hundreds of thousands of items, for your

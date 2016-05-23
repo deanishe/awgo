@@ -11,36 +11,59 @@ import (
 	"time"
 
 	"github.com/mkrautz/plist"
-	"gogs.deanishe.net/deanishe/awgo/util"
 )
 
 const (
-	Version = 0.2
+	// LibVersion is the semantic version number of the Awgo library,
+	// *not* the workflow.
+	LibVersion = "0.2.1"
 )
 
 // The workflow object operated on by top-level functions.
 // It can be retrieved/replaced with GetDefaultWorkflow() and
 // SetDefaultWorkflow() respectively.
-var defaultWorkflow *Workflow
+var wf *Workflow
 
 // Info contains meta information extracted from info.plist.
-// Use Workflow.GetInfo() to retrieve the Info for the running
+// Use Workflow.Info() to retrieve the Info for the running
 // workflow (it is lazily loaded).
 //
-// TODO: Remove info.plist parsing? Everything is in envvars, but
-// won't run from a shell w/out fiddling with the environment first.
+// TODO: Do something meaningful with Variables.
 type Info struct {
-	BundleID    string `plist:"bundleid"`
-	Author      string `plist:"createdby"`
-	Description string `plist:"description"`
-	Name        string `plist:"name"`
-	Readme      string `plist:"readme"`
-	Website     string `plist:"webaddress"`
+	BundleID    string                 `plist:"bundleid"`
+	Author      string                 `plist:"createdby"`
+	Description string                 `plist:"description"`
+	Name        string                 `plist:"name"`
+	Readme      string                 `plist:"readme"`
+	Variables   map[string]interface{} `plist:"variables"`
+	Version     string                 `plist:"version"`
+	Website     string                 `plist:"webaddress"`
+}
+
+// Var returns the value for a variable specified in info.plist. If the
+// variable is empty or unset, an empty string is returned.
+//
+// NOTE: This is the *default* value set in the workflow's configuration
+// sheet (Workflow Environment Variables). Use os.Getenv() to get the
+// current value of a variable.
+func (i *Info) Var(name string) string {
+
+	obj := i.Variables[name]
+	if obj == nil {
+		return ""
+	}
+
+	if s, ok := obj.(string); ok {
+		return s
+	}
+	panic(fmt.Sprintf("Can't convert variable to string: %v", obj))
 }
 
 // Options contains the configuration options for a Workflow struct.
+// Currently not a whole lot of options supported...
 type Options struct {
-	// The version of your workflow. Use semver.
+	// The version of your workflow. Use semver. The version string is
+	// read from info.plist by default. This overrides that.
 	Version string
 }
 
@@ -50,7 +73,7 @@ type Workflow struct {
 	// The response that will be sent to Alfred. Workflow provides
 	// convenience wrapper methods, so you don't have to interact
 	// with this directly.
-	Feedback Feedback
+	Feedback *Feedback
 
 	// Alfred-specific environmental variables, without the 'alfred_'
 	// prefix. The following variables are present:
@@ -81,10 +104,10 @@ type Workflow struct {
 	Env map[string]string
 
 	// Set this to your workflow's version (used in logging)
-	Version string
+	version string
 
 	// Populated by readInfoPlist()
-	info       Info
+	info       *Info
 	infoLoaded bool
 
 	// Set from environment or info.plist
@@ -101,19 +124,25 @@ func (wf *Workflow) readInfoPlist() error {
 		return nil
 	}
 
-	p := path.Join(wf.WorkflowDir(), "info.plist")
+	p := path.Join(wf.Dir(), "info.plist")
 	buf, err := ioutil.ReadFile(p)
 	if err != nil {
 		return fmt.Errorf("Couldn't open `info.plist` (%s) :  %v", p, err)
 	}
 
-	err = plist.Unmarshal(buf, &wf.info)
+	if wf.info == nil {
+		wf.info = &Info{}
+	}
+	err = plist.Unmarshal(buf, wf.info)
 	if err != nil {
 		return fmt.Errorf("Error parsing `info.plist` (%s) : %v", p, err)
 	}
 
 	wf.bundleID = wf.info.BundleID
 	wf.name = wf.info.Name
+	if wf.version == "" { // Other options override info.plist
+		wf.version = wf.info.Version
+	}
 	wf.infoLoaded = true
 	return nil
 }
@@ -165,7 +194,7 @@ func (wf *Workflow) initializeLogging() {
 	file, err := os.OpenFile(wf.LogFile(),
 		os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 	if err != nil {
-		wf.SendErrorMsg(fmt.Sprintf("Couldn't open log file %s : %v",
+		wf.Fatal(fmt.Sprintf("Couldn't open log file %s : %v",
 			wf.LogFile(), err))
 	}
 
@@ -177,9 +206,9 @@ func (wf *Workflow) initializeLogging() {
 }
 
 // Info returns the metadata read from the workflow's info.plist.
-func (wf *Workflow) Info() Info {
+func (wf *Workflow) Info() *Info {
 	if err := wf.readInfoPlist(); err != nil {
-		wf.SendError(err)
+		wf.FatalError(err)
 	}
 	return wf.info
 }
@@ -189,10 +218,10 @@ func (wf *Workflow) Info() Info {
 func (wf *Workflow) BundleID() string {
 	if wf.bundleID == "" { // Really old version of Alfred with no envvars?
 		if err := wf.readInfoPlist(); err != nil {
-			wf.SendError(err)
+			wf.FatalError(err)
 		}
 		if wf.bundleID == "" {
-			wf.SendErrorMsg("No bundle ID set in info.plist. You *must* set a bundle ID to use awgo.")
+			wf.Fatal("No bundle ID set in info.plist. You *must* set a bundle ID to use awgo.")
 		}
 	}
 	return wf.bundleID
@@ -202,18 +231,33 @@ func (wf *Workflow) BundleID() string {
 func (wf *Workflow) Name() string {
 	if wf.name == "" { // Really old version of Alfred with no envvars?
 		if err := wf.readInfoPlist(); err != nil {
-			wf.SendError(err)
+			wf.FatalError(err)
 		}
 	}
 	return wf.name
 }
 
-// WorkflowDir returns the path to the workflow's root directory.
-func (wf *Workflow) WorkflowDir() string {
+// Version returns the workflow's version from info.plist.
+func (wf *Workflow) Version() string {
+	if wf.version == "" {
+		if err := wf.readInfoPlist(); err != nil {
+			wf.FatalError(err)
+		}
+	}
+	return wf.version
+}
+
+// SetVersion sets the workflow's version string.
+func (wf *Workflow) SetVersion(v string) {
+	wf.version = v
+}
+
+// Dir returns the path to the workflow's root directory.
+func (wf *Workflow) Dir() string {
 	if wf.workflowDir == "" {
-		dir, err := util.FindWorkflowRoot()
+		dir, err := FindWorkflowRoot()
 		if err != nil {
-			wf.SendError(err)
+			wf.FatalError(err)
 		}
 		wf.workflowDir = dir
 	}
@@ -225,10 +269,10 @@ func (wf *Workflow) WorkflowDir() string {
 func (wf *Workflow) CacheDir() string {
 	if wf.cacheDir == "" { // Really old version of Alfred with no envvars?
 		wf.cacheDir = os.ExpandEnv(fmt.Sprintf(
-			"$HOME/Library/Caches/com.runningwithcrayons.Alfred-2/Workflow Data/%s",
+			"$HOME/Library/Caches/com.runningwithcrayons.Alfred-3/Workflow Data/%s",
 			wf.BundleID()))
 	}
-	return util.EnsureExists(wf.cacheDir)
+	return EnsureExists(wf.cacheDir)
 }
 
 // DataDir returns the path to the workflow's data directory.
@@ -236,10 +280,10 @@ func (wf *Workflow) CacheDir() string {
 func (wf *Workflow) DataDir() string {
 	if wf.dataDir == "" { // Really old version of Alfred with no envvars?
 		wf.dataDir = os.ExpandEnv(fmt.Sprintf(
-			"$HOME/Library/Application Support/Alfred 2/Workflow Data/%s",
+			"$HOME/Library/Application Support/Alfred 3/Workflow Data/%s",
 			wf.BundleID()))
 	}
-	return util.EnsureExists(wf.dataDir)
+	return EnsureExists(wf.dataDir)
 }
 
 // LogFile returns the path to the workflow's log file.
@@ -265,7 +309,7 @@ func (wf *Workflow) NewWarningItem(title, subtitle string) *Item {
 	it := wf.Feedback.NewItem()
 	it.Title = title
 	it.Subtitle = subtitle
-	it.Icon = ICON_WARNING
+	it.Icon = IconWarning
 	return it
 }
 
@@ -273,14 +317,18 @@ func (wf *Workflow) NewWarningItem(title, subtitle string) *Item {
 func (wf *Workflow) Run(fn func()) {
 	var vstr string
 	startTime := time.Now()
-	if wf.Version != "" {
-		vstr = fmt.Sprintf("%s/%v", wf.Name(), wf.Version)
+	if wf.Version() != "" {
+		vstr = fmt.Sprintf("%s/%v", wf.Name(), wf.Version())
 	} else {
 		vstr = wf.Name()
 	}
-	log.Printf("-------- %s (awgo/%v) --------", vstr, Version)
-	// log.Println("Workflow started -------------------------")
-	// log.Printf("awgo version %v", Version)
+	vstr = fmt.Sprintf(" %s (awgo/%v) ", vstr, LibVersion)
+
+	// Print an underscore, so the log starts on the line following Alfred's
+	// introductory blurb in the debugger. Alfred strips whitespace.
+	fmt.Fprintln(os.Stderr, "_")
+	log.Println(Pad(vstr, "-", 50))
+	// log.Printf("-------- %s (awgo/%v) --------", vstr, LibVersion)
 
 	// Catch any `panic` and display an error in Alfred.
 	// SendError(Msg) will terminate the process (via log.Fatal).
@@ -290,9 +338,9 @@ func (wf *Workflow) Run(fn func()) {
 			// log.Printf("Recovered : %x", r)
 			err, ok := r.(error)
 			if ok {
-				wf.SendError(err)
+				wf.FatalError(err)
 			}
-			wf.SendErrorMsg(fmt.Sprintf("%v", err))
+			wf.Fatal(fmt.Sprintf("%v", err))
 		}
 	}()
 
@@ -300,162 +348,171 @@ func (wf *Workflow) Run(fn func()) {
 	fn()
 
 	elapsed := time.Now().Sub(startTime)
-	log.Printf("------- %v --------", elapsed)
+	log.Println(Pad(fmt.Sprintf(" %v ", elapsed), "-", 50))
 }
 
-// SendError displays an error message in Alfred, then calls log.Fatal(),
+// FatalError displays an error message in Alfred, then calls log.Fatal(),
 // terminating the workflow.
-func (wf *Workflow) SendError(err error) {
+func (wf *Workflow) FatalError(err error) {
 	msg := fmt.Sprintf("%v", err)
-	wf.SendErrorMsg(msg)
+	wf.Fatal(msg)
 }
 
-// SendErrorMsg displays an error message in Alfred, then calls log.Fatal(),
+// Fatal displays an error message in Alfred, then calls log.Fatal(),
 // terminating the workflow.
-func (wf *Workflow) SendErrorMsg(errMsg string) {
+func (wf *Workflow) Fatal(errMsg string) {
 	wf.Feedback.Clear()
 	it := wf.NewItem()
 	it.Title = errMsg
-	it.Icon = ICON_ERROR
+	it.Icon = IconError
 	wf.SendFeedback()
-	// if err := wf.Feedback.Send(); err != nil {
-	// 	log.Fatalf("Error generating XML : %v", err)
-	// }
 	log.Fatal(errMsg)
 }
 
-// SendWarning displays a warning message in Alfred immediately. Unlike
-// SendError()/SendErrorMsg(), this does lot terminate the workflow,
+// Warn displays a warning message in Alfred immediately. Unlike
+// FatalError()/Fatal(), this does not terminate the workflow,
 // but you can't send any more results to Alfred.
-func (wf *Workflow) SendWarning(title, subtitle string) {
+func (wf *Workflow) Warn(title, subtitle string) {
 	wf.Feedback.Clear()
 	it := wf.NewItem()
 	it.Title = title
 	it.Subtitle = subtitle
-	it.Icon = ICON_WARNING
+	it.Icon = IconWarning
 	wf.SendFeedback()
 }
 
 // SendFeedback generates and sends the XML response to Alfred.
 func (wf *Workflow) SendFeedback() {
 	if err := wf.Feedback.Send(); err != nil {
-		log.Fatalf("Error generating XML : %v", err)
+		log.Fatalf("Error generating JSON : %v", err)
 	}
 }
 
 // NewWorkflow creates and initialises a new Workflow.
-func NewWorkflow(opts Options) *Workflow {
-	var w Workflow
+func NewWorkflow(opts *Options) *Workflow {
+	w := &Workflow{}
 	// Configure workflow
-	w.Version = opts.Version
+	w.version = opts.Version
+	w.Feedback = &Feedback{}
+	w.info = &Info{}
 	w.loadEnv()
 	w.initializeLogging()
-	return &w
+	return w
 }
 
 func init() {
-	defaultWorkflow = NewWorkflow(Options{})
+	wf = NewWorkflow(&Options{})
+}
+
+// GetInfo returns the metadata read from the workflow's info.plist.
+func GetInfo() *Info {
+	return wf.Info()
 }
 
 // DefaultWorkflow returns the Workflow object used by the
 // package-level functions.
 func DefaultWorkflow() *Workflow {
-	return defaultWorkflow
+	return wf
 }
 
 // SetDefaultWorkflow changes the Workflow object used by the
 // package-level functions.
-func SetDefaultWorkflow(wf *Workflow) {
-	defaultWorkflow = wf
+func SetDefaultWorkflow(w *Workflow) {
+	wf = w
+}
+
+// Version returns the version of the workflow parsed from info.plist.
+func Version() string {
+	return wf.Version()
 }
 
 // SetVersion sets the version of your workflow. This is only
 // used for logging, but is helpful for bug reports.
 func SetVersion(v string) {
-	defaultWorkflow.Version = v
+	wf.SetVersion(v)
 }
 
-// BundleId returns the bundle ID of the workflow.
+// BundleID returns the bundle ID of the workflow.
 // It is retrieved from Alfred's environmental variables.
 func BundleID() string {
-	return defaultWorkflow.BundleID()
+	return wf.BundleID()
 }
 
 // Name returns the name of the workflow.
 func Name() string {
-	return defaultWorkflow.Name()
+	return wf.Name()
 }
 
 // CacheDir returns the path to the workflow's cache directory.
 // The directory will be created if it does not already exist.
 func CacheDir() string {
-	return defaultWorkflow.CacheDir()
+	return wf.CacheDir()
 }
 
 // LogFile returns the path to the workflow's log file.
 // The file may or may not exist.
 func LogFile() string {
-	return defaultWorkflow.LogFile()
+	return wf.LogFile()
 }
 
 // DataDir returns the path to the workflow's data directory.
 // The directory will be created if it does not already exist.
 func DataDir() string {
-	return defaultWorkflow.DataDir()
+	return wf.DataDir()
 }
 
-// WorkflowDir returns the path to the workflow's root directory.
-func WorkflowDir() string {
-	return defaultWorkflow.WorkflowDir()
+// Dir returns the path to the workflow's root directory.
+func Dir() string {
+	return wf.Dir()
 }
 
 // NewItem adds and returns a new feedback Item.
 // See Feedback.NewItem() for more information.
 func NewItem() *Item {
-	return defaultWorkflow.NewItem()
+	return wf.NewItem()
 }
 
 // NewFileItem adds and returns an Item pre-populated from path.
 // See Feedback.NewFileItem() for more information.
 func NewFileItem(path string) *Item {
-	return defaultWorkflow.NewFileItem(path)
+	return wf.NewFileItem(path)
 }
 
 // NewWarningItem adds and returns an Item with a warning icon.
 func NewWarningItem(title, subtitle string) *Item {
-	return defaultWorkflow.NewWarningItem(title, subtitle)
+	return wf.NewWarningItem(title, subtitle)
 }
 
-// SendError sends an error message to Alfred as XML feedback and
+// FatalError sends an error message to Alfred as JSON feedback and
 // terminates the workflow via log.Fatal().
-func SendError(err error) {
-	defaultWorkflow.SendError(err)
+func FatalError(err error) {
+	wf.FatalError(err)
 }
 
-// SendErrorMsg sends an error message to Alfred as XML feedback and
+// Fatal sends an error message to Alfred as JSON feedback and
 // terminates the workflow via log.Fatal().
-func SendErrorMsg(errMsg string) {
-	defaultWorkflow.SendErrorMsg(errMsg)
+func Fatal(msg string) {
+	wf.Fatal(msg)
 }
 
-// SendWarning sends a warning message to Alfred as XML feedback. This
+// Warn sends a warning message to Alfred as JSON feedback. This
 // does not terminate the workflow process, but it sends the feedback
 // to Alfred, so you can't send any more data to Alfred after calling
 // this.
-func SendWarning(title, subtitle string) {
-	defaultWorkflow.SendWarning(title, subtitle)
+func Warn(title, subtitle string) {
+	wf.Warn(title, subtitle)
 }
 
-// SendFeedback generates and sends the XML response to Alfred.
-// The XML is output to STDOUT. At this point, Alfred considers your
+// SendFeedback generates and sends the JSON response to Alfred.
+// The JSON is output to STDOUT. At this point, Alfred considers your
 // workflow complete; sending further responses will have no effect.
 func SendFeedback() {
-	defaultWorkflow.SendFeedback()
+	wf.SendFeedback()
 }
 
 // Run runs your workflow function, catching any errors.
 // If the workflow panics, Run rescues and displays an error
 // message in Alfred.
 func Run(fn func()) {
-	defaultWorkflow.Run(fn)
+	wf.Run(fn)
 }

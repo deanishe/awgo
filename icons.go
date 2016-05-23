@@ -11,51 +11,51 @@ import "fmt"
 // http://www.deanishe.net/alfred-workflow/user-manual/icons.html#list-of-icons
 var (
 	// Accounts.icns
-	ICON_ACCOUNT *ItemIcon
+	IconAccount *ItemIcon
 	// BurningIcon.icns
-	ICON_BURN *ItemIcon
+	IconBurn *ItemIcon
 	// Clock.icns
-	ICON_CLOCK *ItemIcon
+	IconClock *ItemIcon
 	// ProfileBackgroundColor.icns
-	ICON_COLOR *ItemIcon
+	IconColor *ItemIcon
 	// ProfileBackgroundColor.icns
-	ICON_COLOUR *ItemIcon
+	IconColour *ItemIcon
 	// EjectMediaIcon.icns
-	ICON_EJECT *ItemIcon
+	IconEject *ItemIcon
 	// AlertStopIcon.icns
-	ICON_ERROR *ItemIcon
+	IconError *ItemIcon
 	// ToolbarFavoritesIcon.icns
-	ICON_FAVORITE *ItemIcon
+	IconFavorite *ItemIcon
 	// ToolbarFavoritesIcon.icns
-	ICON_FAVOURITE *ItemIcon
+	IconFavourite *ItemIcon
 	// GroupIcon.icns
-	ICON_GROUP *ItemIcon
+	IconGroup *ItemIcon
 	// HelpIcon.icns
-	ICON_HELP *ItemIcon
+	IconHelp *ItemIcon
 	// HomeFolderIcon.icns
-	ICON_HOME *ItemIcon
+	IconHome *ItemIcon
 	// ToolbarInfo.icns
-	ICON_INFO *ItemIcon
+	IconInfo *ItemIcon
 	// GenericNetworkIcon.icns
-	ICON_NETWORK *ItemIcon
+	IconNetwork *ItemIcon
 	// AlertNoteIcon.icns
-	ICON_NOTE *ItemIcon
+	IconNote *ItemIcon
 	// ToolbarAdvanced.icns
-	ICON_SETTINGS *ItemIcon
+	IconSettings *ItemIcon
 	// ErasingIcon.icns
-	ICON_SWIRL *ItemIcon
+	IconSwirl *ItemIcon
 	// General.icns
-	ICON_SWITCH *ItemIcon
+	IconSwitch *ItemIcon
 	// Sync.icns
-	ICON_SYNC *ItemIcon
+	IconSync *ItemIcon
 	// TrashIcon.icns
-	ICON_TRASH *ItemIcon
+	IconTrash *ItemIcon
 	// UserIcon.icns
-	ICON_USER *ItemIcon
+	IconUser *ItemIcon
 	// AlertCautionIcon.icns
-	ICON_WARNING *ItemIcon
+	IconWarning *ItemIcon
 	// BookmarkIcon.icns
-	ICON_WEB *ItemIcon
+	IconWeb *ItemIcon
 )
 
 func systemIcon(filename string) *ItemIcon {
@@ -69,27 +69,27 @@ func systemIcon(filename string) *ItemIcon {
 }
 
 func init() {
-	ICON_ACCOUNT = systemIcon("Accounts")
-	ICON_BURN = systemIcon("BurningIcon")
-	ICON_CLOCK = systemIcon("Clock")
-	ICON_COLOR = systemIcon("ProfileBackgroundColor")
-	ICON_COLOUR = systemIcon("ProfileBackgroundColor")
-	ICON_EJECT = systemIcon("EjectMediaIcon")
-	ICON_ERROR = systemIcon("AlertStopIcon")
-	ICON_FAVORITE = systemIcon("ToolbarFavoritesIcon")
-	ICON_FAVOURITE = systemIcon("ToolbarFavoritesIcon")
-	ICON_GROUP = systemIcon("GroupIcon")
-	ICON_HELP = systemIcon("HelpIcon")
-	ICON_HOME = systemIcon("HomeFolderIcon")
-	ICON_INFO = systemIcon("ToolbarInfo")
-	ICON_NETWORK = systemIcon("GenericNetworkIcon")
-	ICON_NOTE = systemIcon("AlertNoteIcon")
-	ICON_SETTINGS = systemIcon("ToolbarAdvanced")
-	ICON_SWIRL = systemIcon("ErasingIcon")
-	ICON_SWITCH = systemIcon("General")
-	ICON_SYNC = systemIcon("Sync")
-	ICON_TRASH = systemIcon("TrashIcon")
-	ICON_USER = systemIcon("UserIcon")
-	ICON_WARNING = systemIcon("AlertCautionIcon")
-	ICON_WEB = systemIcon("BookmarkIcon")
+	IconAccount = systemIcon("Accounts")
+	IconBurn = systemIcon("BurningIcon")
+	IconClock = systemIcon("Clock")
+	IconColor = systemIcon("ProfileBackgroundColor")
+	IconColour = systemIcon("ProfileBackgroundColor")
+	IconEject = systemIcon("EjectMediaIcon")
+	IconError = systemIcon("AlertStopIcon")
+	IconFavorite = systemIcon("ToolbarFavoritesIcon")
+	IconFavourite = systemIcon("ToolbarFavoritesIcon")
+	IconGroup = systemIcon("GroupIcon")
+	IconHelp = systemIcon("HelpIcon")
+	IconHome = systemIcon("HomeFolderIcon")
+	IconInfo = systemIcon("ToolbarInfo")
+	IconNetwork = systemIcon("GenericNetworkIcon")
+	IconNote = systemIcon("AlertNoteIcon")
+	IconSettings = systemIcon("ToolbarAdvanced")
+	IconSwirl = systemIcon("ErasingIcon")
+	IconSwitch = systemIcon("General")
+	IconSync = systemIcon("Sync")
+	IconTrash = systemIcon("TrashIcon")
+	IconUser = systemIcon("UserIcon")
+	IconWarning = systemIcon("AlertCautionIcon")
+	IconWeb = systemIcon("BookmarkIcon")
 }

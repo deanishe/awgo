@@ -24,15 +24,18 @@ import (
 
 	"github.com/docopt/docopt-go"
 	"gogs.deanishe.net/deanishe/awgo"
-	"gogs.deanishe.net/deanishe/awgo/util"
 )
 
 var (
-	MinScore   = 30.0
+	// MinScore is the minimum score to consider a match
+	MinScore = 30.0
+	// MaxResults is the maximum number of results to sent to Alfred
 	MaxResults = 50
-	Version    = "0.1"
-	TsvURL     = "https://raw.githubusercontent.com/deanishe/alfred-index-demo/master/src/books.tsv"
-	usage      = `fuzzy-big [options] [<query>]
+	// Version of the workflow
+	Version = "0.1"
+	// TsvURL is the source of the workflow's data
+	TsvURL = "https://raw.githubusercontent.com/deanishe/alfred-index-demo/master/src/books.tsv"
+	usage  = `fuzzy-big [options] [<query>]
 
 Usage:
 	fuzzy-big <query>
@@ -153,7 +156,7 @@ func loadFromTSV(path string) (Books, error) {
 		books = append(books, Book{id, author, title, url})
 		// books = append(books, record...)
 	}
-	log.Printf("%d books loaded from %s", len(books), util.ShortenPath(path))
+	log.Printf("%d books loaded from %s", len(books), workflow.ShortenPath(path))
 	return books, nil
 }
 
@@ -163,17 +166,17 @@ func loadFromTSV(path string) (Books, error) {
 func loadBooks() Books {
 	csvpath := filepath.Join(workflow.DataDir(), "books.tsv")
 	gobpath := filepath.Join(workflow.DataDir(), "books.gob")
-	if util.Exists(gobpath) {
+	if workflow.PathExists(gobpath) {
 		books, err := loadFromGob(gobpath)
 		if err != nil {
-			workflow.SendError(err)
+			workflow.FatalError(err)
 		}
 		return books
 	}
 
-	if !util.Exists(csvpath) {
+	if !workflow.PathExists(csvpath) {
 		c := make(chan error)
-		workflow.SendWarning("Downloading book database…",
+		workflow.Warn("Downloading book database…",
 			"Try again in a few seconds.")
 		go func(c chan error) {
 			err := downloadTSV(csvpath)
@@ -186,11 +189,11 @@ func loadBooks() Books {
 	}
 	books, err := loadFromTSV(csvpath)
 	if err != nil {
-		workflow.SendError(err)
+		workflow.FatalError(err)
 	}
 	err = saveToGob(books, gobpath)
 	if err != nil {
-		workflow.SendError(err)
+		workflow.FatalError(err)
 	}
 	return books
 }

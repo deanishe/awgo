@@ -80,7 +80,7 @@ func run() {
 		it.SetAlternateSubtitle("alt", "Browse in Alfred.")
 	}
 
-	// Send XML to Alfred. After calling this function, you can't send
+	// Send JSON to Alfred. After calling this function, you can't send
 	// any more results to Alfred.
 	workflow.SendFeedback()
 }

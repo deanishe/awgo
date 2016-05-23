@@ -1,7 +1,7 @@
 package workflow
 
 import (
-	"encoding/xml"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -9,7 +9,7 @@ import (
 )
 
 func TestNewFileItem(t *testing.T) {
-	ipPath := filepath.Join(WorkflowDir(), "info.plist")
+	ipPath := filepath.Join(Dir(), "info.plist")
 	ipShort := strings.Replace(ipPath, os.Getenv("HOME"), "~", -1)
 	fb := Feedback{}
 	it := fb.NewFileItem(ipPath)
@@ -50,111 +50,93 @@ func TestSetIcon(t *testing.T) {
 }
 
 var marshalTests = []struct {
-	Item        *Item
-	ExpectedXML string
+	Item         *Item
+	ExpectedJSON string
 }{
 	// Minimal item
 	{Item: &Item{Title: "title"},
-		ExpectedXML: `<item valid="no"><title>title</title></item>`},
+		ExpectedJSON: `{"title":"title"}`},
 	// With UID
 	{Item: &Item{Title: "title", UID: "xxx-yyy"},
-		ExpectedXML: `<item uid="xxx-yyy" valid="no">` +
-			`<title>title</title></item>`},
+		ExpectedJSON: `{"title":"title","uid":"xxx-yyy"}`},
 	// With autocomplete
 	{Item: &Item{Title: "title", Autocomplete: "xxx-yyy"},
-		ExpectedXML: `<item autocomplete="xxx-yyy" valid="no">` +
-			`<title>title</title></item>`},
+		ExpectedJSON: `{"autocomplete":"xxx-yyy","title":"title"}`},
 	// With empty autocomplete
 	{Item: &Item{Title: "title", KeepEmptyAutocomplete: true},
-		ExpectedXML: `<item autocomplete="" valid="no">` +
-			`<title>title</title></item>`},
+		ExpectedJSON: `{"autocomplete":"","title":"title"}`},
 	// With subtitle
 	{Item: &Item{Title: "title", Subtitle: "subtitle"},
-		ExpectedXML: `<item valid="no">` +
-			`<title>title</title>` +
-			`<subtitle>subtitle</subtitle>` +
-			`</item>`},
+		ExpectedJSON: `{"title":"title","subtitle":"subtitle"}`},
 	// Alternate subtitle
 	{Item: &Item{Title: "title", Subtitle: "subtitle",
 		AlternateSubtitles: map[string]string{"cmd": "command sub"}},
-		ExpectedXML: `<item valid="no">` +
-			`<title>title</title>` +
-			`<subtitle>subtitle</subtitle>` +
-			`<subtitle mod="cmd">command sub</subtitle>` +
-			`</item>`},
+		ExpectedJSON: `{"title":"title","subtitle":"subtitle",` +
+			`"mods":{"cmd":"command sub"}}`},
 	// Valid item
 	{Item: &Item{Title: "title", Valid: true},
-		ExpectedXML: `<item valid="yes"><title>title</title></item>`},
+		ExpectedJSON: `{"title":"title","valid":true}`},
 	// With arg
 	{Item: &Item{Title: "title", Arg: "arg1"},
-		ExpectedXML: `<item valid="no">` +
-			`<title>title</title>` +
-			`<arg>arg1</arg></item>`},
+		ExpectedJSON: `{"title":"title","arg":"arg1"}`},
 	// Valid with arg
 	{Item: &Item{Title: "title", Arg: "arg1", Valid: true},
-		ExpectedXML: `<item valid="yes">` +
-			`<title>title</title>` +
-			`<arg>arg1</arg></item>`},
+		ExpectedJSON: `{"title":"title","arg":"arg1","valid":true}`},
 	// With icon
 	{Item: &Item{Title: "title",
 		Icon: &ItemIcon{Value: "icon.png", Type: ""}},
-		ExpectedXML: `<item valid="no">` +
-			`<title>title</title>` +
-			`<icon>icon.png</icon>` +
-			`</item>`},
+		ExpectedJSON: `{"title":"title","icon":{"path":"icon.png"}}`},
 	// With file icon
 	{Item: &Item{Title: "title",
 		Icon: &ItemIcon{Value: "icon.png", Type: "fileicon"}},
-		ExpectedXML: `<item valid="no">` +
-			`<title>title</title>` +
-			`<icon type="fileicon">icon.png</icon>` +
-			`</item>`},
+		ExpectedJSON: `{"title":"title","icon":{"path":"icon.png","type":"fileicon"}}`},
 	// With filetype icon
 	{Item: &Item{Title: "title",
 		Icon: &ItemIcon{Value: "public.folder", Type: "filetype"}},
-		ExpectedXML: `<item valid="no">` +
-			`<title>title</title>` +
-			`<icon type="filetype">public.folder</icon>` +
-			`</item>`},
+		ExpectedJSON: `{"title":"title","icon":{"path":"public.folder","type":"filetype"}}`},
+	// With type = file
+	{Item: &Item{Title: "title", IsFile: true},
+		ExpectedJSON: `{"type":"file","title":"title"}`},
 	// TODO: copytext
 	// TODO: largetext
 }
 
 func TestMarshalItem(t *testing.T) {
 	for i, test := range marshalTests {
-		data, err := xml.Marshal(test.Item)
+		data, err := json.Marshal(test.Item)
 		if err != nil {
-			t.Errorf("#%d: marshal(%v): %v", i, test.Item, err)
+			t.Fatalf("#%d: marshal(%v): %v", i, test.Item, err)
 			continue
 		}
 
-		if got, want := string(data), test.ExpectedXML; got != want {
-			t.Errorf("#%d: got: %v wanted: %v", i, got, want)
+		if got, want := string(data), test.ExpectedJSON; got != want {
+			t.Fatalf("#%d: got: %v wanted: %v", i, got, want)
 		}
 	}
 }
 
 func TestMarshalFeedback(t *testing.T) {
 	// Empty feedback
-	fb := Feedback{}
-	want := `<items></items>`
-	got, err := xml.Marshal(fb)
+	fb := NewFeedback()
+	want := `{"items":[]}`
+	got, err := json.Marshal(fb)
 	if err != nil {
-		t.Errorf("Error marshalling feedback: got: %v want: %v: %v",
+		t.Fatalf("Error marshalling feedback: got: %s want: %s: %v",
 			got, want, err)
 	}
 	if string(got) != want {
-		t.Errorf("Incorrect feedback: got: %v, wanted: %v", got, want)
+		t.Fatalf("Incorrect feedback: got: %s, wanted: %s", got, want)
 	}
 
 	// Feedback with item
-	want = `<items><item valid="no"><title>item 1</title></item></items>`
+	// want = `<items><item valid="no"><title>item 1</title></item></items>`
+	want = `{"items":[{"title":"item 1"}]}`
 	it := fb.NewItem()
 	it.Title = "item 1"
 
-	got, err = xml.Marshal(fb)
+	got, err = json.Marshal(fb)
 	if err != nil {
-		t.Errorf("Error marshalling feedback: got: %v want: %v: %v",
+		t.Fatalf("Error marshalling feedback: got: %s want: %s: %v",
 			got, want, err)
 	}
 
