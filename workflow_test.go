@@ -1,6 +1,7 @@
 package workflow
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 )
@@ -59,4 +60,21 @@ func ExampleNewWorkflow_overrideVersion() {
 	wf := NewWorkflow(&Options{Version: "1.1.0"})
 	fmt.Println(wf.Version())
 	// Output: 1.1.0
+}
+
+// The normal way to create a new Item, but not the normal way to use it.
+//
+// Normally, when you're done adding Items, you call SendFeedback() to
+// send the results to Alfred.
+func ExampleNewItem() {
+	// Create a new item via the default Workflow object, which will
+	// track the Item and send it to Alfred when you call SendFeedback()
+	it := NewItem()
+	// Title is required
+	it.Title = "First Result"
+	it.Subtitle = "Some details here"
+	// Don't know why you'd do this, but...
+	data, _ := json.Marshal(it)
+	fmt.Println(string(data))
+	// Output: {"title":"First Result","subtitle":"Some details here"}
 }

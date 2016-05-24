@@ -2,8 +2,11 @@
 Package workflow provides utilities for building workflows for Alfred 3.
 https://www.alfredapp.com/
 
-NOTE: This library is currently very alpha. I'm new to Go, and doubtless
-much will change as I figure out what I'm doing.
+NOTE: This library is currently very alpha. I'm new to Go (and Alfred 3 is new),
+so doubtless will change as I figure out what I'm doing.
+
+This library is released under the MIT licence, which you can read online at
+https://opensource.org/licenses/MIT
 
 To read this documentation on godoc.org, see
 http://godoc.org/gogs.deanishe.net/deanishe/awgo
@@ -48,9 +51,9 @@ program.go:
 		workflow.Run(run)
 	}
 
-In the Script Filter's Script box (Language = /bin/bash):
+In the Script Filter's Script box (Language = /bin/bash with input as argv):
 
-	./program "{query}"
+	./program "$1"
 
 
 The Item struct isn't intended to be used as the workflow's data model,

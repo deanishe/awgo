@@ -466,8 +466,8 @@ func Dir() string {
 	return wf.Dir()
 }
 
-// NewItem adds and returns a new feedback Item.
-// See Feedback.NewItem() for more information.
+// NewItem adds and returns a new feedback Item via the default Workflow
+// object. See Feedback.NewItem() for more information.
 func NewItem() *Item {
 	return wf.NewItem()
 }

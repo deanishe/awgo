@@ -1,3 +1,9 @@
+//
+// Copyright (c) 2016 Dean Jackson <deanishe@deanishe.net>
+//
+// MIT Licence. See http://opensource.org/licenses/MIT
+//
+
 package workflow
 
 import (
@@ -32,6 +38,8 @@ var (
 // Fuzzy makes a slice fuzzy-sortable.
 // The standard sort.Interface (i.e. Less()) is used as a fallback for
 // data with the same score.
+//
+// TODO: Simply to a single method plus an intermediate wrapper struct?
 type Fuzzy interface {
 	// Terms against which data will be sorted.
 	Keywords(i int) string
