@@ -39,16 +39,22 @@ program.go:
 
 	import "gogs.deanishe.net/deanishe/awgo"
 
+	var wf *workflow.Workflow
+
+	func init() {
+		wf = workflow.NewWarningItem(nil)
+	}
+
 	func run() {
 		// Your workflow starts here
-		it := workflow.NewItem()
+		it := wf.NewItem()
 		it.Title = "First result!"
-		workflow.SendFeedback()
+		wf.SendFeedback()
 	}
 
 	func main() {
 		// Package is called workflow
-		workflow.Run(run)
+		wf.Run(run)
 	}
 
 In the Script Filter's Script box (Language = /bin/bash with input as argv):
@@ -59,28 +65,15 @@ In the Script Filter's Script box (Language = /bin/bash with input as argv):
 The Item struct isn't intended to be used as the workflow's data model,
 just as a way to encapsulate search results for Alfred.
 
-You may want your own data model to implement the Fuzzy interface to
-enable...
+You may want your own data model to implement fuzzy.Interface to enable...
 
 
 Fuzzy sorting
 
-SortFuzzy() implements Alfred-like fuzzy search, e.g. "of" will match
+fuzzy.Sort() implements Alfred-like fuzzy search, e.g. "of" will match
 "OmniFocus" and "got" will match "Game of Thrones".
 
-To use SortFuzzy, your struct must implement the Fuzzy interface, which
-is sort.Interface plus a Keywords() method that returns the string
-the fuzzy filtering should be applied to.
-
-The sorting algorithm uses multiple comparisons:
-
-	1. Exact match, e.g. "Safari" matches "Safari"
-	2. Case-insensitive exact match, e.g. "safari" matches "Safari"
-	3. Capital letters, e.g. "of" matches "OmniFocus"
-	4. Initials, e.g. "got" matches "Game of Thrones"
-	5. Prefix, e.g. "pho" matches "Photoshop"
-	6. Substring, e.g. "gator" matches "alligator"
-	7. Ordered subset, e.g. "hhg" matches "Hitchhiker's Guide to the Galaxy"
+See subpackage fuzzy for more details.
 
 
 Sending results to Alfred

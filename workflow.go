@@ -16,7 +16,7 @@ import (
 const (
 	// LibVersion is the semantic version number of the Awgo library,
 	// *not* the workflow.
-	LibVersion = "0.2.1"
+	LibVersion = "0.2.2"
 )
 
 // The workflow object operated on by top-level functions.
@@ -293,8 +293,8 @@ func (wf *Workflow) LogFile() string {
 
 // NewItem adds and returns a new feedback Item.
 // See Feedback.NewItem() for more information.
-func (wf *Workflow) NewItem() *Item {
-	return wf.Feedback.NewItem()
+func (wf *Workflow) NewItem(title string) *Item {
+	return wf.Feedback.NewItem(title)
 }
 
 // NewFileItem adds and returns a new feedback Item pre-populated from path.
@@ -306,8 +306,7 @@ func (wf *Workflow) NewFileItem(path string) *Item {
 // NewWarningItem adds and returns a new Feedback Item with the system
 // warning icon (exclamation mark on yellow triangle).
 func (wf *Workflow) NewWarningItem(title, subtitle string) *Item {
-	it := wf.Feedback.NewItem()
-	it.Title = title
+	it := wf.Feedback.NewItem(title)
 	it.Subtitle = subtitle
 	it.Icon = IconWarning
 	return it
@@ -362,8 +361,7 @@ func (wf *Workflow) FatalError(err error) {
 // terminating the workflow.
 func (wf *Workflow) Fatal(errMsg string) {
 	wf.Feedback.Clear()
-	it := wf.NewItem()
-	it.Title = errMsg
+	it := wf.NewItem(errMsg)
 	it.Icon = IconError
 	wf.SendFeedback()
 	log.Fatal(errMsg)
@@ -374,8 +372,7 @@ func (wf *Workflow) Fatal(errMsg string) {
 // but you can't send any more results to Alfred.
 func (wf *Workflow) Warn(title, subtitle string) {
 	wf.Feedback.Clear()
-	it := wf.NewItem()
-	it.Title = title
+	it := wf.NewItem(title)
 	it.Subtitle = subtitle
 	it.Icon = IconWarning
 	wf.SendFeedback()
@@ -392,7 +389,9 @@ func (wf *Workflow) SendFeedback() {
 func NewWorkflow(opts *Options) *Workflow {
 	w := &Workflow{}
 	// Configure workflow
-	w.version = opts.Version
+	if opts != nil {
+		w.version = opts.Version
+	}
 	w.Feedback = &Feedback{}
 	w.info = &Info{}
 	w.loadEnv()
@@ -468,8 +467,8 @@ func Dir() string {
 
 // NewItem adds and returns a new feedback Item via the default Workflow
 // object. See Feedback.NewItem() for more information.
-func NewItem() *Item {
-	return wf.NewItem()
+func NewItem(title string) *Item {
+	return wf.NewItem(title)
 }
 
 // NewFileItem adds and returns an Item pre-populated from path.

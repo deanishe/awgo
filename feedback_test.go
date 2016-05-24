@@ -137,8 +137,7 @@ func TestMarshalFeedback(t *testing.T) {
 	// Feedback with item
 	// want = `<items><item valid="no"><title>item 1</title></item></items>`
 	want = `{"items":[{"title":"item 1"}]}`
-	it := fb.NewItem()
-	it.Title = "item 1"
+	fb.NewItem("item 1")
 
 	got, err = json.Marshal(fb)
 	if err != nil {

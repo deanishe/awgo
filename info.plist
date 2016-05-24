@@ -23,7 +23,7 @@
 	<key>webaddress</key>
 	<string>https://gogs.deanishe.net/deanishe/awgo</string>
     <key>version</key>
-    <string>0.2.1</string>
+    <string>0.2.2</string>
 	<key>variables</key>
 	<dict>
 		<key>exported_var</key>

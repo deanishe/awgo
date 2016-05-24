@@ -13,6 +13,13 @@ It filters a list of the books from the Gutenberg project. The list
 using gob.
 
 There are >45K books in the list.
+
+This runs in ~0.5s on my machine, which is really pushing the limits of
+acceptable performance, imo.
+
+A dataset of this size would be better off in an sqlite database, which
+can *easily* handle this amount of data.
+
 */
 package main
 
@@ -30,17 +37,18 @@ import (
 
 	"github.com/docopt/docopt-go"
 	"gogs.deanishe.net/deanishe/awgo"
+	"gogs.deanishe.net/deanishe/awgo/fuzzy"
 )
 
 var (
-	// MinScore is the minimum score to consider a match
-	MinScore = 30.0
-	// MaxResults is the maximum number of results to sent to Alfred
-	MaxResults = 50
-	// Version of the workflow
-	Version = "0.1"
-	// TsvURL is the source of the workflow's data
-	TsvURL = "https://raw.githubusercontent.com/deanishe/alfred-index-demo/master/src/books.tsv"
+	// minScore is the minimum score to consider a match
+	minScore = 30.0
+	// maxResults is the maximum number of results to sent to Alfred
+	maxResults = 50
+	// version of the workflow
+	version = "0.1"
+	// tsvURL is the source of the workflow's data
+	tsvURL = "https://raw.githubusercontent.com/deanishe/alfred-index-demo/master/src/books.tsv"
 	usage  = `fuzzy-big [options] [<query>]
 
 Usage:
@@ -51,7 +59,12 @@ Options:
 	-h, --help  Show this message and exit.
 	--version   Show version number and exit.
 `
+	wf *workflow.Workflow
 )
+
+func init() {
+	wf = workflow.NewWorkflow(nil)
+}
 
 // Book is a single work on Gutenberg.org.
 type Book struct {
@@ -113,8 +126,8 @@ func saveToGob(books Books, path string) error {
 // downloadTSV fetches the data source TSV from GitHub and saves it
 // in the workflow's data directory.
 func downloadTSV(path string) error {
-	log.Printf("Fetching %s...", TsvURL)
-	r, err := http.Get(TsvURL)
+	log.Printf("Fetching %s...", tsvURL)
+	r, err := http.Get(tsvURL)
 	if err != nil {
 		return err
 	}
@@ -170,19 +183,19 @@ func loadFromTSV(path string) (Books, error) {
 // file doesn't exist, the source data is downloaded and the cache
 // generated.
 func loadBooks() Books {
-	csvpath := filepath.Join(workflow.DataDir(), "books.tsv")
-	gobpath := filepath.Join(workflow.DataDir(), "books.gob")
+	csvpath := filepath.Join(wf.DataDir(), "books.tsv")
+	gobpath := filepath.Join(wf.DataDir(), "books.gob")
 	if workflow.PathExists(gobpath) {
 		books, err := loadFromGob(gobpath)
 		if err != nil {
-			workflow.FatalError(err)
+			wf.FatalError(err)
 		}
 		return books
 	}
 
 	if !workflow.PathExists(csvpath) {
 		c := make(chan error)
-		workflow.Warn("Downloading book database…",
+		wf.Warn("Downloading book database…",
 			"Try again in a few seconds.")
 		go func(c chan error) {
 			err := downloadTSV(csvpath)
@@ -190,16 +203,16 @@ func loadBooks() Books {
 		}(c)
 		<-c // Wait for download to finish
 		// if err != nil {
-		// 	workflow.SendError(err)
+		// 	wf.SendError(err)
 		// }
 	}
 	books, err := loadFromTSV(csvpath)
 	if err != nil {
-		workflow.FatalError(err)
+		wf.FatalError(err)
 	}
 	err = saveToGob(books, gobpath)
 	if err != nil {
-		workflow.FatalError(err)
+		wf.FatalError(err)
 	}
 	return books
 }
@@ -207,10 +220,8 @@ func loadBooks() Books {
 func run() {
 	var query string
 	var total, count int
-	vstr := fmt.Sprintf("%s/%v (awgo/%v)", workflow.Name(), Version,
-		workflow.Version)
 
-	args, err := docopt.Parse(usage, nil, true, vstr, false)
+	args, err := docopt.Parse(usage, nil, true, version, false)
 	if err != nil {
 		log.Fatalf("Error parsing CLI options : %v", err)
 	}
@@ -223,8 +234,8 @@ func run() {
 	}
 
 	if query != "" {
-		for i, score := range workflow.SortFuzzy(books, query) {
-			if score < MinScore || i == MaxResults-1 {
+		for i, score := range fuzzy.Sort(books, query) {
+			if score < minScore || i == maxResults-1 {
 				books = books[:i]
 				break
 			}
@@ -236,17 +247,16 @@ func run() {
 
 	// Feedback
 	for _, book := range books {
-		it := workflow.NewItem()
-		it.Title = book.Title
+		it := wf.NewItem(book.Title)
 		it.Subtitle = book.Author
 		it.Arg = book.URL
 		it.Valid = true
 		// log.Printf("item=%v", it)
 	}
-	workflow.SendFeedback()
+	wf.SendFeedback()
 }
 
 func main() {
-	workflow.SetVersion(Version)
-	workflow.Run(run)
+	wf.SetVersion(version)
+	wf.Run(run)
 }

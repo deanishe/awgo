@@ -20,14 +20,15 @@ import (
 	"strings"
 
 	"gogs.deanishe.net/deanishe/awgo"
+	"gogs.deanishe.net/deanishe/awgo/fuzzy"
 )
 
 var (
-	StartDir     string  // Directory to read
-	MinimumScore float64 // Search score cutoff
+	startDir     string  // Directory to read
+	minimumScore float64 // Search score cutoff
 )
 
-// Folders is a simple slice of strings that supports workflow.Fuzzy
+// Folders is a simple slice of strings that supports fuzzy.Interface
 // to allow fuzzy searching.
 type Folders []string
 
@@ -36,13 +37,13 @@ func (f Folders) Len() int           { return len(f) }
 func (f Folders) Less(i, j int) bool { return f[i] < f[j] }
 func (f Folders) Swap(i, j int)      { f[i], f[j] = f[j], f[i] }
 
-// Keywords implements workflow.Fuzzy. Comparisons are based on the
+// Keywords implements fuzzy.Interface. Comparisons are based on the
 // basename of the filepath.
 func (f Folders) Keywords(i int) string { return filepath.Base(f[i]) }
 
 func init() {
-	StartDir = os.Getenv("HOME")
-	MinimumScore = 0.3
+	startDir = os.Getenv("HOME")
+	minimumScore = 0.3
 }
 
 // readDir returns the paths to all the visible subdirectories of `dirpath`
@@ -61,18 +62,22 @@ func readDir(dirpath string) Folders {
 
 // run runs the workflow
 func run() {
-	paths := readDir(StartDir)
+	var query string
+	paths := readDir(startDir)
 
-	// Because the program is called from Alfred with "{query}",
-	// $1 will always be set, even if to an emtpy string.
-	query := os.Args[1]
+	if len(os.Args) > 1 {
+		// When run from a workflow, because the program is called from Alfred
+		// with "{query}" or "$1", $1 will always be set, even if to an
+		// emtpy string.
+		query = os.Args[1]
+	}
 
 	// Filter results if query isn't empty.
 	if query != "" {
 		// Filter results
-		for i, score := range workflow.SortFuzzy(paths, query) {
+		for i, score := range fuzzy.Sort(paths, query) {
 			log.Printf("%v\t%v", score, paths[i])
-			if score < MinimumScore {
+			if score < minimumScore {
 				paths = paths[:i]
 				break
 			}

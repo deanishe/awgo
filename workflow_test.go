@@ -48,11 +48,17 @@ func ExampleInfo_Var() {
 	// Output: exported_value
 }
 
+// NewWorkflow initialises a Workflow with the default settings. Name,
+// bundle ID, version etc. are read from the environment and info.plist.
 func ExampleNewWorkflow() {
-	wf := NewWorkflow(&Options{})
-	// Version is read from info.plist
+	wf := NewWorkflow(nil)
+	// BundleID is read from environment or info.plist
+	fmt.Println(wf.BundleID())
+	// Version is from info.plist
 	fmt.Println(wf.Version())
-	// Output: 0.2.1
+	// Output:
+	// net.deanishe.awgo
+	// 0.2.2
 }
 
 func ExampleNewWorkflow_overrideVersion() {
@@ -69,10 +75,11 @@ func ExampleNewWorkflow_overrideVersion() {
 func ExampleNewItem() {
 	// Create a new item via the default Workflow object, which will
 	// track the Item and send it to Alfred when you call SendFeedback()
-	it := NewItem()
-	// Title is required
-	it.Title = "First Result"
+	//
+	// Title is the only required value.
+	it := NewItem("First Result")
 	it.Subtitle = "Some details here"
+
 	// Don't know why you'd do this, but...
 	data, _ := json.Marshal(it)
 	fmt.Println(string(data))

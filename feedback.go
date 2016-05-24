@@ -209,8 +209,9 @@ func (fb *Feedback) Clear() {
 }
 
 // NewItem adds a new Item and returns a pointer to it.
-func (fb *Feedback) NewItem() *Item {
+func (fb *Feedback) NewItem(title string) *Item {
 	it := &Item{}
+	it.Title = title
 	fb.Items = append(fb.Items, it)
 	return it
 }
@@ -223,8 +224,7 @@ func (fb *Feedback) NewItem() *Item {
 // Type is "file"
 // Icon is the icon of the file at path
 func (fb *Feedback) NewFileItem(path string) *Item {
-	it := fb.NewItem()
-	it.Title = filepath.Base(path)
+	it := fb.NewItem(filepath.Base(path))
 	it.Subtitle = ShortenPath(path)
 	it.Arg = path
 	it.Valid = true
