@@ -20,9 +20,8 @@ import (
 )
 
 const (
-	// LibVersion is the semantic version number of the Awgo library,
-	// *not* the workflow.
-	LibVersion = "0.2.2"
+	// AwgoVersion is the semantic version number of this library.
+	AwgoVersion = "0.2.2"
 )
 
 var (
@@ -32,13 +31,17 @@ var (
 	// It can be retrieved/replaced with GetDefaultWorkflow() and
 	// SetDefaultWorkflow() respectively.
 	wf *Workflow
+
+	// Flag, as we only want to set up logging once
+	// TODO: Better, more pluggable logging
+	logInitialized bool
 )
 
 // Info contains meta information extracted from info.plist.
 // Use Workflow.Info() to retrieve the Info for the running
 // workflow (it is lazily loaded).
 //
-// TODO: Do something meaningful with Variables.
+// TODO: Do something meaningful with info.plist Variables.
 type Info struct {
 	BundleID    string                 `plist:"bundleid"`
 	Author      string                 `plist:"createdby"`
@@ -79,6 +82,12 @@ type Options struct {
 
 // Workflow provides a simple, consolidated API for building Script
 // Filters and talking to Alfred.
+//
+// As a rule, you should create a Workflow in main() and call your main
+// entry-point via Workflow.Run().
+//
+// See "fuzzy-simple" and "fuzzy-big" in the examples/ subdirectory for full
+// examples of workflows.
 type Workflow struct {
 	// The response that will be sent to Alfred. Workflow provides
 	// convenience wrapper methods, so you don't have to interact
@@ -88,32 +97,34 @@ type Workflow struct {
 	// Alfred-specific environmental variables, without the 'alfred_'
 	// prefix. The following variables are present:
 	//
-	//	   version                 Alfred version number, e.g. "2.7"
-	//     version_build           Alfred build, e.g. "277"
-	//     theme                   ID of current theme, e.g.
-	//                             "alfred.theme.custom.UUID-UUID-UUID"
-	//     theme_background        Theme background colour in rgba format,
-	//                             e.g. "rgba(255,255,255,1.00)"
-	//     theme_subtext           User's subtext setting.
-	//                                 "0" = Always show
-	//                                 "1" = Show only for alternate actions
-	//                                 "2" = Never show
-	//     preferences             Path to "Alfred.alfredpreferences" file
-	//     preferences_localhash   Machine-specific hash. Machine preferences
-	//                             are stored in
-	//                             Alfred.alfredpreferences/preferences/local/<hash>
-	//     workflow_cache          Path to workflow's cache directory. Use
-	//                             Workflow.GetCacheDir() instead to ensure
-	//                             directory exists.
-	//     workflow_data           Path to workflow's data directory. Use
-	//                             Workflow.GetDataDir() instead to ensure
-	//                             directory exists.
-	//     workflow_name           Name of workflow, e.g. "Fast Translator"
-	//     workflow_uid            Random UID assigned to workflow by Alfred
-	//     workflow_bundleid       Workflow's bundle ID from info.plist
+	//     debug                        Set to "1" if Alfred's debugger is open
+	//     version                      Alfred version number, e.g. "2.7"
+	//     version_build                Alfred build, e.g. "277"
+	//     theme                        ID of current theme, e.g. "alfred.theme.custom.UUID-UUID-UUID"
+	//     theme_background             Theme background colour in rgba format, e.g. "rgba(255,255,255,1.00)"
+	//     theme_selection_background   Theme selection background colour in rgba format, e.g. "rgba(255,255,255,1.00)"
+	//     theme_subtext                User's subtext setting.
+	//                                      "0" = Always show
+	//                                      "1" = Show only for alternate actions
+	//                                      "2" = Never show
+	//     preferences                  Path to "Alfred.alfredpreferences" file
+	//     preferences_localhash        Machine-specific hash. Machine preferences are stored in
+	//                                  Alfred.alfredpreferences/preferences/local/<hash>
+	//     workflow_cache               Path to workflow's cache directory. Use Workflow.CacheDir()
+	//                                  instead to ensure directory exists.
+	//     workflow_data                Path to workflow's data directory. Use Workflow.DataDir()
+	//                                  instead to ensure directory exists.
+	//     workflow_name                Name of workflow, e.g. "Fast Translator"
+	//     workflow_uid                 Random UID assigned to workflow by Alfred
+	//     workflow_bundleid            Workflow's bundle ID from info.plist
+	//
+	// TODO: Replace Env with something better
 	Env map[string]string
 
-	// Set this to your workflow's version (used in logging)
+	// debug is set from Alfred's `alfred_debug` environment variable.
+	debug bool
+
+	// version holds value set by user or read from info.plist
 	version string
 
 	// Populated by readInfoPlist()
@@ -126,6 +137,21 @@ type Workflow struct {
 	cacheDir    string
 	dataDir     string
 	workflowDir string
+}
+
+// NewWorkflow creates and initialises a new Workflow. Use NewWorkflow to avoid
+// uninitialised maps.
+func NewWorkflow(opts *Options) *Workflow {
+	w := &Workflow{}
+	// Configure workflow
+	if opts != nil {
+		w.version = opts.Version
+	}
+	w.Feedback = &Feedback{}
+	w.info = &Info{}
+	w.loadEnv()
+	w.initializeLogging()
+	return w
 }
 
 // readInfoPlist loads the data in `info.plist`
@@ -163,10 +189,12 @@ func (wf *Workflow) loadEnv() {
 	// Variables currently exported by Alfred. These actual names
 	// are prefixed with `alfred_`.
 	keys := []string{
+		"debug",
 		"version",
 		"version_build",
 		"theme",
 		"theme_background",
+		"theme_selection_background",
 		"theme_subtext",
 		"preferences",
 		"preferences_localhash",
@@ -193,6 +221,8 @@ func (wf *Workflow) loadEnv() {
 			wf.bundleID = val
 		} else if key == "workflow_name" {
 			wf.name = val
+		} else if key == "alfred_debug" && val == "1" {
+			wf.debug = true
 		}
 	}
 }
@@ -200,6 +230,10 @@ func (wf *Workflow) loadEnv() {
 // initializeLogging ensures future log messages are written to
 // workflow's log file.
 func (wf *Workflow) initializeLogging() {
+
+	if logInitialized { // All Workflows use the same global logger
+		return
+	}
 
 	// Rotate log file if larger than MaxLogSize
 	fi, err := os.Stat(wf.LogFile())
@@ -225,7 +259,18 @@ func (wf *Workflow) initializeLogging() {
 	multi := io.MultiWriter(file, os.Stderr)
 	log.SetOutput(multi)
 	// log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
-	log.SetFlags(log.Lshortfile)
+	if wf.Env["debug"] == "1" {
+		log.SetFlags(log.Ltime | log.Lshortfile)
+	} else {
+		log.SetFlags(log.Ltime)
+	}
+
+	logInitialized = true
+}
+
+// Debug returns true if Alfred's debugger is open.
+func (wf *Workflow) Debug() bool {
+	return wf.debug
 }
 
 // Info returns the metadata read from the workflow's info.plist.
@@ -314,6 +359,24 @@ func (wf *Workflow) LogFile() string {
 	return path.Join(wf.CacheDir(), fmt.Sprintf("%s.log", wf.BundleID()))
 }
 
+// Vars returns the workflow variables set on Workflow.Feedback.
+// See Feedback.Vars() for more information.
+func (wf *Workflow) Vars() map[string]string {
+	return wf.Feedback.Vars()
+}
+
+// Var returns the workflow variable set on Workflow.Feedback for key k.
+// See Feedback.Var() for more information.
+func (wf *Workflow) Var(k string) string {
+	return wf.Feedback.Var(k)
+}
+
+// SetVar sets the value of workflow variable k on Workflow.Feedback to v.
+// See Feedback.SetVar() for more information.
+func (wf *Workflow) SetVar(k, v string) {
+	wf.Feedback.SetVar(k, v)
+}
+
 // NewItem adds and returns a new feedback Item.
 // See Feedback.NewItem() for more information.
 func (wf *Workflow) NewItem(title string) *Item {
@@ -344,13 +407,14 @@ func (wf *Workflow) Run(fn func()) {
 	} else {
 		vstr = wf.Name()
 	}
-	vstr = fmt.Sprintf(" %s (awgo/%v) ", vstr, LibVersion)
+	vstr = fmt.Sprintf(" %s (awgo/%v) ", vstr, AwgoVersion)
 
-	// Print an underscore, so the log starts on the line following Alfred's
+	// Print a dot, so the log starts on the line following Alfred's
 	// introductory blurb in the debugger. Alfred strips whitespace.
-	fmt.Fprintln(os.Stderr, "_")
+	fmt.Fprintln(os.Stderr, ".")
+	// Tried, but failed, to find a better character
+	// fmt.Fprintf(os.Stderr, "%c\n", '\U000000BB')
 	log.Println(Pad(vstr, "-", 50))
-	// log.Printf("-------- %s (awgo/%v) --------", vstr, LibVersion)
 
 	// Catch any `panic` and display an error in Alfred.
 	// SendError(Msg) will terminate the process (via log.Fatal).
@@ -408,22 +472,8 @@ func (wf *Workflow) SendFeedback() {
 	}
 }
 
-// NewWorkflow creates and initialises a new Workflow.
-func NewWorkflow(opts *Options) *Workflow {
-	w := &Workflow{}
-	// Configure workflow
-	if opts != nil {
-		w.version = opts.Version
-	}
-	w.Feedback = &Feedback{}
-	w.info = &Info{}
-	w.loadEnv()
-	w.initializeLogging()
-	return w
-}
-
 func init() {
-	wf = NewWorkflow(&Options{})
+	wf = NewWorkflow(nil)
 }
 
 // GetInfo returns the metadata read from the workflow's info.plist.
@@ -455,12 +505,13 @@ func SetVersion(v string) {
 }
 
 // BundleID returns the bundle ID of the workflow.
-// It is retrieved from Alfred's environmental variables.
+// It is retrieved from Alfred's environmental variables or info.plist.
 func BundleID() string {
 	return wf.BundleID()
 }
 
 // Name returns the name of the workflow.
+// It is retrieved from Alfred's environmental variables or info.plist.
 func Name() string {
 	return wf.Name()
 }
@@ -486,6 +537,24 @@ func DataDir() string {
 // Dir returns the path to the workflow's root directory.
 func Dir() string {
 	return wf.Dir()
+}
+
+// Vars returns the workflow variables set on the default Workflow.
+// See Feedback.Vars() for more information.
+func Vars() map[string]string {
+	return wf.Feedback.Vars()
+}
+
+// Var returns the workflow variable set on the default Workflow for key k.
+// See Feedback.Var() for more information.
+func Var(k string) string {
+	return wf.Feedback.Var(k)
+}
+
+// SetVar sets the value of workflow variable k on the default Workflow to v.
+// See Feedback.Vars() for more information.
+func SetVar(k, v string) {
+	wf.Feedback.SetVar(k, v)
 }
 
 // NewItem adds and returns a new feedback Item via the default Workflow
