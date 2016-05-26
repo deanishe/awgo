@@ -15,24 +15,51 @@ import (
 	"strings"
 )
 
-var (
-	// ValidModifiers are permitted modifier keys
-	ValidModifiers = map[string]bool{
-		"cmd":   true,
-		"alt":   true,
-		"ctrl":  true,
-		"shift": true,
-		"fn":    true,
-	}
-	// ValidIconTypes are the values you may specify for an icon type
-	ValidIconTypes = map[string]bool{
-		"filetype": true,
-		"fileicon": true,
-		"":         true,
-	}
+// Valid modifier keys for Item.NewModifier(). You can't combine these
+// in any way: Alfred only permits one modifier at a time.
+const (
+	ModCmd   = "cmd"
+	ModAlt   = "alt"
+	ModCtrl  = "ctrl"
+	ModShift = "shift"
+	ModFn    = "fn"
 )
 
-// TODO: Add Options
+// Valid icon types for ItemIcon. You can use an image file, the icon of a file,
+// e.g. an application's icon, or the icon for a filetype (specified by a UTI).
+const (
+	// Use with image files you wish to show in Alfred.
+	IconTypeImageFile = ""
+	// Use to show the icon of a file, e.g. combine with "/Applications/Safari.app"
+	// to show Safari's icon in Alfred.
+	IconTypeFileIcon = "fileicon"
+	// Use together with a UTI to show the icon for a filetype, e.g. "public.folder",
+	// which will give you the icon for a folder.
+	IconTypeFileType = "filetype"
+)
+
+var (
+	// ValidModifiers are permitted modifier keys for Modifiers.
+	// See Item.NewModifier() for application.
+	ValidModifiers = []string{ModCmd, ModAlt, ModCtrl, ModShift, ModFn}
+
+	// ValidIconTypes are the values you may specify for an icon type.
+	ValidIconTypes = []string{IconTypeImageFile, IconTypeFileIcon, IconTypeFileType}
+
+	// Maps to shadow the above to make lookup easier.
+	validModifiers = make(map[string]bool, len(ValidModifiers))
+	validIconTypes = make(map[string]bool, len(ValidIconTypes))
+)
+
+func init() {
+	// Build lookup maps (why doesn't Go have sets?)
+	for _, s := range ValidModifiers {
+		validModifiers[s] = true
+	}
+	for _, s := range ValidIconTypes {
+		validIconTypes[s] = true
+	}
+}
 
 // Arg is a result (Item) argument. It may contain a single string, or it
 // may also contain workflow variables.
@@ -127,7 +154,7 @@ type Modifier struct {
 
 // newModifier creates a Modifier, validating key.
 func newModifier(key string) (*Modifier, error) {
-	if ok := ValidModifiers[key]; !ok {
+	if ok := validModifiers[key]; !ok {
 		return nil, fmt.Errorf("Invalid modifier key: %s", key)
 	}
 	return &Modifier{Key: key, vars: map[string]string{}}, nil
@@ -312,7 +339,7 @@ func (it *Item) NewModifier(key string) (*Modifier, error) {
 // values are "fileicon" and "filetype". See ItemIcon for more information.
 func (it *Item) SetIcon(value string, kind string) error {
 	kind = strings.ToLower(kind)
-	if _, valid := ValidIconTypes[kind]; !valid {
+	if _, valid := validIconTypes[kind]; !valid {
 		return fmt.Errorf("Invalid icon kind: %v", kind)
 	}
 	if it.Icon == nil {
@@ -325,7 +352,7 @@ func (it *Item) SetIcon(value string, kind string) error {
 
 // SetModifier sets a Modifier for a modifier key.
 func (it *Item) SetModifier(m *Modifier) error {
-	if ok := ValidModifiers[m.Key]; !ok {
+	if ok := validModifiers[m.Key]; !ok {
 		return fmt.Errorf("Invalid modifier: %s", m.Key)
 	}
 	if it.Modifiers == nil {
@@ -376,7 +403,7 @@ func (it *Item) MarshalJSON() ([]byte, error) {
 	if it.Copytext != "" || it.Largetext != "" {
 		text = &itemText{Copy: it.Copytext, Large: it.Largetext}
 	}
-	// TODO: Alfred config
+	// TODO: Alfred workflow config in Feedback/Item/Modifier
 
 	if it.Arg != "" {
 		arg = &it.Arg
@@ -454,9 +481,12 @@ type ItemIcon struct {
 }
 
 // Feedback contains Items. This is the top-level object for generating
-// Alfred XML (i.e. serialise this and send it to Alfred).
+// Alfred JSON (i.e. serialise this and send it to Alfred).
 //
 // Use NewFeedback() to create new (initialised) Feedback structs.
+//
+// It is important to use the constructor functions for Feedback, Item
+// and Modifier structs.
 //
 // TODO: Implement Vars on Feedback.
 type Feedback struct {
