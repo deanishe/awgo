@@ -117,7 +117,7 @@ var marshalItemTests = []struct {
 	{Item: &Item{Title: "title", Copytext: "copy", Largetext: "large"},
 		ExpectedJSON: `{"text":{"copy":"copy","largetype":"large"},"title":"title"}`},
 	// With arg and variable
-	{Item: &Item{Title: "title", Arg: "value", Vars: map[string]string{"foo": "bar"}},
+	{Item: &Item{Title: "title", Arg: "value", vars: map[string]string{"foo": "bar"}},
 		ExpectedJSON: `{"arg":"{\"alfredworkflow\":{\"arg\":\"value\",\"variables\":{\"foo\":\"bar\"}}}","title":"title"}`},
 }
 
@@ -248,6 +248,26 @@ func TestModifiersInheritVars(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating modifier: %v", err)
 	}
+	if m.Var("foo") != "bar" {
+		t.Fatalf("Modifier var has wrong value. Expected=bar, Received=%v", m.Var("foo"))
+	}
+}
+
+// TestFeedbackVars tests if vars are properly inherited by Items and Modifiers
+func TestFeedbackVars(t *testing.T) {
+	fb := NewFeedback()
+
+	fb.SetVar("foo", "bar")
+	if fb.Var("foo") != "bar" {
+		t.Fatalf("Feedback var has wrong value. Expected=bar, Received=%v", fb.Var("foo"))
+	}
+
+	it := fb.NewItem("title")
+	if it.Var("foo") != "bar" {
+		t.Fatalf("Item var has wrong value. Expected=bar, Received=%v", it.Var("foo"))
+	}
+
+	m, _ := it.NewModifier("cmd")
 	if m.Var("foo") != "bar" {
 		t.Fatalf("Modifier var has wrong value. Expected=bar, Received=%v", m.Var("foo"))
 	}

@@ -1,3 +1,9 @@
+//
+// Copyright (c) 2016 Dean Jackson <deanishe@deanishe.net>
+//
+// MIT Licence. See http://opensource.org/licenses/MIT
+//
+
 package workflow
 
 import "fmt"

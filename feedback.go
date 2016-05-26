@@ -1,3 +1,9 @@
+//
+// Copyright (c) 2016 Dean Jackson <deanishe@deanishe.net>
+//
+// MIT Licence. See http://opensource.org/licenses/MIT
+//
+
 package workflow
 
 import (
@@ -269,8 +275,8 @@ type Item struct {
 	// subsequent action.
 	Valid bool `json:"valid,omitempty"`
 
-	// Vars are variables to pass to subsequent workflow elements.
-	Vars map[string]string `json:"-"`
+	// vars are variables to pass to subsequent workflow elements.
+	vars map[string]string
 
 	// IsFile tells Alfred that this Item is a file, i.e. Arg is a path
 	// and Alfred's File Actions should be made available.
@@ -291,8 +297,8 @@ func (it *Item) NewModifier(key string) (*Modifier, error) {
 	}
 
 	// Add Item variables to Modifier
-	if it.Vars != nil {
-		for k, v := range it.Vars {
+	if it.vars != nil {
+		for k, v := range it.vars {
 			m.SetVar(k, v)
 		}
 	}
@@ -300,23 +306,6 @@ func (it *Item) NewModifier(key string) (*Modifier, error) {
 	it.SetModifier(m)
 	return m, nil
 }
-
-// SetAlternateSubtitle sets custom subtitles for modifier keys.
-// modifier must be one of "cmd", "opt", "ctrl", "shift", "fn".
-//
-// TODO: Update alternate subtitles for Alfred 3 model
-// func (it *Item) SetAlternateSubtitle(modifier string, value string) error {
-// 	modifier = strings.ToLower(modifier)
-// 	if _, valid := ValidModifiers[modifier]; !valid {
-// 		return fmt.Errorf("Invalid modifier: %v", modifier)
-// 	}
-// 	if it.AlternateSubtitles == nil {
-// 		it.AlternateSubtitles = map[string]string{}
-// 	}
-// 	it.AlternateSubtitles[modifier] = value
-//
-// 	return nil
-// }
 
 // SetIcon sets the icon for a result item.
 // Pass "" for kind if value is the path to an icon file. Other valid
@@ -348,10 +337,20 @@ func (it *Item) SetModifier(m *Modifier) error {
 
 // SetVar sets an Alfred variable for subsequent workflow elements.
 func (it *Item) SetVar(k, v string) {
-	if it.Vars == nil {
-		it.Vars = make(map[string]string, 1)
+	if it.vars == nil {
+		it.vars = make(map[string]string, 1)
 	}
-	it.Vars[k] = v
+	it.vars[k] = v
+}
+
+// Var returns the value of Item's workflow variable for key k.
+func (it *Item) Var(k string) string {
+	return it.vars[k]
+}
+
+// Vars returns the Item's workflow variables.
+func (it *Item) Vars() map[string]string {
+	return it.vars
 }
 
 // MarshalJSON serializes Item to Alfred 3's JSON format. You shouldn't
@@ -382,7 +381,7 @@ func (it *Item) MarshalJSON() ([]byte, error) {
 	if it.Arg != "" {
 		arg = &it.Arg
 	}
-	if it.Vars != nil {
+	if it.vars != nil {
 		data, err := json.Marshal(&struct {
 			Root interface{} `json:"alfredworkflow"`
 		}{
@@ -391,7 +390,7 @@ func (it *Item) MarshalJSON() ([]byte, error) {
 				Vars map[string]string `json:"variables"`
 			}{
 				Arg:  it.Arg,
-				Vars: it.Vars,
+				Vars: it.vars,
 			},
 		})
 		// data, err := json.Marshal(&struct {
@@ -464,13 +463,33 @@ type Feedback struct {
 	Items []*Item `json:"items"`
 	// Set to true when feedback has been sent.
 	sent bool
+	vars map[string]string
 }
 
 // NewFeedback creates a new, initialised Feedback struct.
 func NewFeedback() *Feedback {
 	fb := &Feedback{}
 	fb.Items = []*Item{}
+	fb.vars = map[string]string{}
 	return fb
+}
+
+// SetVar sets an Alfred variable for subsequent workflow elements.
+func (fb *Feedback) SetVar(k, v string) {
+	if fb.vars == nil {
+		fb.vars = make(map[string]string, 1)
+	}
+	fb.vars[k] = v
+}
+
+// Var returns the value of Feedback's workflow variable for key k.
+func (fb *Feedback) Var(k string) string {
+	return fb.vars[k]
+}
+
+// Vars returns the Feedback's workflow variables.
+func (fb *Feedback) Vars() map[string]string {
+	return fb.vars
 }
 
 // Clear removes any items.
@@ -483,6 +502,14 @@ func (fb *Feedback) Clear() {
 // NewItem adds a new Item and returns a pointer to it.
 func (fb *Feedback) NewItem(title string) *Item {
 	it := &Item{Title: title}
+
+	// Variables
+	if len(fb.vars) > 0 {
+		for k, v := range fb.vars {
+			it.SetVar(k, v)
+		}
+	}
+
 	fb.Items = append(fb.Items, it)
 	return it
 }
