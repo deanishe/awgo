@@ -86,9 +86,14 @@ func run() {
 
 	// Generate feedback for Alfred
 	for _, path := range paths {
+
 		it := workflow.NewFileItem(path)
-		it.SetAlternateSubtitle("cmd", "Reveal in Finder.")
-		it.SetAlternateSubtitle("alt", "Browse in Alfred.")
+
+		m, _ := it.NewModifier("cmd")
+		m.SetSubtitle("Reveal in Finder.")
+
+		m, _ = it.NewModifier("alt")
+		m.SetSubtitle("Browse in Alfred.")
 	}
 
 	// Send JSON to Alfred. After calling this function, you can't send

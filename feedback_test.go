@@ -55,7 +55,7 @@ func TestSetIcon(t *testing.T) {
 	}
 }
 
-var marshalTests = []struct {
+var marshalItemTests = []struct {
 	Item         *Item
 	ExpectedJSON string
 }{
@@ -76,18 +76,22 @@ var marshalTests = []struct {
 		ExpectedJSON: `{"title":"title","subtitle":"subtitle"}`},
 	// Alternate subtitle
 	{Item: &Item{Title: "title", Subtitle: "subtitle",
-		AlternateSubtitles: map[string]string{"cmd": "command sub"}},
+		Modifiers: map[string]*Modifier{
+			"cmd": &Modifier{
+				Key:         "cmd",
+				subtitle:    "command sub",
+				subtitleSet: true}}},
 		ExpectedJSON: `{"title":"title","subtitle":"subtitle",` +
-			`"mods":{"cmd":"command sub"}}`},
+			`"mods":{"cmd":{"subtitle":"command sub"}}}`},
 	// Valid item
 	{Item: &Item{Title: "title", Valid: true},
 		ExpectedJSON: `{"title":"title","valid":true}`},
 	// With arg
 	{Item: &Item{Title: "title", Arg: "arg1"},
-		ExpectedJSON: `{"title":"title","arg":"arg1"}`},
+		ExpectedJSON: `{"arg":"arg1","title":"title"}`},
 	// Valid with arg
 	{Item: &Item{Title: "title", Arg: "arg1", Valid: true},
-		ExpectedJSON: `{"title":"title","arg":"arg1","valid":true}`},
+		ExpectedJSON: `{"arg":"arg1","title":"title","valid":true}`},
 	// With icon
 	{Item: &Item{Title: "title",
 		Icon: &ItemIcon{Value: "icon.png", Type: ""}},
@@ -103,15 +107,102 @@ var marshalTests = []struct {
 	// With type = file
 	{Item: &Item{Title: "title", IsFile: true},
 		ExpectedJSON: `{"type":"file","title":"title"}`},
-	// TODO: copytext
-	// TODO: largetext
+	// With copy text
+	{Item: &Item{Title: "title", Copytext: "copy"},
+		ExpectedJSON: `{"text":{"copy":"copy"},"title":"title"}`},
+	// With large text
+	{Item: &Item{Title: "title", Largetext: "large"},
+		ExpectedJSON: `{"text":{"largetype":"large"},"title":"title"}`},
+	// With copy and large text
+	{Item: &Item{Title: "title", Copytext: "copy", Largetext: "large"},
+		ExpectedJSON: `{"text":{"copy":"copy","largetype":"large"},"title":"title"}`},
+	// With arg and variable
+	{Item: &Item{Title: "title", Arg: "value", Vars: map[string]string{"foo": "bar"}},
+		ExpectedJSON: `{"arg":"{\"alfredworkflow\":{\"arg\":\"value\",\"variables\":{\"foo\":\"bar\"}}}","title":"title"}`},
+}
+
+var marshalModifierTests = []struct {
+	Mod          *Modifier
+	ExpectedJSON string
+}{
+	// Empty item (argSet=false)
+	{Mod: &Modifier{arg: "title"},
+		ExpectedJSON: `{}`},
+	// With arg
+	{Mod: &Modifier{arg: "title", argSet: true},
+		ExpectedJSON: `{"arg":"title"}`},
+	// With subtitle
+	{Mod: &Modifier{subtitle: "sub here", subtitleSet: true},
+		ExpectedJSON: `{"subtitle":"sub here"}`},
+	// valid
+	{Mod: &Modifier{valid: true, validSet: true},
+		ExpectedJSON: `{"valid":true}`},
+	// With all
+	{Mod: &Modifier{
+		arg: "title", argSet: true,
+		subtitle: "sub here", subtitleSet: true,
+		valid: true, validSet: true,
+	},
+		ExpectedJSON: `{"arg":"title","subtitle":"sub here","valid":true}`},
+}
+
+var marshalArgTests = []struct {
+	Arg          *Arg
+	ExpectedJSON string
+}{
+	// Only an arg
+	{Arg: &Arg{},
+		ExpectedJSON: `""`},
+	// With arg
+	{Arg: &Arg{arg: "title"},
+		ExpectedJSON: `"title"`},
+	// With variable
+	{Arg: &Arg{vars: map[string]string{"foo": "bar"}},
+		ExpectedJSON: `{"alfredworkflow":{"variables":{"foo":"bar"}}}`},
+	// Multiple variables
+	{Arg: &Arg{vars: map[string]string{"foo": "bar", "ducky": "fuzz"}},
+		ExpectedJSON: `{"alfredworkflow":{"variables":{"ducky":"fuzz","foo":"bar"}}}`},
+	// Multiple variables and arg (arg should be absent as argSet=false)
+	{Arg: &Arg{arg: "title", vars: map[string]string{"foo": "bar", "ducky": "fuzz"}},
+		ExpectedJSON: `{"alfredworkflow":{"variables":{"ducky":"fuzz","foo":"bar"}}}`},
+	// Multiple variables and arg (arg should be present as argSet=true)
+	{Arg: &Arg{arg: "title", argSet: true, vars: map[string]string{"foo": "bar", "ducky": "fuzz"}},
+		ExpectedJSON: `{"alfredworkflow":{"arg":"title","variables":{"ducky":"fuzz","foo":"bar"}}}`},
 }
 
 func TestMarshalItem(t *testing.T) {
-	for i, test := range marshalTests {
+	for i, test := range marshalItemTests {
 		data, err := json.Marshal(test.Item)
 		if err != nil {
 			t.Fatalf("#%d: marshal(%v): %v", i, test.Item, err)
+			continue
+		}
+
+		if got, want := string(data), test.ExpectedJSON; got != want {
+			t.Fatalf("#%d: got: %v wanted: %v", i, got, want)
+		}
+	}
+}
+
+func TestMarshalModifier(t *testing.T) {
+	for i, test := range marshalModifierTests {
+		data, err := json.Marshal(test.Mod)
+		if err != nil {
+			t.Fatalf("#%d: marshal(%v): %v", i, test.Mod, err)
+			continue
+		}
+
+		if got, want := string(data), test.ExpectedJSON; got != want {
+			t.Fatalf("#%d: got: %v wanted: %v", i, got, want)
+		}
+	}
+}
+
+func TestMarshalArg(t *testing.T) {
+	for i, test := range marshalArgTests {
+		data, err := json.Marshal(test.Arg)
+		if err != nil {
+			t.Fatalf("#%d: marshal(%v): %v", i, test.Arg, err)
 			continue
 		}
 
@@ -145,4 +236,19 @@ func TestMarshalFeedback(t *testing.T) {
 			got, want, err)
 	}
 
+}
+
+// TestModifiersInheritVars tests that Modifiers inherit variables from their
+// parent Item
+func TestModifiersInheritVars(t *testing.T) {
+	fb := NewFeedback()
+	it := fb.NewItem("title")
+	it.SetVar("foo", "bar")
+	m, err := it.NewModifier("cmd")
+	if err != nil {
+		t.Fatalf("Error creating modifier: %v", err)
+	}
+	if m.Var("foo") != "bar" {
+		t.Fatalf("Modifier var has wrong value. Expected=bar, Received=%v", m.Var("foo"))
+	}
 }
