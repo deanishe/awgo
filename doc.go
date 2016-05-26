@@ -20,7 +20,7 @@ The current main features are:
 	- Simple generation of Alfred JSON feedback.
 	- Fuzzy sorting.
 	- Catches panics, logs stack trace and shows user an error message.
-	- Log file for easier debugging.
+	- (Rotated) Log file for easier debugging.
 	- OS X system icons.
 
 	TODO: Starting background processes

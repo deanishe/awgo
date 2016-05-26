@@ -19,10 +19,14 @@ const (
 	LibVersion = "0.2.2"
 )
 
-// The workflow object operated on by top-level functions.
-// It can be retrieved/replaced with GetDefaultWorkflow() and
-// SetDefaultWorkflow() respectively.
-var wf *Workflow
+var (
+	// MaxLogSize is the size at which the workflow log is rotated.
+	MaxLogSize = 204800 // 200 KiB
+	// The workflow object operated on by top-level functions.
+	// It can be retrieved/replaced with GetDefaultWorkflow() and
+	// SetDefaultWorkflow() respectively.
+	wf *Workflow
+)
 
 // Info contains meta information extracted from info.plist.
 // Use Workflow.Info() to retrieve the Info for the running
@@ -190,7 +194,20 @@ func (wf *Workflow) loadEnv() {
 // initializeLogging ensures future log messages are written to
 // workflow's log file.
 func (wf *Workflow) initializeLogging() {
-	// TODO: Rotate log file
+
+	// Rotate log file if larger than MaxLogSize
+	fi, err := os.Stat(wf.LogFile())
+	if err == nil {
+		if fi.Size() >= int64(MaxLogSize) {
+			new := wf.LogFile() + ".1"
+			if err := os.Rename(wf.LogFile(), new); err != nil {
+				fmt.Fprintf(os.Stderr, "Error rotating log: %v", err)
+			}
+			fmt.Fprintln(os.Stderr, "Rotated log")
+		}
+	}
+
+	// Open log file
 	file, err := os.OpenFile(wf.LogFile(),
 		os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 	if err != nil {
@@ -198,11 +215,11 @@ func (wf *Workflow) initializeLogging() {
 			wf.LogFile(), err))
 	}
 
+	// Attach logger to file
 	multi := io.MultiWriter(file, os.Stderr)
 	log.SetOutput(multi)
 	// log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	log.SetFlags(log.Lshortfile)
-	// log.New(multi, "", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
 // Info returns the metadata read from the workflow's info.plist.
