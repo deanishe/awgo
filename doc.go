@@ -42,7 +42,7 @@ program.go:
 	var wf *workflow.Workflow
 
 	func init() {
-		wf = workflow.NewWarningItem(nil)
+		wf = workflow.NewWorkflow(nil)
 	}
 
 	func run() {
@@ -84,7 +84,7 @@ SendFeedback() to generate the JSON and send it to Alfred
 
 You can only call a sending method once: multiple calls would result in
 invalid JSON, as there'd be multiple root objects, so any subsequent
-calls to Send* methods are logged and ignored. Sending methods are:
+calls to sending methods are logged and ignored. Sending methods are:
 
 	SendFeedback()
 	Fatal()
@@ -106,10 +106,22 @@ the workflow.
 
 Warn() also immediately sends a single result to Alfred
 with a warning message (and icon), but does not terminate the workflow.
-However, because the XML has already been sent to Alfred, you can't
+However, because the JSON has already been sent to Alfred, you can't
 send any more results after calling Warn().
 
 If you want to include a warning with other results, use NewWarningItem().
+
+
+Logging
+
+Awgo uses the default log package. It is automatically configured to log to
+STDERR (Alfred's debugger) and to a file in the workflow's cache directory.
+
+The log file is rotated when it exceeds 200 KiB in size.
+One previous log is kept.
+
+Awgo automatically detects when Alfred's debugger is open (Workflow.Debug()
+returns true) and adds filename:linenumber: to the logged output.
 
 
 Performance
