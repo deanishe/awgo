@@ -84,7 +84,8 @@ type Options struct {
 // Filters and talking to Alfred.
 //
 // As a rule, you should create a Workflow in main() and call your main
-// entry-point via Workflow.Run().
+// entry-point via Workflow.Run(). Use Workflow.NewItem() to create new
+// feedback Items and Workflow.SendFeedback() to send the results to Alfred.
 //
 // See "fuzzy-simple" and "fuzzy-big" in the examples/ subdirectory for full
 // examples of workflows.

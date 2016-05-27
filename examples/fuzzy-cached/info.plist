@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>bundleid</key>
-	<string>net.deanishe.awgo-example-fuzzy-big</string>
+	<string>net.deanishe.alfred.awgo.demo-fuzzy-cached</string>
 	<key>connections</key>
 	<dict>
 		<key>D61073F1-262D-482D-800D-A788FD7B9F69</key>
@@ -15,6 +15,8 @@
 				<integer>0</integer>
 				<key>modifiersubtext</key>
 				<string></string>
+				<key>vitoclose</key>
+				<false/>
 			</dict>
 		</array>
 	</dict>
@@ -25,14 +27,16 @@
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
-	<string>Awgo Large Fuzzy Example</string>
+	<string>Awgo Demo: Fuzzy Search (Very Large) Cached Dataset</string>
 	<key>objects</key>
 	<array>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>plusspaces</key>
-				<false/>
+				<key>browser</key>
+				<string></string>
+				<key>spaces</key>
+				<string></string>
 				<key>url</key>
 				<string>{query}</string>
 				<key>utf8</key>
@@ -43,11 +47,13 @@
 			<key>uid</key>
 			<string>76AEA54C-6AD8-43B3-A8EB-7C693414C860</string>
 			<key>version</key>
-			<integer>0</integer>
+			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
 				<key>argumenttype</key>
 				<integer>0</integer>
 				<key>escaping</key>
@@ -65,7 +71,11 @@
 				<key>runningsubtext</key>
 				<string>Loading books…</string>
 				<key>script</key>
-				<string>./fuzzy-big "{query}"</string>
+				<string>./fuzzy-cached "{query}"</string>
+				<key>scriptargtype</key>
+				<integer>0</integer>
+				<key>scriptfile</key>
+				<string></string>
 				<key>subtext</key>
 				<string>Filter ebooks from gutenberg.org</string>
 				<key>title</key>
@@ -80,25 +90,46 @@
 			<key>uid</key>
 			<string>D61073F1-262D-482D-800D-A788FD7B9F69</string>
 			<key>version</key>
-			<integer>0</integer>
+			<integer>2</integer>
 		</dict>
 	</array>
 	<key>readme</key>
-	<string></string>
+	<string>Awgo: Large Fuzzy Search Demo
+=============================
+
+This workflow demonstrates Awgo's performance on a large dataset (&gt;45K books).
+
+It fetches TSV data from a server and caches it locally in a more efficient format (gob) that loads ~5 times faster.
+
+This workflow is pushing the bounds of acceptable performance, imo.
+
+A dataset this size belongs in sqlite, which can handle this many data with ease.</string>
 	<key>uidata</key>
 	<dict>
 		<key>76AEA54C-6AD8-43B3-A8EB-7C693414C860</key>
 		<dict>
+			<key>note</key>
+			<string>Open actioned book's webpage in your browser.</string>
+			<key>xpos</key>
+			<integer>240</integer>
 			<key>ypos</key>
-			<real>10</real>
+			<integer>40</integer>
 		</dict>
 		<key>D61073F1-262D-482D-800D-A788FD7B9F69</key>
 		<dict>
+			<key>note</key>
+			<string>Download and cache list of Gutenberg.org ebooks, then search the cached data.
+
+There are &gt;45K books, and a proper database (e.g. sqlite) would be better suited.</string>
+			<key>xpos</key>
+			<integer>40</integer>
 			<key>ypos</key>
-			<real>10</real>
+			<integer>40</integer>
 		</dict>
 	</dict>
+	<key>version</key>
+	<string>0.1</string>
 	<key>webaddress</key>
-	<string></string>
+	<string>https://godoc.org/gogs.deanishe.net/deanishe/awgo</string>
 </dict>
 </plist>

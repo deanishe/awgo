@@ -24,7 +24,8 @@ The sorting algorithm uses multiple comparisons:
 	6. Substring, e.g. "gator" matches "alligator"
 	7. Ordered subset, e.g. "hhg" matches "Hitchhiker's Guide to the Galaxy"
 
-You can turn algorithms off by setting their weighting to 0.0.
+You can turn algorithms off (including any processing) by setting their
+weighting to 0.0.
 */
 package fuzzy
 
@@ -99,6 +100,7 @@ type fuzzyQuery struct {
 
 func newFuzzyQuery(query string, slice Interface) *fuzzyQuery {
 	fq := &fuzzyQuery{query, slice, nil}
+	// TODO: Parallel fuzzy scoring
 	fq.scores = make([]float64, fq.Data.Len())
 	var score float64
 	for i := 0; i < fq.Data.Len(); i++ {

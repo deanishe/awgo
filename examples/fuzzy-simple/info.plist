@@ -3,50 +3,48 @@
 <plist version="1.0">
 <dict>
 	<key>bundleid</key>
-	<string>net.deanishe.awgo-example-fuzzy</string>
+	<string>net.deanishe.alfred.awgo.demo-fuzzy</string>
 	<key>connections</key>
 	<dict>
 		<key>D61073F1-262D-482D-800D-A788FD7B9F69</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>B471EC53-09D0-4075-9B6E-2CE89D7F06DA</string>
+				<string>7C574F95-18F7-4AA2-B8EF-812745DB293D</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
 				<string></string>
-			</dict>
-			<dict>
-				<key>destinationuid</key>
-				<string>2A118969-1136-422A-93D1-6D7092CAC3EF</string>
-				<key>modifiers</key>
-				<integer>1048576</integer>
-				<key>modifiersubtext</key>
-				<string></string>
+				<key>vitoclose</key>
+				<false/>
 			</dict>
 			<dict>
 				<key>destinationuid</key>
 				<string>921C896B-DC08-4B14-9424-B5CEF32C5C37</string>
 				<key>modifiers</key>
-				<integer>524288</integer>
+				<integer>1048576</integer>
 				<key>modifiersubtext</key>
 				<string></string>
+				<key>vitoclose</key>
+				<false/>
 			</dict>
 		</array>
 	</dict>
 	<key>createdby</key>
 	<string>Dean Jackson</string>
 	<key>description</key>
-	<string>Filter files in ~/</string>
+	<string>Filter folders in ~/</string>
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
-	<string>Awgo Fuzzy Sort Example</string>
+	<string>Awgo Demo: Fuzzy Search</string>
 	<key>objects</key>
 	<array>
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
 				<key>argumenttype</key>
 				<integer>1</integer>
 				<key>escaping</key>
@@ -62,11 +60,17 @@
 				<key>queuemode</key>
 				<integer>1</integer>
 				<key>runningsubtext</key>
-				<string>Loading your files…</string>
+				<string>Loading folders…</string>
 				<key>script</key>
-				<string>./fuzzy "{query}"</string>
+				<string>./fuzzy-simple "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string>All subdirectories of your home directory</string>
 				<key>title</key>
-				<string>Filter files in ~/</string>
+				<string>Filter folders in ~/</string>
 				<key>type</key>
 				<integer>0</integer>
 				<key>withspace</key>
@@ -77,63 +81,71 @@
 			<key>uid</key>
 			<string>D61073F1-262D-482D-800D-A788FD7B9F69</string>
 			<key>version</key>
-			<integer>0</integer>
+			<integer>2</integer>
 		</dict>
 		<dict>
 			<key>config</key>
-			<dict/>
+			<dict>
+				<key>openwith</key>
+				<string></string>
+				<key>sourcefile</key>
+				<string></string>
+			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.openfile</string>
 			<key>uid</key>
-			<string>B471EC53-09D0-4075-9B6E-2CE89D7F06DA</string>
+			<string>7C574F95-18F7-4AA2-B8EF-812745DB293D</string>
 			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>type</key>
-			<string>alfred.workflow.action.revealfile</string>
-			<key>uid</key>
-			<string>2A118969-1136-422A-93D1-6D7092CAC3EF</string>
-			<key>version</key>
-			<integer>0</integer>
+			<integer>3</integer>
 		</dict>
 		<dict>
 			<key>config</key>
-			<dict/>
+			<dict>
+				<key>path</key>
+				<string></string>
+			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.browseinalfred</string>
 			<key>uid</key>
 			<string>921C896B-DC08-4B14-9424-B5CEF32C5C37</string>
 			<key>version</key>
-			<integer>0</integer>
+			<integer>1</integer>
 		</dict>
 	</array>
 	<key>readme</key>
-	<string></string>
+	<string>Awgo: Fuzzy Sort Demo
+=====================</string>
 	<key>uidata</key>
 	<dict>
-		<key>2A118969-1136-422A-93D1-6D7092CAC3EF</key>
+		<key>7C574F95-18F7-4AA2-B8EF-812745DB293D</key>
 		<dict>
+			<key>xpos</key>
+			<integer>300</integer>
 			<key>ypos</key>
-			<real>130</real>
+			<integer>40</integer>
 		</dict>
 		<key>921C896B-DC08-4B14-9424-B5CEF32C5C37</key>
 		<dict>
+			<key>xpos</key>
+			<integer>300</integer>
 			<key>ypos</key>
-			<real>250</real>
-		</dict>
-		<key>B471EC53-09D0-4075-9B6E-2CE89D7F06DA</key>
-		<dict>
-			<key>ypos</key>
-			<real>10</real>
+			<integer>180</integer>
 		</dict>
 		<key>D61073F1-262D-482D-800D-A788FD7B9F69</key>
 		<dict>
+			<key>note</key>
+			<string>Program runs here.
+
+The alternate actions are all configured in the Script Filter code/output (which is why you can't see the alternate subtitle text in the connection configuration).</string>
+			<key>xpos</key>
+			<integer>50</integer>
 			<key>ypos</key>
-			<real>10</real>
+			<integer>40</integer>
 		</dict>
 	</dict>
+	<key>version</key>
+	<string>0.1</string>
 	<key>webaddress</key>
-	<string></string>
+	<string>https://godoc.org/gogs.deanishe.net/deanishe/awgo</string>
 </dict>
 </plist>

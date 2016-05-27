@@ -5,10 +5,12 @@
 //
 
 /*
-examples/fuzzy shows how to fuzzy filter results using awgo.
+fuzzy-simple shows how to fuzzy filter results using awgo.
 
 It displays and filters a list of subdirectories of ~/ in Alfred, and
-allows you to open or reveal the folders, or browse them in Alfred.
+allows you to open the folders or browse them in Alfred.
+
+This demo is a complete Alfred 3 workflow.
 */
 package main
 
@@ -24,8 +26,9 @@ import (
 )
 
 var (
-	startDir     string  // Directory to read
-	minimumScore float64 // Search score cutoff
+	startDir     string             // Directory to read
+	minimumScore float64            // Search score cutoff
+	wf           *workflow.Workflow // Our Workflow object
 )
 
 // Folders is a simple slice of strings that supports fuzzy.Interface
@@ -42,8 +45,12 @@ func (f Folders) Swap(i, j int)      { f[i], f[j] = f[j], f[i] }
 func (f Folders) Keywords(i int) string { return filepath.Base(f[i]) }
 
 func init() {
+	// Where we'll look for directories
 	startDir = os.Getenv("HOME")
-	minimumScore = 0.3
+	// Ignore fuzzy matches below this
+	minimumScore = 40.0
+	// Initialise workflow
+	wf = workflow.NewWorkflow(nil)
 }
 
 // readDir returns the paths to all the visible subdirectories of `dirpath`
@@ -76,33 +83,34 @@ func run() {
 	if query != "" {
 		// Filter results
 		for i, score := range fuzzy.Sort(paths, query) {
-			log.Printf("%v\t%v", score, paths[i])
 			if score < minimumScore {
+				log.Printf("%d/%d matches for %s", i, len(paths), query)
 				paths = paths[:i]
 				break
 			}
+			log.Printf("%0.2f\t%v", score, paths[i])
 		}
 	}
 
 	// Generate feedback for Alfred
 	for _, path := range paths {
 
-		it := workflow.NewFileItem(path)
+		it := wf.NewFileItem(path)
 
-		m, _ := it.NewModifier("cmd")
-		m.SetSubtitle("Reveal in Finder.")
-
-		m, _ = it.NewModifier("alt")
-		m.SetSubtitle("Browse in Alfred.")
+		// We could set this modifier via Alfred's GUI.
+		// You'll only get an error if the modifier key is invalid.
+		if m, err := it.NewModifier("cmd"); err == nil {
+			m.SetSubtitle("Browse in Alfred")
+		}
 	}
 
 	// Send JSON to Alfred. After calling this function, you can't send
 	// any more results to Alfred.
-	workflow.SendFeedback()
+	wf.SendFeedback()
 }
 
 func main() {
 	// Call workflow via `Run` wrapper to catch any errors, log them
 	// and display an error message in Alfred.
-	workflow.Run(run)
+	wf.Run(run)
 }

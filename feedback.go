@@ -140,9 +140,17 @@ func (a *Arg) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// Modifier encapsulates alterations to Item when a modifier key is held.
+// Modifier encapsulates alterations to Item when a modifier key is held when
+// the user actions the item.
+//
+// Create new Modifiers via Item.NewModifier(). This binds the Modifier to the
+// Item, initializes Modifier's map and inherits Item's workflow variables.
+//
+// A Modifier created via Item.NewModifier() also inherits its parent Item's
+// workflow variables.
 type Modifier struct {
-	Key         string // The modifier key. May be any of ValidModifiers.
+	// The modifier key. May be any of ValidModifiers.
+	Key         string
 	arg         string
 	argSet      bool
 	subtitle    string
@@ -208,7 +216,7 @@ func (m *Modifier) Vars() map[string]string {
 	return m.vars
 }
 
-// MarshalJSON returns Modifier as JSON bytes.
+// MarshalJSON implements the JSON serialization interface.
 func (m *Modifier) MarshalJSON() ([]byte, error) {
 
 	var a, s *string
@@ -316,7 +324,7 @@ type Item struct {
 }
 
 // NewModifier returns an initialised Modifier bound to this Item.
-// It also populates the Modifier with any variables set in the Item.
+// It also populates the Modifier with any workflow variables set in the Item.
 func (it *Item) NewModifier(key string) (*Modifier, error) {
 	m, err := newModifier(key)
 	if err != nil {
@@ -530,6 +538,9 @@ func (fb *Feedback) Clear() {
 }
 
 // NewItem adds a new Item and returns a pointer to it.
+//
+// The Item inherits and workflow variables set on the Feedback parent at
+// time of creation.
 func (fb *Feedback) NewItem(title string) *Item {
 	it := &Item{Title: title}
 

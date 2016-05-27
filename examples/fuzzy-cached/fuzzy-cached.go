@@ -6,11 +6,14 @@
 
 /*
 
-fuzzy-big demonstrates how to handle larger datasets in awgo.
+fuzzy-cached demonstrates how to handle larger datasets in awgo, caching
+the data in a format that's more quickly loaded.
 
 It filters a list of the books from the Gutenberg project. The list
 (a TSV file) is downloaded on first run, parsed and cached to disk
 using gob.
+
+The gob file loads ~5 times faster than the TSV.
 
 There are >45K books in the list.
 
@@ -20,6 +23,7 @@ acceptable performance, imo.
 A dataset of this size would be better off in an sqlite database, which
 can *easily* handle this amount of data.
 
+This demo is a complete Alfred 3 workflow.
 */
 package main
 
@@ -34,6 +38,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/docopt/docopt-go"
 	"gogs.deanishe.net/deanishe/awgo"
@@ -45,8 +50,6 @@ var (
 	minScore = 30.0
 	// maxResults is the maximum number of results to sent to Alfred
 	maxResults = 50
-	// version of the workflow
-	version = "0.1"
 	// tsvURL is the source of the workflow's data
 	tsvURL = "https://raw.githubusercontent.com/deanishe/alfred-index-demo/master/src/books.tsv"
 	usage  = `fuzzy-big [options] [<query>]
@@ -63,6 +66,17 @@ Options:
 )
 
 func init() {
+	// Turning these off shaves ~0.1s off execution time, and they're
+	// not super-suited to this dataset:
+	//
+	// Dataset is full of names, and query will almost certainly be
+	// lowercase. Just do lowercase comparison.
+	fuzzy.WeightingExact = 0.0
+	// Not many people/books have CamelCase names. Initials will pick
+	// do just fine.
+	fuzzy.WeightingCaps = 0.0
+	// Not on a dataset this size. Adds no value.
+	fuzzy.WeightingOrderedSubset = 0.0
 	wf = workflow.NewWorkflow(nil)
 }
 
@@ -94,6 +108,7 @@ func (b Books) Keywords(i int) string {
 
 // loadFromGob reads the book list from the cache.
 func loadFromGob(path string) (Books, error) {
+	s := time.Now()
 	books := Books{}
 	fp, err := os.Open(path)
 	if err != nil {
@@ -105,11 +120,13 @@ func loadFromGob(path string) (Books, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("[gob] loaded %d books in %v", len(books), time.Now().Sub(s))
 	return books, nil
 }
 
 // saveToGob serialises the books to disk.
 func saveToGob(books Books, path string) error {
+	s := time.Now()
 	fp, err := os.Create(path)
 	if err != nil {
 		return err
@@ -120,12 +137,14 @@ func saveToGob(books Books, path string) error {
 	if err != nil {
 		return err
 	}
+	log.Printf("[gob] saved %d books in %v", len(books), time.Now().Sub(s))
 	return nil
 }
 
 // downloadTSV fetches the data source TSV from GitHub and saves it
 // in the workflow's data directory.
 func downloadTSV(path string) error {
+	s := time.Now()
 	log.Printf("Fetching %s...", tsvURL)
 	r, err := http.Get(tsvURL)
 	if err != nil {
@@ -142,12 +161,13 @@ func downloadTSV(path string) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Saved %d bytes to %s", i, path)
+	log.Printf("Saved %d bytes to %s (%v)", i, path, time.Now().Sub(s))
 	return nil
 }
 
 // loadFromTSV loads the list of books from a TSV file.
 func loadFromTSV(path string) (Books, error) {
+	s := time.Now()
 	books := Books{}
 	f, err := os.Open(path)
 	if err != nil {
@@ -176,6 +196,7 @@ func loadFromTSV(path string) (Books, error) {
 		// books = append(books, record...)
 	}
 	log.Printf("%d books loaded from %s", len(books), workflow.ShortenPath(path))
+	log.Printf("[tsv] loaded %d books in %v", len(books), time.Now().Sub(s))
 	return books, nil
 }
 
@@ -202,9 +223,6 @@ func loadBooks() Books {
 			c <- err
 		}(c)
 		<-c // Wait for download to finish
-		// if err != nil {
-		// 	wf.SendError(err)
-		// }
 	}
 	books, err := loadFromTSV(csvpath)
 	if err != nil {
@@ -221,18 +239,21 @@ func run() {
 	var query string
 	var total, count int
 
-	args, err := docopt.Parse(usage, nil, true, version, false)
+	// Version is parsed from info.plist
+	args, err := docopt.Parse(usage, nil, true, wf.Version(), false)
 	if err != nil {
 		log.Fatalf("Error parsing CLI options : %v", err)
 	}
-	log.Printf("args=%v", args)
+
+	// Docopt values are interface{} :(
+	if s, ok := args["<query>"].(string); ok {
+		query = s
+	}
+
 	books := loadBooks()
 	total = len(books)
 
-	if len(os.Args) > 1 {
-		query = os.Args[1]
-	}
-
+	// Filter books based on query
 	if query != "" {
 		for i, score := range fuzzy.Sort(books, query) {
 			if score < minScore || i == maxResults-1 {
@@ -257,6 +278,5 @@ func run() {
 }
 
 func main() {
-	wf.SetVersion(version)
 	wf.Run(run)
 }
