@@ -61,47 +61,49 @@ func init() {
 	}
 }
 
-// Arg is a result (Item) argument. It may contain a single string, or it
+// itemArg is a result (Item) argument. It may contain a single string, or it
 // may also contain workflow variables.
-type Arg struct {
+//
+// This is a helper struct to simplify encoding Items and Modifiers to JSON.
+type itemArg struct {
 	arg    string
 	argSet bool
 	vars   map[string]string
 }
 
-// NewArg returns an initialised Arg.
-func NewArg() *Arg {
-	return &Arg{vars: map[string]string{}}
+// newArg returns an initialised Arg.
+func newArg() *itemArg {
+	return &itemArg{vars: map[string]string{}}
 }
 
 // Arg returns Arg's arg.
-func (a *Arg) Arg() string {
+func (a *itemArg) Arg() string {
 	return a.arg
 }
 
 // SetArg sets Arg's arg.
-func (a *Arg) SetArg(s string) {
+func (a *itemArg) SetArg(s string) {
 	a.arg = s
 	a.argSet = true
 }
 
 // Vars returns Arg's variables.
-func (a *Arg) Vars() map[string]string {
+func (a *itemArg) Vars() map[string]string {
 	return a.vars
 }
 
 // Var returns value set for key k.
-func (a *Arg) Var(k string) string {
+func (a *itemArg) Var(k string) string {
 	return a.vars[k]
 }
 
 // SetVar sets the value of a variable.
-func (a *Arg) SetVar(k, v string) {
+func (a *itemArg) SetVar(k, v string) {
 	a.vars[k] = v
 }
 
 // String returns a JSON string representation of Arg.
-func (a *Arg) String() (string, error) {
+func (a *itemArg) String() (string, error) {
 	if len(a.vars) == 0 {
 		return a.arg, nil
 	}
@@ -113,7 +115,7 @@ func (a *Arg) String() (string, error) {
 }
 
 // MarshalJSON serialises Arg to JSON.
-func (a *Arg) MarshalJSON() ([]byte, error) {
+func (a *itemArg) MarshalJSON() ([]byte, error) {
 
 	var arg *string
 
@@ -225,18 +227,16 @@ func (m *Modifier) MarshalJSON() ([]byte, error) {
 	if m.argSet {
 		a = &m.arg
 	}
-
 	if m.subtitleSet {
 		s = &m.subtitle
 	}
-
 	if m.validSet {
 		v = &m.valid
 	}
 
 	// Variables
 	if len(m.vars) > 0 {
-		arg := NewArg()
+		arg := newArg()
 		if m.argSet {
 			arg.SetArg(m.arg)
 		}
@@ -325,10 +325,13 @@ type Item struct {
 
 // NewModifier returns an initialised Modifier bound to this Item.
 // It also populates the Modifier with any workflow variables set in the Item.
-func (it *Item) NewModifier(key string) (*Modifier, error) {
+//
+// The workflow will terminate (call FatalError) if key is not a valid
+// modifier.
+func (it *Item) NewModifier(key string) *Modifier {
 	m, err := newModifier(key)
 	if err != nil {
-		return nil, err
+		wf.FatalError(err)
 	}
 
 	// Add Item variables to Modifier
@@ -339,7 +342,7 @@ func (it *Item) NewModifier(key string) (*Modifier, error) {
 	}
 
 	it.SetModifier(m)
-	return m, nil
+	return m
 }
 
 // SetIcon sets the icon for a result item.
@@ -416,31 +419,47 @@ func (it *Item) MarshalJSON() ([]byte, error) {
 	if it.Arg != "" {
 		arg = &it.Arg
 	}
-	if it.vars != nil {
-		data, err := json.Marshal(&struct {
-			Root interface{} `json:"alfredworkflow"`
-		}{
-			Root: &struct {
-				Arg  string            `json:"arg,omitempty"`
-				Vars map[string]string `json:"variables"`
-			}{
-				Arg:  it.Arg,
-				Vars: it.vars,
-			},
-		})
-		// data, err := json.Marshal(&struct {
-		// 	Arg  string            `json:"arg,omitempty"`
-		// 	Vars map[string]string `json:"variables"`
-		// }{
-		// 	Arg:  it.Arg,
-		// 	Vars: it.Vars,
-		// })
-		if err != nil {
-			return []byte{}, err
+
+	if len(it.vars) > 0 {
+		a := newArg()
+		if it.Arg != "" {
+			a.SetArg(it.Arg)
 		}
-		s := string(data)
-		arg = &s
+		for k, v := range it.vars {
+			a.SetVar(k, v)
+		}
+		if s, err := a.String(); err == nil {
+			arg = &s
+		} else {
+			log.Printf("Error encoding variables: %v", err)
+		}
 	}
+
+	// if it.vars != nil {
+	// 	data, err := json.Marshal(&struct {
+	// 		Root interface{} `json:"alfredworkflow"`
+	// 	}{
+	// 		Root: &struct {
+	// 			Arg  string            `json:"arg,omitempty"`
+	// 			Vars map[string]string `json:"variables"`
+	// 		}{
+	// 			Arg:  it.Arg,
+	// 			Vars: it.vars,
+	// 		},
+	// 	})
+	// 	// data, err := json.Marshal(&struct {
+	// 	// 	Arg  string            `json:"arg,omitempty"`
+	// 	// 	Vars map[string]string `json:"variables"`
+	// 	// }{
+	// 	// 	Arg:  it.Arg,
+	// 	// 	Vars: it.Vars,
+	// 	// })
+	// 	if err != nil {
+	// 		return []byte{}, err
+	// 	}
+	// 	s := string(data)
+	// 	arg = &s
+	// }
 
 	return json.Marshal(&struct {
 		Auto     *string   `json:"autocomplete,omitempty"`
@@ -542,7 +561,7 @@ func (fb *Feedback) Clear() {
 // The Item inherits and workflow variables set on the Feedback parent at
 // time of creation.
 func (fb *Feedback) NewItem(title string) *Item {
-	it := &Item{Title: title}
+	it := &Item{Title: title, vars: map[string]string{}}
 
 	// Variables
 	if len(fb.vars) > 0 {

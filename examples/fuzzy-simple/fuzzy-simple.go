@@ -98,10 +98,8 @@ func run() {
 		it := wf.NewFileItem(path)
 
 		// We could set this modifier via Alfred's GUI.
-		// You'll only get an error if the modifier key is invalid.
-		if m, err := it.NewModifier("cmd"); err == nil {
-			m.SetSubtitle("Browse in Alfred")
-		}
+		m := it.NewModifier("cmd")
+		m.SetSubtitle("Browse in Alfred")
 	}
 
 	// Send JSON to Alfred. After calling this function, you can't send

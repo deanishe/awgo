@@ -147,26 +147,26 @@ var marshalModifierTests = []struct {
 }
 
 var marshalArgTests = []struct {
-	Arg          *Arg
+	Arg          *itemArg
 	ExpectedJSON string
 }{
 	// Only an arg
-	{Arg: &Arg{},
+	{Arg: &itemArg{},
 		ExpectedJSON: `""`},
 	// With arg
-	{Arg: &Arg{arg: "title"},
+	{Arg: &itemArg{arg: "title"},
 		ExpectedJSON: `"title"`},
 	// With variable
-	{Arg: &Arg{vars: map[string]string{"foo": "bar"}},
+	{Arg: &itemArg{vars: map[string]string{"foo": "bar"}},
 		ExpectedJSON: `{"alfredworkflow":{"variables":{"foo":"bar"}}}`},
 	// Multiple variables
-	{Arg: &Arg{vars: map[string]string{"foo": "bar", "ducky": "fuzz"}},
+	{Arg: &itemArg{vars: map[string]string{"foo": "bar", "ducky": "fuzz"}},
 		ExpectedJSON: `{"alfredworkflow":{"variables":{"ducky":"fuzz","foo":"bar"}}}`},
 	// Multiple variables and arg (arg should be absent as argSet=false)
-	{Arg: &Arg{arg: "title", vars: map[string]string{"foo": "bar", "ducky": "fuzz"}},
+	{Arg: &itemArg{arg: "title", vars: map[string]string{"foo": "bar", "ducky": "fuzz"}},
 		ExpectedJSON: `{"alfredworkflow":{"variables":{"ducky":"fuzz","foo":"bar"}}}`},
 	// Multiple variables and arg (arg should be present as argSet=true)
-	{Arg: &Arg{arg: "title", argSet: true, vars: map[string]string{"foo": "bar", "ducky": "fuzz"}},
+	{Arg: &itemArg{arg: "title", argSet: true, vars: map[string]string{"foo": "bar", "ducky": "fuzz"}},
 		ExpectedJSON: `{"alfredworkflow":{"arg":"title","variables":{"ducky":"fuzz","foo":"bar"}}}`},
 }
 
@@ -244,10 +244,8 @@ func TestModifiersInheritVars(t *testing.T) {
 	fb := NewFeedback()
 	it := fb.NewItem("title")
 	it.SetVar("foo", "bar")
-	m, err := it.NewModifier("cmd")
-	if err != nil {
-		t.Fatalf("Error creating modifier: %v", err)
-	}
+	m := it.NewModifier("cmd")
+
 	if m.Var("foo") != "bar" {
 		t.Fatalf("Modifier var has wrong value. Expected=bar, Received=%v", m.Var("foo"))
 	}
@@ -267,7 +265,7 @@ func TestFeedbackVars(t *testing.T) {
 		t.Fatalf("Item var has wrong value. Expected=bar, Received=%v", it.Var("foo"))
 	}
 
-	m, _ := it.NewModifier("cmd")
+	m := it.NewModifier("cmd")
 	if m.Var("foo") != "bar" {
 		t.Fatalf("Modifier var has wrong value. Expected=bar, Received=%v", m.Var("foo"))
 	}
