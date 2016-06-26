@@ -26,7 +26,7 @@ const (
 
 var (
 	// MaxLogSize is the size at which the workflow log is rotated.
-	MaxLogSize = 204800 // 200 KiB
+	MaxLogSize = 1048576 // 1 MiB
 	// The workflow object operated on by top-level functions.
 	// It can be retrieved/replaced with GetDefaultWorkflow() and
 	// SetDefaultWorkflow() respectively.
@@ -453,6 +453,12 @@ func (wf *Workflow) Fatal(errMsg string) {
 	it.Icon = IconError
 	wf.SendFeedback()
 	log.Fatal(errMsg)
+}
+
+// Fatalf displays an error message in Alfred, then calls log.Fatal(),
+// terminating the workflow.
+func (wf *Workflow) Fatalf(format string, args ...interface{}) {
+	wf.Fatal(fmt.Sprintf(format, args...))
 }
 
 // Warn displays a warning message in Alfred immediately. Unlike

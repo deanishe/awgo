@@ -61,19 +61,19 @@ var marshalItemTests = []struct {
 }{
 	// Minimal item
 	{Item: &Item{Title: "title"},
-		ExpectedJSON: `{"title":"title"}`},
+		ExpectedJSON: `{"title":"title","valid":false}`},
 	// With UID
 	{Item: &Item{Title: "title", UID: "xxx-yyy"},
-		ExpectedJSON: `{"title":"title","uid":"xxx-yyy"}`},
+		ExpectedJSON: `{"title":"title","uid":"xxx-yyy","valid":false}`},
 	// With autocomplete
 	{Item: &Item{Title: "title", Autocomplete: "xxx-yyy"},
-		ExpectedJSON: `{"autocomplete":"xxx-yyy","title":"title"}`},
+		ExpectedJSON: `{"autocomplete":"xxx-yyy","title":"title","valid":false}`},
 	// With empty autocomplete
 	{Item: &Item{Title: "title", KeepEmptyAutocomplete: true},
-		ExpectedJSON: `{"autocomplete":"","title":"title"}`},
+		ExpectedJSON: `{"autocomplete":"","title":"title","valid":false}`},
 	// With subtitle
 	{Item: &Item{Title: "title", Subtitle: "subtitle"},
-		ExpectedJSON: `{"title":"title","subtitle":"subtitle"}`},
+		ExpectedJSON: `{"title":"title","subtitle":"subtitle","valid":false}`},
 	// Alternate subtitle
 	{Item: &Item{Title: "title", Subtitle: "subtitle",
 		Modifiers: map[string]*Modifier{
@@ -82,43 +82,43 @@ var marshalItemTests = []struct {
 				subtitle:    "command sub",
 				subtitleSet: true}}},
 		ExpectedJSON: `{"title":"title","subtitle":"subtitle",` +
-			`"mods":{"cmd":{"subtitle":"command sub"}}}`},
+			`"mods":{"cmd":{"subtitle":"command sub"}},"valid":false}`},
 	// Valid item
 	{Item: &Item{Title: "title", Valid: true},
 		ExpectedJSON: `{"title":"title","valid":true}`},
 	// With arg
 	{Item: &Item{Title: "title", Arg: "arg1"},
-		ExpectedJSON: `{"arg":"arg1","title":"title"}`},
+		ExpectedJSON: `{"arg":"arg1","title":"title","valid":false}`},
 	// Valid with arg
 	{Item: &Item{Title: "title", Arg: "arg1", Valid: true},
 		ExpectedJSON: `{"arg":"arg1","title":"title","valid":true}`},
 	// With icon
 	{Item: &Item{Title: "title",
 		Icon: &ItemIcon{Value: "icon.png", Type: ""}},
-		ExpectedJSON: `{"title":"title","icon":{"path":"icon.png"}}`},
+		ExpectedJSON: `{"title":"title","valid":false,"icon":{"path":"icon.png"}}`},
 	// With file icon
 	{Item: &Item{Title: "title",
 		Icon: &ItemIcon{Value: "icon.png", Type: "fileicon"}},
-		ExpectedJSON: `{"title":"title","icon":{"path":"icon.png","type":"fileicon"}}`},
+		ExpectedJSON: `{"title":"title","valid":false,"icon":{"path":"icon.png","type":"fileicon"}}`},
 	// With filetype icon
 	{Item: &Item{Title: "title",
 		Icon: &ItemIcon{Value: "public.folder", Type: "filetype"}},
-		ExpectedJSON: `{"title":"title","icon":{"path":"public.folder","type":"filetype"}}`},
+		ExpectedJSON: `{"title":"title","valid":false,"icon":{"path":"public.folder","type":"filetype"}}`},
 	// With type = file
 	{Item: &Item{Title: "title", IsFile: true},
-		ExpectedJSON: `{"type":"file","title":"title"}`},
+		ExpectedJSON: `{"type":"file","title":"title","valid":false}`},
 	// With copy text
 	{Item: &Item{Title: "title", Copytext: "copy"},
-		ExpectedJSON: `{"text":{"copy":"copy"},"title":"title"}`},
+		ExpectedJSON: `{"text":{"copy":"copy"},"title":"title","valid":false}`},
 	// With large text
 	{Item: &Item{Title: "title", Largetext: "large"},
-		ExpectedJSON: `{"text":{"largetype":"large"},"title":"title"}`},
+		ExpectedJSON: `{"text":{"largetype":"large"},"title":"title","valid":false}`},
 	// With copy and large text
 	{Item: &Item{Title: "title", Copytext: "copy", Largetext: "large"},
-		ExpectedJSON: `{"text":{"copy":"copy","largetype":"large"},"title":"title"}`},
+		ExpectedJSON: `{"text":{"copy":"copy","largetype":"large"},"title":"title","valid":false}`},
 	// With arg and variable
 	{Item: &Item{Title: "title", Arg: "value", vars: map[string]string{"foo": "bar"}},
-		ExpectedJSON: `{"arg":"{\"alfredworkflow\":{\"arg\":\"value\",\"variables\":{\"foo\":\"bar\"}}}","title":"title"}`},
+		ExpectedJSON: `{"arg":"{\"alfredworkflow\":{\"arg\":\"value\",\"variables\":{\"foo\":\"bar\"}}}","title":"title","valid":false}`},
 }
 
 var marshalModifierTests = []struct {

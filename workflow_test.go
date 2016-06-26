@@ -86,8 +86,8 @@ func ExampleNewItem() {
 	it := NewItem("First Result")
 	it.Subtitle = "Some details here"
 
-	// Don't know why you'd do this, but...
+	// Just to see what it looks like...
 	data, _ := json.Marshal(it)
 	fmt.Println(string(data))
-	// Output: {"title":"First Result","subtitle":"Some details here"}
+	// Output: {"title":"First Result","subtitle":"Some details here","valid":false}
 }

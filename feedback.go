@@ -308,7 +308,7 @@ type Item struct {
 
 	// Whether the result is "actionable", i.e. ENTER will pass Arg to
 	// subsequent action.
-	Valid bool `json:"valid,omitempty"`
+	Valid bool `json:"valid"`
 
 	// vars are variables to pass to subsequent workflow elements.
 	vars map[string]string

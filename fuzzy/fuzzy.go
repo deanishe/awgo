@@ -93,16 +93,25 @@ func Sort(data Interface, query string) []float64 {
 
 // fuzzyQuery fuzzy-sorts Data based on Query.
 type fuzzyQuery struct {
-	Query  string
-	Data   Interface
-	scores []float64
+	Query   string
+	Data    Interface
+	matcher *Matcher
+	scores  []float64
 }
 
 func newFuzzyQuery(query string, slice Interface) *fuzzyQuery {
-	fq := &fuzzyQuery{query, slice, nil}
+	fq := &fuzzyQuery{query, slice, NewMatcher(), nil}
 	// TODO: Parallel fuzzy scoring
 	fq.scores = make([]float64, fq.Data.Len())
 	var score float64
+	for i := 0; i < fq.Data.Len(); i++ {
+		loc, score := fq.matcher.Search(fq.Data.Keywords(i), fq.Query, 0)
+		if loc == -1 {
+			score = 0.0
+		}
+		fq.scores[i] = score
+	}
+
 	for i := 0; i < fq.Data.Len(); i++ {
 		score = fq.CalculateScore(fq.Data.Keywords(i))
 		fq.scores[i] = score
