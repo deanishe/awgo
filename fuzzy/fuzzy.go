@@ -104,13 +104,13 @@ func newFuzzyQuery(query string, slice Interface) *fuzzyQuery {
 	// TODO: Parallel fuzzy scoring
 	fq.scores = make([]float64, fq.Data.Len())
 	var score float64
-	for i := 0; i < fq.Data.Len(); i++ {
-		loc, score := fq.matcher.Search(fq.Data.Keywords(i), fq.Query, 0)
-		if loc == -1 {
-			score = 0.0
-		}
-		fq.scores[i] = score
-	}
+	// for i := 0; i < fq.Data.Len(); i++ {
+	// 	loc, score := fq.matcher.Search(fq.Data.Keywords(i), fq.Query, 0)
+	// 	if loc == -1 {
+	// 		score = 0.0
+	// 	}
+	// 	fq.scores[i] = score
+	// }
 
 	for i := 0; i < fq.Data.Len(); i++ {
 		score = fq.CalculateScore(fq.Data.Keywords(i))

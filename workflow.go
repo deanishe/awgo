@@ -21,7 +21,7 @@ import (
 
 const (
 	// AwgoVersion is the semantic version number of this library.
-	AwgoVersion = "0.2.2"
+	AwgoVersion = "0.2.3"
 )
 
 var (
@@ -118,6 +118,7 @@ type Workflow struct {
 	//     workflow_name                Name of workflow, e.g. "Fast Translator"
 	//     workflow_uid                 Random UID assigned to workflow by Alfred
 	//     workflow_bundleid            Workflow's bundle ID from info.plist
+	//     workflow_version             Workflow's version number from info.plist
 	//
 	// TODO: Replace Env with something better
 	Env map[string]string
@@ -204,12 +205,13 @@ func (wf *Workflow) loadEnv() {
 		"workflow_name",
 		"workflow_uid",
 		"workflow_bundleid",
+		"workflow_version",
 	}
 
 	var val, envkey string
 
 	for _, key := range keys {
-		envkey = fmt.Sprintf("alfred_%s", key)
+		envkey = "alfred_" + key
 		val = os.Getenv(envkey)
 		wf.Env[key] = val
 
@@ -222,8 +224,10 @@ func (wf *Workflow) loadEnv() {
 			wf.bundleID = val
 		} else if key == "workflow_name" {
 			wf.name = val
-		} else if key == "alfred_debug" && val == "1" {
+		} else if key == "debug" && val == "1" {
 			wf.debug = true
+		} else if key == "workflow_version" && wf.version == "" {
+			wf.version = val
 		}
 	}
 }
@@ -418,10 +422,12 @@ func (wf *Workflow) Run(fn func()) {
 	log.Println(Pad(vstr, "-", 50))
 
 	// Catch any `panic` and display an error in Alfred.
-	// SendError(Msg) will terminate the process (via log.Fatal).
+	// Fatal(msg) will terminate the process (via log.Fatal).
 	defer func() {
 		if r := recover(); r != nil {
+			log.Println(Pad(" FATAL ERROR ", "-", 50))
 			log.Printf("%s : %s", r, debug.Stack())
+			log.Println(Pad("", "-", 50))
 			// log.Printf("Recovered : %x", r)
 			err, ok := r.(error)
 			if ok {

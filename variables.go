@@ -33,6 +33,7 @@ func (v *VarSet) Arg(value string) *VarSet {
 }
 
 // String returns a string suitable for sending to Alfred.
+// Basically a JSON string, not []byte.
 func (v *VarSet) String() (string, error) {
 	if len(v.vars) == 0 {
 		return *v.arg, nil
@@ -50,7 +51,7 @@ func (v *VarSet) MarshalJSON() ([]byte, error) {
 		if v.arg == nil {
 			return []byte{}, nil
 		}
-		// return []byte(*v.arg), nil
+		// No variables, so just return `arg`
 		return json.Marshal(&v.arg)
 	}
 
