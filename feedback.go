@@ -76,6 +76,7 @@ type Item struct {
 	copytext     *string
 	largetype    *string
 	qlurl        *url.URL
+	sortkey      *string
 	vars         map[string]string
 	mods         map[string]*Modifier
 	icon         *Icon
@@ -154,6 +155,12 @@ func (it *Item) Var(k, v string) *Item {
 		it.vars = make(map[string]string, 1)
 	}
 	it.vars[k] = v
+	return it
+}
+
+// SortKey sets the fuzzy sort terms for Item.
+func (it *Item) SortKey(s string) *Item {
+	it.sortkey = &s
 	return it
 }
 
@@ -484,8 +491,54 @@ func (fb *Feedback) Send() error {
 
 	os.Stdout.Write(output)
 	fb.sent = true
+	log.Printf("Sent %d results to Alfred", len(fb.Items))
 	return nil
 }
+
+// Sort sorts Items against query. Uses a Sorter with the default
+// settings.
+func (fb *Feedback) Sort(query string, opts *SortOptions) []*Result {
+	s := NewSorter(fb, opts)
+	return s.Sort(query)
+}
+
+// Filter fuzzy-sorts feedback Items against query and deletes Items that
+// don't match.
+func (fb *Feedback) Filter(query string, opts *SortOptions) []*Result {
+	var items []*Item
+	var res []*Result
+	r := fb.Sort(query, opts)
+	for i, it := range fb.Items {
+		if r[i].Match {
+			items = append(items, it)
+			res = append(res, r[i])
+		}
+	}
+	fb.Items = items
+	return res
+}
+
+// SortKey implements Sortable interface.
+//
+// Returns the fuzzy sort key for Item i. If Item has no sort key,
+// returns item title instead.
+func (fb *Feedback) SortKey(i int) string {
+	it := fb.Items[i]
+	// Sort on title if sortkey isn't set
+	if it.sortkey != nil {
+		return *it.sortkey
+	}
+	return it.title
+}
+
+// Len implements sort.Interface.
+func (fb *Feedback) Len() int { return len(fb.Items) }
+
+// Less implements sort.Interface.
+func (fb *Feedback) Less(i, j int) bool { return fb.SortKey(i) < fb.SortKey(j) }
+
+// Swap implements sort.Interface.
+func (fb *Feedback) Swap(i, j int) { fb.Items[i], fb.Items[j] = fb.Items[j], fb.Items[i] }
 
 // ArgVars is an Alfred `arg` plus workflow variables to set
 // output and workflow variables from a non-Script Filter action.
@@ -518,11 +571,18 @@ func (a *ArgVars) Var(k, v string) *ArgVars {
 	return a
 }
 
-// String returns a JSON string representation of Arg.
+// String returns a string representation.
+//
+// If any variables are set, JSON is returned. Otherwise,
+// a plain string is returned.
 func (a *ArgVars) String() (string, error) {
-	// if len(a.vars) == 0 {
-	// 	return *a.arg, nil
-	// }
+	if len(a.vars) == 0 {
+		if a.arg != nil {
+			return *a.arg, nil
+		}
+		return "", nil
+	}
+	// Vars set, so return as JSON
 	data, err := a.MarshalJSON()
 	if err != nil {
 		return "", err

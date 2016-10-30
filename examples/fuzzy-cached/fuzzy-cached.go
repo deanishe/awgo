@@ -42,12 +42,9 @@ import (
 
 	"github.com/docopt/docopt-go"
 	"gogs.deanishe.net/deanishe/awgo"
-	"gogs.deanishe.net/deanishe/awgo/fuzzy"
 )
 
 var (
-	// minScore is the minimum score to consider a match
-	minScore = 30.0
 	// maxResults is the maximum number of results to sent to Alfred
 	maxResults = 50
 	// tsvURL is the source of the workflow's data
@@ -66,18 +63,9 @@ Options:
 )
 
 func init() {
-	// Turning these off shaves ~0.1s off execution time, and they're
-	// not super-suited to this dataset:
-	//
-	// Dataset is full of names, and query will almost certainly be
-	// lowercase. Just do lowercase comparison.
-	fuzzy.WeightingExact = 0.0
-	// Not many people/books have CamelCase names. Initials will pick
-	// do just fine.
-	fuzzy.WeightingCaps = 0.0
-	// Not on a dataset this size. Adds no value.
-	fuzzy.WeightingOrderedSubset = 0.0
-	wf = workflow.NewWorkflow(nil)
+	wf = workflow.NewWorkflow(&workflow.Options{
+		MaxResults: maxResults,
+	})
 }
 
 // Book is a single work on Gutenberg.org.
@@ -237,7 +225,7 @@ func loadBooks() Books {
 
 func run() {
 	var query string
-	var total, count int
+	var total int
 
 	// Version is parsed from info.plist
 	args, err := docopt.Parse(usage, nil, true, wf.Version(), false)
@@ -253,27 +241,19 @@ func run() {
 	books := loadBooks()
 	total = len(books)
 
-	// Filter books based on query
-	if query != "" {
-		for i, score := range fuzzy.Sort(books, query) {
-			if score < minScore || i == maxResults-1 {
-				books = books[:i]
-				break
-			}
-		}
-	}
-
-	count = len(books)
-	log.Printf("%d/%d books match \"%v\"", count, total, query)
-
 	// Feedback
 	for _, book := range books {
 		wf.NewItem(book.Title).
 			Subtitle(book.Author).
 			Arg(book.URL).
+			SortKey(book.Title + " " + book.Author).
 			Valid(true)
-		// log.Printf("item=%v", it)
 	}
+
+	// Filter books based on query
+	res := wf.Filter(query)
+	log.Printf("%d/%d books match `%v`", len(res), total, query)
+
 	wf.SendFeedback()
 }
 

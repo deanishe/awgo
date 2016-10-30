@@ -22,7 +22,6 @@ import (
 	"strings"
 
 	"gogs.deanishe.net/deanishe/awgo"
-	"gogs.deanishe.net/deanishe/awgo/fuzzy"
 )
 
 var (
@@ -40,15 +39,13 @@ func (f Folders) Len() int           { return len(f) }
 func (f Folders) Less(i, j int) bool { return f[i] < f[j] }
 func (f Folders) Swap(i, j int)      { f[i], f[j] = f[j], f[i] }
 
-// Keywords implements fuzzy.Interface. Comparisons are based on the
+// SortKey implements Sortable. Comparisons are based on the
 // basename of the filepath.
-func (f Folders) Keywords(i int) string { return filepath.Base(f[i]) }
+func (f Folders) SortKey(i int) string { return filepath.Base(f[i]) }
 
 func init() {
 	// Where we'll look for directories
 	startDir = os.Getenv("HOME")
-	// Ignore fuzzy matches below this
-	minimumScore = 40.0
 	// Initialise workflow
 	wf = workflow.NewWorkflow(nil)
 }
@@ -79,19 +76,6 @@ func run() {
 		query = os.Args[1]
 	}
 
-	// Filter results if query isn't empty.
-	if query != "" {
-		// Filter results
-		for i, score := range fuzzy.Sort(paths, query) {
-			if score < minimumScore {
-				log.Printf("%d/%d matches for %s", i, len(paths), query)
-				paths = paths[:i]
-				break
-			}
-			log.Printf("%0.2f\t%v", score, paths[i])
-		}
-	}
-
 	// Generate feedback for Alfred
 	for _, path := range paths {
 
@@ -100,6 +84,16 @@ func run() {
 		// We could set this modifier via Alfred's GUI.
 		it.NewModifier("cmd").
 			Subtitle("Browse in Alfred")
+	}
+
+	// Sort results if query isn't empty.
+	if query != "" {
+		// Sort results
+		res := wf.Filter(query)
+		log.Printf("%d results match `%s`", len(res), query)
+		for i, r := range res {
+			log.Printf("%02d. score=%0.1f sortkey=%s", i+1, r.Score, wf.Feedback.SortKey(i))
+		}
 	}
 
 	// Send JSON to Alfred. After calling this function, you can't send

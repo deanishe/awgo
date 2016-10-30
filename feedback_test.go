@@ -8,7 +8,6 @@ package workflow
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -98,6 +97,9 @@ var marshalItemTests = []struct {
 	// Empty arg
 	{Item: &Item{title: "title", arg: p("")},
 		ExpectedJSON: `{"title":"title","arg":"","valid":false}`},
+	// Arg contains escapes
+	{Item: &Item{title: "title", arg: p("\x00arg\x00")},
+		ExpectedJSON: `{"title":"title","arg":"\u0000arg\u0000","valid":false}`},
 	// Valid with arg
 	{Item: &Item{title: "title", arg: p("arg1"), valid: true},
 		ExpectedJSON: `{"title":"title","arg":"arg1","valid":true}`},
@@ -168,6 +170,12 @@ var marshalArgTests = []struct {
 	// With arg
 	{Arg: &ArgVars{arg: p("title")},
 		ExpectedJSON: `"title"`},
+	// With non-ASCII arg
+	{Arg: &ArgVars{arg: p("fübär")},
+		ExpectedJSON: `"fübär"`},
+	// With escapes
+	{Arg: &ArgVars{arg: p("\x00")},
+		ExpectedJSON: `"\u0000"`},
 	// With variable
 	{Arg: &ArgVars{vars: map[string]string{"foo": "bar"}},
 		ExpectedJSON: `{"alfredworkflow":{"variables":{"foo":"bar"}}}`},
@@ -179,9 +187,27 @@ var marshalArgTests = []struct {
 		ExpectedJSON: `{"alfredworkflow":{"arg":"title","variables":{"ducky":"fuzz","foo":"bar"}}}`},
 }
 
+var stringifyArgTests = []struct {
+	Arg            *ArgVars
+	ExpectedString string
+}{
+	// Empty
+	{Arg: &ArgVars{},
+		ExpectedString: ""},
+	// With arg
+	{Arg: &ArgVars{arg: p("title")},
+		ExpectedString: "title"},
+	// With non-ASCII
+	{Arg: &ArgVars{arg: p("fübär")},
+		ExpectedString: "fübär"},
+	// With escapes
+	{Arg: &ArgVars{arg: p("\x00")},
+		ExpectedString: "\x00"},
+}
+
 func TestMarshalItem(t *testing.T) {
 	for i, test := range marshalItemTests {
-		log.Printf("#%d: %v", i, test.Item)
+		// log.Printf("#%d: %v", i, test.Item)
 		data, err := json.Marshal(test.Item)
 		if err != nil {
 			t.Errorf("#%d: marshal(%v): %v", i, test.Item, err)
@@ -217,6 +243,19 @@ func TestMarshalArg(t *testing.T) {
 		}
 
 		if got, want := string(data), test.ExpectedJSON; got != want {
+			t.Errorf("#%d: got: %v wanted: %v", i, got, want)
+		}
+	}
+}
+
+func TestStringifyArg(t *testing.T) {
+	for i, test := range stringifyArgTests {
+		s, err := test.Arg.String()
+		if err != nil {
+			t.Errorf("#%d: string(%v): %v", i, test.Arg, err)
+			continue
+		}
+		if got, want := s, test.ExpectedString; got != want {
 			t.Errorf("#%d: got: %v wanted: %v", i, got, want)
 		}
 	}

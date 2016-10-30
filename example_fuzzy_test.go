@@ -1,0 +1,92 @@
+//
+// Copyright (c) 2016 Dean Jackson <deanishe@deanishe.net>
+//
+// MIT Licence. See http://opensource.org/licenses/MIT
+//
+// Created on 2016-10-30
+//
+
+package workflow_test
+
+import (
+	"fmt"
+
+	"gogs.deanishe.net/deanishe/awgo"
+)
+
+// Contact is a very simple data model.
+type Contact struct {
+	Firstname string
+	Lastname  string
+}
+
+// Name returns the full name of the Contact.
+func (c *Contact) Name() string { return fmt.Sprintf("%s %s", c.Firstname, c.Lastname) }
+
+// Contacts is a collection of Contact items. This is where fuzzy.Interface
+// must be implemented to enable fuzzy sorting.
+type Contacts []*Contact
+
+// Default sort.Interface methods
+func (co Contacts) Len() int           { return len(co) }
+func (co Contacts) Swap(i, j int)      { co[i], co[j] = co[j], co[i] }
+func (co Contacts) Less(i, j int) bool { return co[i].Name() < co[j].Name() }
+
+// SortKey implements Sortable.
+// Comparisons are based on the the full name of the contact.
+func (co Contacts) SortKey(i int) string { return co[i].Name() }
+
+// Fuzzy sort contacts by name.
+func ExampleSort() {
+	// My imaginary friends
+	var c = Contacts{
+		&Contact{"Meggan", "Siering"},
+		&Contact{"Seraphin", "Stracke"},
+		&Contact{"Sheryll", "Steckel"},
+		&Contact{"Erlene", "Vollbrecht"},
+		&Contact{"Kayla", "Gumprich"},
+		&Contact{"Jimmy", "Johnson"},
+		&Contact{"Jimmy", "Jimson"},
+		&Contact{"Mischa", "Witting"},
+	}
+	// Unsorted
+	fmt.Println(c[0].Name())
+
+	workflow.Sort(c, "mw")
+	fmt.Println(c[0].Name())
+
+	workflow.Sort(c, "meg")
+	fmt.Println(c[0].Name())
+
+	workflow.Sort(c, "voll")
+	fmt.Println(c[0].Name())
+
+	workflow.Sort(c, "ser")
+	fmt.Println(c[0].Name())
+
+	workflow.Sort(c, "ss")
+	fmt.Println(c[0].Name())
+
+	workflow.Sort(c, "jim")
+	fmt.Println(c[0].Name())
+
+	workflow.Sort(c, "jj")
+	fmt.Println(c[0].Name())
+
+	workflow.Sort(c, "jjo")
+	fmt.Println(c[0].Name())
+
+	workflow.Sort(c, "kg")
+	fmt.Println(c[0].Name())
+	// Output:
+	// Meggan Siering
+	// Mischa Witting
+	// Meggan Siering
+	// Erlene Vollbrecht
+	// Seraphin Stracke
+	// Sheryll Steckel
+	// Jimmy Jimson
+	// Jimmy Jimson
+	// Jimmy Johnson
+	// Kayla Gumprich
+}

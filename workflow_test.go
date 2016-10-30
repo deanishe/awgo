@@ -49,7 +49,7 @@ func TestParseVars(t *testing.T) {
 }
 
 func ExampleInfo_Var() {
-	i := GetInfo()
+	i := Info()
 	fmt.Println(i.Var("exported_var"))
 	// Output: exported_value
 }
