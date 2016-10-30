@@ -12,7 +12,7 @@ import (
 )
 
 func TestIcons(t *testing.T) {
-	icons := []*ItemIcon{
+	icons := []*Icon{
 		IconAccount,
 		IconBurn,
 		IconClock,

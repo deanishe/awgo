@@ -372,14 +372,15 @@ func (wf *Workflow) Vars() map[string]string {
 
 // Var returns the workflow variable set on Workflow.Feedback for key k.
 // See Feedback.Var() for more information.
-func (wf *Workflow) Var(k string) string {
-	return wf.Feedback.Var(k)
-}
+// func (wf *Workflow) Var(k string) string {
+// 	return wf.Feedback.Var(k)
+// }
 
-// SetVar sets the value of workflow variable k on Workflow.Feedback to v.
-// See Feedback.SetVar() for more information.
-func (wf *Workflow) SetVar(k, v string) {
-	wf.Feedback.SetVar(k, v)
+// Var sets the value of workflow variable k on Workflow.Feedback to v.
+// See Feedback.Var() for more information.
+func (wf *Workflow) Var(k, v string) *Workflow {
+	wf.Feedback.Var(k, v)
+	return wf
 }
 
 // NewItem adds and returns a new feedback Item.
@@ -397,10 +398,9 @@ func (wf *Workflow) NewFileItem(path string) *Item {
 // NewWarningItem adds and returns a new Feedback Item with the system
 // warning icon (exclamation mark on yellow triangle).
 func (wf *Workflow) NewWarningItem(title, subtitle string) *Item {
-	it := wf.Feedback.NewItem(title)
-	it.Subtitle = subtitle
-	it.Icon = IconWarning
-	return it
+	return wf.Feedback.NewItem(title).
+		Subtitle(subtitle).
+		Icon(IconWarning)
 }
 
 // Run runs your workflow function, catching any errors.
@@ -455,8 +455,7 @@ func (wf *Workflow) FatalError(err error) {
 // terminating the workflow.
 func (wf *Workflow) Fatal(errMsg string) {
 	wf.Feedback.Clear()
-	it := wf.NewItem(errMsg)
-	it.Icon = IconError
+	wf.NewItem(errMsg).Icon(IconError)
 	wf.SendFeedback()
 	log.Fatal(errMsg)
 }
@@ -470,19 +469,20 @@ func (wf *Workflow) Fatalf(format string, args ...interface{}) {
 // Warn displays a warning message in Alfred immediately. Unlike
 // FatalError()/Fatal(), this does not terminate the workflow,
 // but you can't send any more results to Alfred.
-func (wf *Workflow) Warn(title, subtitle string) {
+func (wf *Workflow) Warn(title, subtitle string) *Workflow {
 	wf.Feedback.Clear()
-	it := wf.NewItem(title)
-	it.Subtitle = subtitle
-	it.Icon = IconWarning
-	wf.SendFeedback()
+	wf.NewItem(title).
+		Subtitle(subtitle).
+		Icon(IconWarning)
+	return wf.SendFeedback()
 }
 
 // SendFeedback generates and sends the XML response to Alfred.
-func (wf *Workflow) SendFeedback() {
+func (wf *Workflow) SendFeedback() *Workflow {
 	if err := wf.Feedback.Send(); err != nil {
 		log.Fatalf("Error generating JSON : %v", err)
 	}
+	return wf
 }
 
 func init() {
@@ -560,14 +560,15 @@ func Vars() map[string]string {
 
 // Var returns the workflow variable set on the default Workflow for key k.
 // See Feedback.Var() for more information.
-func Var(k string) string {
-	return wf.Feedback.Var(k)
-}
+// func Var(k string) string {
+// 	return wf.Feedback.Var(k)
+// }
 
-// SetVar sets the value of workflow variable k on the default Workflow to v.
+// Var sets the value of workflow variable k on the default Workflow to v.
 // See Feedback.Vars() for more information.
-func SetVar(k, v string) {
-	wf.Feedback.SetVar(k, v)
+func Var(k, v string) *Workflow {
+	wf.Feedback.Var(k, v)
+	return wf
 }
 
 // NewItem adds and returns a new feedback Item via the default Workflow
@@ -603,8 +604,8 @@ func Fatal(msg string) {
 // does not terminate the workflow process, but it sends the feedback
 // to Alfred, so you can't send any more data to Alfred after calling
 // this.
-func Warn(title, subtitle string) {
-	wf.Warn(title, subtitle)
+func Warn(title, subtitle string) *Workflow {
+	return wf.Warn(title, subtitle)
 }
 
 // SendFeedback generates and sends the JSON response to Alfred.

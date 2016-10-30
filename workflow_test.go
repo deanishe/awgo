@@ -83,8 +83,8 @@ func ExampleNewItem() {
 	// track the Item and send it to Alfred when you call SendFeedback()
 	//
 	// Title is the only required value.
-	it := NewItem("First Result")
-	it.Subtitle = "Some details here"
+	it := NewItem("First Result").
+		Subtitle("Some details here")
 
 	// Just to see what it looks like...
 	data, _ := json.Marshal(it)

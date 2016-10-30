@@ -17,55 +17,55 @@ import "fmt"
 // http://www.deanishe.net/alfred-workflow/user-manual/icons.html#list-of-icons
 var (
 	// Accounts.icns
-	IconAccount *ItemIcon
+	IconAccount *Icon
 	// BurningIcon.icns
-	IconBurn *ItemIcon
+	IconBurn *Icon
 	// Clock.icns
-	IconClock *ItemIcon
+	IconClock *Icon
 	// ProfileBackgroundColor.icns
-	IconColor *ItemIcon
+	IconColor *Icon
 	// ProfileBackgroundColor.icns
-	IconColour *ItemIcon
+	IconColour *Icon
 	// EjectMediaIcon.icns
-	IconEject *ItemIcon
+	IconEject *Icon
 	// AlertStopIcon.icns
-	IconError *ItemIcon
+	IconError *Icon
 	// ToolbarFavoritesIcon.icns
-	IconFavorite *ItemIcon
+	IconFavorite *Icon
 	// ToolbarFavoritesIcon.icns
-	IconFavourite *ItemIcon
+	IconFavourite *Icon
 	// GroupIcon.icns
-	IconGroup *ItemIcon
+	IconGroup *Icon
 	// HelpIcon.icns
-	IconHelp *ItemIcon
+	IconHelp *Icon
 	// HomeFolderIcon.icns
-	IconHome *ItemIcon
+	IconHome *Icon
 	// ToolbarInfo.icns
-	IconInfo *ItemIcon
+	IconInfo *Icon
 	// GenericNetworkIcon.icns
-	IconNetwork *ItemIcon
+	IconNetwork *Icon
 	// AlertNoteIcon.icns
-	IconNote *ItemIcon
+	IconNote *Icon
 	// ToolbarAdvanced.icns
-	IconSettings *ItemIcon
+	IconSettings *Icon
 	// ErasingIcon.icns
-	IconSwirl *ItemIcon
+	IconSwirl *Icon
 	// General.icns
-	IconSwitch *ItemIcon
+	IconSwitch *Icon
 	// Sync.icns
-	IconSync *ItemIcon
+	IconSync *Icon
 	// TrashIcon.icns
-	IconTrash *ItemIcon
+	IconTrash *Icon
 	// UserIcon.icns
-	IconUser *ItemIcon
+	IconUser *Icon
 	// AlertCautionIcon.icns
-	IconWarning *ItemIcon
+	IconWarning *Icon
 	// BookmarkIcon.icns
-	IconWeb *ItemIcon
+	IconWeb *Icon
 )
 
-func systemIcon(filename string) *ItemIcon {
-	icon := &ItemIcon{}
+func systemIcon(filename string) *Icon {
+	icon := &Icon{}
 	var path string
 	path = fmt.Sprintf(
 		"/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/%s.icns", filename)

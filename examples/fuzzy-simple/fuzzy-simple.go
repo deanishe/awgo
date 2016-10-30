@@ -98,8 +98,8 @@ func run() {
 		it := wf.NewFileItem(path)
 
 		// We could set this modifier via Alfred's GUI.
-		m := it.NewModifier("cmd")
-		m.SetSubtitle("Browse in Alfred")
+		it.NewModifier("cmd").
+			Subtitle("Browse in Alfred")
 	}
 
 	// Send JSON to Alfred. After calling this function, you can't send

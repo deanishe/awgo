@@ -3,6 +3,8 @@
 //
 // MIT Licence. See http://opensource.org/licenses/MIT
 //
+// Created on 2016-10-23
+//
 
 package workflow
 
@@ -10,9 +12,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 // Valid modifier keys for Item.NewModifier(). You can't combine these
@@ -61,266 +63,98 @@ func init() {
 	}
 }
 
-// itemArg is a result (Item) argument. It may contain a single string, or it
-// may also contain workflow variables.
-//
-// This is a helper struct to simplify encoding Items and Modifiers to JSON.
-type itemArg struct {
-	arg    string
-	argSet bool
-	vars   map[string]string
-}
-
-// newArg returns an initialised Arg.
-func newArg() *itemArg {
-	return &itemArg{vars: map[string]string{}}
-}
-
-// Arg returns Arg's arg.
-func (a *itemArg) Arg() string {
-	return a.arg
-}
-
-// SetArg sets Arg's arg.
-func (a *itemArg) SetArg(s string) {
-	a.arg = s
-	a.argSet = true
-}
-
-// Vars returns Arg's variables.
-func (a *itemArg) Vars() map[string]string {
-	return a.vars
-}
-
-// Var returns value set for key k.
-func (a *itemArg) Var(k string) string {
-	return a.vars[k]
-}
-
-// SetVar sets the value of a variable.
-func (a *itemArg) SetVar(k, v string) {
-	a.vars[k] = v
-}
-
-// String returns a JSON string representation of Arg.
-func (a *itemArg) String() (string, error) {
-	if len(a.vars) == 0 {
-		return a.arg, nil
-	}
-	data, err := a.MarshalJSON()
-	if err != nil {
-		return "", err
-	}
-	return string(data), nil
-}
-
-// MarshalJSON serialises Arg to JSON.
-func (a *itemArg) MarshalJSON() ([]byte, error) {
-
-	var arg *string
-
-	// Return arg regardless of whether it's empty or not:
-	// we have return *something*
-	if len(a.vars) == 0 {
-		return json.Marshal(a.Arg())
-	}
-
-	if a.argSet {
-		arg = &a.arg
-	}
-
-	return json.Marshal(&struct {
-		Root interface{} `json:"alfredworkflow"`
-	}{
-		Root: &struct {
-			Arg  *string           `json:"arg,omitempty"`
-			Vars map[string]string `json:"variables"`
-		}{
-			Arg:  arg,
-			Vars: a.vars,
-		},
-	})
-}
-
-// Modifier encapsulates alterations to Item when a modifier key is held when
-// the user actions the item.
-//
-// Create new Modifiers via Item.NewModifier(). This binds the Modifier to the
-// Item, initializes Modifier's map and inherits Item's workflow variables.
-//
-// A Modifier created via Item.NewModifier() also inherits its parent Item's
-// workflow variables.
-type Modifier struct {
-	// The modifier key. May be any of ValidModifiers.
-	Key         string
-	arg         string
-	argSet      bool
-	subtitle    string
-	subtitleSet bool
-	valid       bool
-	validSet    bool
-	vars        map[string]string
-}
-
-// newModifier creates a Modifier, validating key.
-func newModifier(key string) (*Modifier, error) {
-	if ok := validModifiers[key]; !ok {
-		return nil, fmt.Errorf("Invalid modifier key: %s", key)
-	}
-	return &Modifier{Key: key, vars: map[string]string{}}, nil
-}
-
-// Arg returns the arg set for the Modifier.
-func (m *Modifier) Arg() string {
-	return m.arg
-}
-
-// SetArg sets the arg for the Modifier.
-func (m *Modifier) SetArg(s string) {
-	m.arg = s
-	m.argSet = true
-}
-
-// Subtitle returns the subtitle set for the Modifier.
-func (m *Modifier) Subtitle() string {
-	return m.subtitle
-}
-
-// SetSubtitle sets the subtitle for the Modifier.
-func (m *Modifier) SetSubtitle(s string) {
-	m.subtitle = s
-	m.subtitleSet = true
-}
-
-// Valid returns the valid status for the Modifier.
-func (m *Modifier) Valid() bool {
-	return m.valid
-}
-
-// SetValid sets the valid for the Modifier.
-func (m *Modifier) SetValid(v bool) {
-	m.valid = v
-	m.validSet = true
-}
-
-// SetVar sets a variable for the Modifier.
-func (m *Modifier) SetVar(k, v string) {
-	m.vars[k] = v
-}
-
-// Var returns Modifier variable for key k.
-func (m *Modifier) Var(k string) string {
-	return m.vars[k]
-}
-
-// Vars returns all Modifier variables.
-func (m *Modifier) Vars() map[string]string {
-	return m.vars
-}
-
-// MarshalJSON implements the JSON serialization interface.
-func (m *Modifier) MarshalJSON() ([]byte, error) {
-
-	var a, s *string
-	var v *bool
-
-	if m.argSet {
-		a = &m.arg
-	}
-	if m.subtitleSet {
-		s = &m.subtitle
-	}
-	if m.validSet {
-		v = &m.valid
-	}
-
-	// Variables
-	if len(m.vars) > 0 {
-		arg := newArg()
-		if m.argSet {
-			arg.SetArg(m.arg)
-		}
-		for k, v := range m.vars {
-			arg.SetVar(k, v)
-		}
-		if s, err := arg.String(); err == nil {
-			a = &s
-		} else {
-			log.Printf("Error encoding variables: %v", err)
-		}
-	}
-
-	return json.Marshal(&struct {
-		Arg      *string `json:"arg,omitempty"`
-		Subtitle *string `json:"subtitle,omitempty"`
-		Valid    *bool   `json:"valid,omitempty"`
-	}{
-		Arg:      a,
-		Subtitle: s,
-		Valid:    v,
-	})
-}
-
-// itemText encapsulates the copytext and largetext values for a result Item.
-type itemText struct {
-	// Copied to the clipboard on CMD+C
-	Copy string `json:"copy,omitempty"`
-	// Shown in Alfred's Large Type window on CMD+L
-	Large string `json:"largetype,omitempty"`
-}
-
 // Item is a single Alfred result. Add them to a Feedback struct to
 // generate valid Alfred JSON.
 type Item struct {
-	// Result title (only required field)
-	Title string `json:"title"`
+	title        string
+	subtitle     *string
+	uid          *string
+	autocomplete *string
+	arg          *string
+	valid        bool
+	file         bool
+	copytext     *string
+	largetype    *string
+	qlurl        *url.URL
+	vars         map[string]string
+	mods         map[string]*Modifier
+	icon         *Icon
+}
 
-	// Result subtitle
-	Subtitle string `json:"subtitle,omitempty"`
+// Title sets the title of the item in Alfred's results
+func (it *Item) Title(s string) *Item {
+	it.title = s
+	return it
+}
 
-	// The value that is passed as {query} to the next action in the workflow
-	Arg string `json:"-"`
+// Subtitle sets the subtitle of the item in Alfred's results
+func (it *Item) Subtitle(s string) *Item {
+	it.subtitle = &s
+	return it
+}
 
-	// Used by Alfred to remember your choices. Use blank string
-	// to force results to appear in the order you generate them.
-	UID string `json:"uid,omitempty"`
+// Arg sets Item's arg, i.e. the value that is passed as {query} to the next action in the workflow
+func (it *Item) Arg(s string) *Item {
+	it.arg = &s
+	return it
+}
 
-	// What the query will expand to when the user TABs it (or hits
-	// RETURN on an invalid result)
-	Autocomplete string `json:"-"`
+// UID sets Item's unique ID, which is used by Alfred to remember your choices.
+// Use blank string to force results to appear in the order you generate them.
+func (it *Item) UID(s string) *Item {
+	it.uid = &s
+	return it
+}
 
-	// If true, send autocomplete="" to Alfred. If autocomplete is not
-	// specified, TAB will do nothing. If autocomplete is an empty
-	// string, TAB will autocomplete to an empty string, i.e. Alfred's
-	// query will be deleted.
-	KeepEmptyAutocomplete bool `json:"-"`
+// Autocomplete sets what Alfred's query will expand to when the user TABs it (or hits
+// RETURN on a result where valid is false)
+func (it *Item) Autocomplete(s string) *Item {
+	it.autocomplete = &s
+	return it
+}
 
-	// Copytext is what CMD+C should copy instead of Arg (the default).
-	Copytext string `json:"-"`
+// Valid tells Alfred whether the result is "actionable", i.e. ENTER will
+// pass Arg to subsequent action.
+func (it *Item) Valid(b bool) *Item {
+	it.valid = b
+	return it
+}
 
-	// Largetext is what is shown in Alfred's Large Text window on CMD+L
-	// instead of Arg (the default).
-	Largetext string `json:"-"`
+// IsFile tells Alfred that this Item is a file, i.e. Arg is a path
+// and Alfred's File Actions should be made available.
+func (it *Item) IsFile(b bool) *Item {
+	it.file = b
+	return it
+}
 
-	// Modifiers are deviating values set for when the user holds down a
-	// modifier key like CMD or SHIFT.
-	Modifiers map[string]*Modifier `json:"mods,omitempty"`
+// Copytext is what CMD+C should copy instead of Arg (the default).
+func (it *Item) Copytext(s string) *Item {
+	it.copytext = &s
+	return it
+}
 
-	// Whether the result is "actionable", i.e. ENTER will pass Arg to
-	// subsequent action.
-	Valid bool `json:"valid"`
+// Largetype is what is shown in Alfred's Large Text window on CMD+L
+// instead of Arg (the default).
+func (it *Item) Largetype(s string) *Item {
+	it.largetype = &s
+	return it
+}
 
-	// vars are variables to pass to subsequent workflow elements.
-	vars map[string]string
+// Icon sets the icon for the Item. Can point to an image file, a filepath
+// of a file whose icon should be used, or a UTI, such as
+// "com.apple.folder".
+func (it *Item) Icon(icon *Icon) *Item {
+	it.icon = icon
+	return it
+}
 
-	// IsFile tells Alfred that this Item is a file, i.e. Arg is a path
-	// and Alfred's File Actions should be made available.
-	IsFile bool `json:"-"`
-
-	// The icon for the result. Can point to an image file, a filepath
-	// of a file whose icon should be used, or a UTI, such as
-	// "com.apple.folder".
-	Icon *ItemIcon `json:"icon,omitempty"`
+// Var sets an Alfred variable for subsequent workflow elements.
+func (it *Item) Var(k, v string) *Item {
+	if it.vars == nil {
+		it.vars = make(map[string]string, 1)
+	}
+	it.vars[k] = v
+	return it
 }
 
 // NewModifier returns an initialised Modifier bound to this Item.
@@ -337,7 +171,7 @@ func (it *Item) NewModifier(key string) *Modifier {
 	// Add Item variables to Modifier
 	if it.vars != nil {
 		for k, v := range it.vars {
-			m.SetVar(k, v)
+			m.Var(k, v)
 		}
 	}
 
@@ -345,45 +179,16 @@ func (it *Item) NewModifier(key string) *Modifier {
 	return m
 }
 
-// SetIcon sets the icon for a result item.
-// Pass "" for kind if value is the path to an icon file. Other valid
-// values are "fileicon" and "filetype". See ItemIcon for more information.
-func (it *Item) SetIcon(value string, kind string) error {
-	kind = strings.ToLower(kind)
-	if _, valid := validIconTypes[kind]; !valid {
-		return fmt.Errorf("Invalid icon kind: %v", kind)
-	}
-	if it.Icon == nil {
-		it.Icon = &ItemIcon{}
-	}
-	it.Icon.Value = value
-	it.Icon.Type = kind
-	return nil
-}
-
 // SetModifier sets a Modifier for a modifier key.
 func (it *Item) SetModifier(m *Modifier) error {
 	if ok := validModifiers[m.Key]; !ok {
 		return fmt.Errorf("Invalid modifier: %s", m.Key)
 	}
-	if it.Modifiers == nil {
-		it.Modifiers = map[string]*Modifier{}
+	if it.mods == nil {
+		it.mods = map[string]*Modifier{}
 	}
-	it.Modifiers[m.Key] = m
+	it.mods[m.Key] = m
 	return nil
-}
-
-// SetVar sets an Alfred variable for subsequent workflow elements.
-func (it *Item) SetVar(k, v string) {
-	if it.vars == nil {
-		it.vars = make(map[string]string, 1)
-	}
-	it.vars[k] = v
-}
-
-// Var returns the value of Item's workflow variable for key k.
-func (it *Item) Var(k string) string {
-	return it.vars[k]
 }
 
 // Vars returns the Item's workflow variables.
@@ -393,40 +198,31 @@ func (it *Item) Vars() map[string]string {
 
 // MarshalJSON serializes Item to Alfred 3's JSON format. You shouldn't
 // need to call this directly: use Feedback.Send() instead.
-//
-// A custom serializer is necessary because Alfred behaves
-// differently when autocomplete is missing or when present, but empty.
 func (it *Item) MarshalJSON() ([]byte, error) {
-
-	type Alias Item
-	var auto *string
-	var arg *string
-	var t string
+	var typ string
+	var qlurl string
 	var text *itemText
+	arg := it.arg
 
-	if it.Autocomplete != "" || it.KeepEmptyAutocomplete {
-		auto = &it.Autocomplete
-	}
-	if it.IsFile {
-		t = "file"
+	if it.file {
+		typ = "file"
 	}
 
-	if it.Copytext != "" || it.Largetext != "" {
-		text = &itemText{Copy: it.Copytext, Large: it.Largetext}
+	if it.qlurl != nil {
+		qlurl = it.qlurl.String()
 	}
-	// TODO: Alfred workflow config in Feedback/Item/Modifier
 
-	if it.Arg != "" {
-		arg = &it.Arg
+	if it.copytext != nil || it.largetype != nil {
+		text = &itemText{Copy: it.copytext, Large: it.largetype}
 	}
 
 	if len(it.vars) > 0 {
-		a := newArg()
-		if it.Arg != "" {
-			a.SetArg(it.Arg)
+		a := NewArgVars()
+		if arg != nil {
+			a.Arg(*arg)
 		}
 		for k, v := range it.vars {
-			a.SetVar(k, v)
+			a.Var(k, v)
 		}
 		if s, err := a.String(); err == nil {
 			arg = &s
@@ -435,48 +231,131 @@ func (it *Item) MarshalJSON() ([]byte, error) {
 		}
 	}
 
-	// if it.vars != nil {
-	// 	data, err := json.Marshal(&struct {
-	// 		Root interface{} `json:"alfredworkflow"`
-	// 	}{
-	// 		Root: &struct {
-	// 			Arg  string            `json:"arg,omitempty"`
-	// 			Vars map[string]string `json:"variables"`
-	// 		}{
-	// 			Arg:  it.Arg,
-	// 			Vars: it.vars,
-	// 		},
-	// 	})
-	// 	// data, err := json.Marshal(&struct {
-	// 	// 	Arg  string            `json:"arg,omitempty"`
-	// 	// 	Vars map[string]string `json:"variables"`
-	// 	// }{
-	// 	// 	Arg:  it.Arg,
-	// 	// 	Vars: it.Vars,
-	// 	// })
-	// 	if err != nil {
-	// 		return []byte{}, err
-	// 	}
-	// 	s := string(data)
-	// 	arg = &s
-	// }
-
+	// Serialise Item
 	return json.Marshal(&struct {
-		Auto     *string   `json:"autocomplete,omitempty"`
-		Argument *string   `json:"arg,omitempty"`
-		Type     string    `json:"type,omitempty"`
-		Text     *itemText `json:"text,omitempty"`
-		*Alias
+		Title     string               `json:"title"`
+		Subtitle  *string              `json:"subtitle,omitempty"`
+		Auto      *string              `json:"autocomplete,omitempty"`
+		Arg       *string              `json:"arg,omitempty"`
+		UID       *string              `json:"uid,omitempty"`
+		Valid     bool                 `json:"valid"`
+		Type      string               `json:"type,omitempty"`
+		Text      *itemText            `json:"text,omitempty"`
+		Icon      *Icon                `json:"icon,omitempty"`
+		Quicklook string               `json:"quicklookurl,omitempty"`
+		Mods      map[string]*Modifier `json:"mods,omitempty"`
 	}{
-		Auto:     auto,
-		Argument: arg,
-		Type:     t,
-		Text:     text,
-		Alias:    (*Alias)(it),
+		Title:     it.title,
+		Subtitle:  it.subtitle,
+		Auto:      it.autocomplete,
+		Arg:       arg,
+		UID:       it.uid,
+		Valid:     it.valid,
+		Type:      typ,
+		Text:      text,
+		Icon:      it.icon,
+		Quicklook: qlurl,
+		Mods:      it.mods,
 	})
 }
 
-// ItemIcon represents the icon for an Item.
+// itemText encapsulates the copytext and largetext values for a result Item.
+type itemText struct {
+	// Copied to the clipboard on CMD+C
+	Copy *string `json:"copy,omitempty"`
+	// Shown in Alfred's Large Type window on CMD+L
+	Large *string `json:"largetype,omitempty"`
+}
+
+// Modifier encapsulates alterations to Item when a modifier key is held when
+// the user actions the item.
+//
+// Create new Modifiers via Item.NewModifier(). This binds the Modifier to the
+// Item, initializes Modifier's map and inherits Item's workflow variables.
+//
+// A Modifier created via Item.NewModifier() also inherits its parent Item's
+// workflow variables.
+type Modifier struct {
+	// The modifier key. May be any of ValidModifiers.
+	Key         string
+	arg         *string
+	subtitle    *string
+	subtitleSet bool
+	valid       bool
+	validSet    bool
+	vars        map[string]string
+}
+
+// newModifier creates a Modifier, validating key.
+func newModifier(key string) (*Modifier, error) {
+	if ok := validModifiers[key]; !ok {
+		return nil, fmt.Errorf("Invalid modifier key: %s", key)
+	}
+	return &Modifier{Key: key, vars: map[string]string{}}, nil
+}
+
+// Arg sets the arg for the Modifier.
+func (m *Modifier) Arg(s string) *Modifier {
+	m.arg = &s
+	return m
+}
+
+// Subtitle sets the subtitle for the Modifier.
+func (m *Modifier) Subtitle(s string) *Modifier {
+	m.subtitle = &s
+	return m
+}
+
+// Valid sets the valid status for the Modifier.
+func (m *Modifier) Valid(v bool) *Modifier {
+	m.valid = v
+	return m
+}
+
+// Var sets a variable for the Modifier.
+func (m *Modifier) Var(k, v string) *Modifier {
+	m.vars[k] = v
+	return m
+}
+
+// Vars returns all Modifier variables.
+func (m *Modifier) Vars() map[string]string {
+	return m.vars
+}
+
+// MarshalJSON implements the JSON serialization interface.
+func (m *Modifier) MarshalJSON() ([]byte, error) {
+
+	arg := m.arg
+
+	// Variables
+	if len(m.vars) > 0 {
+		a := NewArgVars()
+		if m.arg != nil {
+			a.Arg(*arg)
+		}
+		for k, v := range m.vars {
+			a.Var(k, v)
+		}
+		if s, err := a.String(); err == nil {
+			arg = &s
+		} else {
+			log.Printf("Error encoding variables: %v", err)
+		}
+	}
+
+	return json.Marshal(&struct {
+		Arg      *string `json:"arg,omitempty"`
+		Subtitle *string `json:"subtitle,omitempty"`
+		Valid    bool    `json:"valid,omitempty"`
+	}{
+		Arg:      arg,
+		Subtitle: m.subtitle,
+		Valid:    m.valid,
+	})
+}
+
+// Icon represents the icon for an Item.
 //
 // Alfred supports PNG or ICNS files, UTIs (e.g. "public.folder") or
 // can use the icon of a specific file (e.g. "/Applications/Safari.app"
@@ -488,7 +367,7 @@ func (it *Item) MarshalJSON() ([]byte, error) {
 // Type = "fileicon" will treat Value as the path to a file or directory
 // and use that file's icon, e.g:
 //
-//    icon := ItemIcon{"/Applications/Mail.app", "fileicon"}
+//    icon := Icon{"/Applications/Mail.app", "fileicon"}
 //
 // will display Mail.app's icon.
 //
@@ -502,7 +381,7 @@ func (it *Item) MarshalJSON() ([]byte, error) {
 //    mdls -name kMDItemContentType -raw /path/to/the/file
 //
 // This will only work on Spotlight-indexed files.
-type ItemIcon struct {
+type Icon struct {
 	Value string `json:"path"`
 	Type  string `json:"type,omitempty"`
 }
@@ -514,8 +393,6 @@ type ItemIcon struct {
 //
 // It is important to use the constructor functions for Feedback, Item
 // and Modifier structs.
-//
-// TODO: Implement Vars on Feedback.
 type Feedback struct {
 	Items []*Item `json:"items"`
 	// Set to true when feedback has been sent.
@@ -531,18 +408,19 @@ func NewFeedback() *Feedback {
 	return fb
 }
 
-// SetVar sets an Alfred variable for subsequent workflow elements.
-func (fb *Feedback) SetVar(k, v string) {
+// Var sets an Alfred variable for subsequent workflow elements.
+func (fb *Feedback) Var(k, v string) *Feedback {
 	if fb.vars == nil {
 		fb.vars = make(map[string]string, 1)
 	}
 	fb.vars[k] = v
+	return fb
 }
 
 // Var returns the value of Feedback's workflow variable for key k.
-func (fb *Feedback) Var(k string) string {
-	return fb.vars[k]
-}
+// func (fb *Feedback) Var(k string) string {
+// 	return fb.vars[k]
+// }
 
 // Vars returns the Feedback's workflow variables.
 func (fb *Feedback) Vars() map[string]string {
@@ -561,12 +439,12 @@ func (fb *Feedback) Clear() {
 // The Item inherits and workflow variables set on the Feedback parent at
 // time of creation.
 func (fb *Feedback) NewItem(title string) *Item {
-	it := &Item{Title: title, vars: map[string]string{}}
+	it := &Item{title: title, vars: map[string]string{}}
 
 	// Variables
 	if len(fb.vars) > 0 {
 		for k, v := range fb.vars {
-			it.SetVar(k, v)
+			it.Var(k, v)
 		}
 	}
 
@@ -577,19 +455,19 @@ func (fb *Feedback) NewItem(title string) *Item {
 // NewFileItem adds and returns a pointer to a new item pre-populated from path.
 // Title is the base name of the file
 // Subtitle is the path to the file (using "~" for $HOME)
-// Valid is "YES"
+// Valid is `true`
 // UID, Arg and Autocomplete are set to path
 // Type is "file"
 // Icon is the icon of the file at path
 func (fb *Feedback) NewFileItem(path string) *Item {
 	it := fb.NewItem(filepath.Base(path))
-	it.Subtitle = ShortenPath(path)
-	it.Arg = path
-	it.Valid = true
-	it.UID = path
-	it.Autocomplete = path
-	it.IsFile = true
-	it.SetIcon(path, "fileicon")
+	it.Subtitle(ShortenPath(path)).
+		Arg(path).
+		Valid(true).
+		UID(path).
+		Autocomplete(path).
+		IsFile(true).
+		Icon(&Icon{path, "fileicon"})
 	return it
 }
 
@@ -607,4 +485,74 @@ func (fb *Feedback) Send() error {
 	os.Stdout.Write(output)
 	fb.sent = true
 	return nil
+}
+
+// ArgVars is an Alfred `arg` plus workflow variables to set
+// output and workflow variables from a non-Script Filter action.
+//
+// Write to STDOUT to pass variables to downstream workflow elements.
+type ArgVars struct {
+	arg  *string
+	vars map[string]string
+}
+
+// NewArgVars returns an initialised Arg.
+func NewArgVars() *ArgVars {
+	return &ArgVars{vars: map[string]string{}}
+}
+
+// Arg sets Arg's arg.
+func (a *ArgVars) Arg(s string) *ArgVars {
+	a.arg = &s
+	return a
+}
+
+// Vars returns Arg's variables.
+func (a *ArgVars) Vars() map[string]string {
+	return a.vars
+}
+
+// Var sets the value of a variable.
+func (a *ArgVars) Var(k, v string) *ArgVars {
+	a.vars[k] = v
+	return a
+}
+
+// String returns a JSON string representation of Arg.
+func (a *ArgVars) String() (string, error) {
+	// if len(a.vars) == 0 {
+	// 	return *a.arg, nil
+	// }
+	data, err := a.MarshalJSON()
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
+// MarshalJSON serialises Arg to JSON.
+func (a *ArgVars) MarshalJSON() ([]byte, error) {
+
+	// Return arg regardless of whether it's empty or not:
+	// we have return *something*
+	if len(a.vars) == 0 {
+		// Want empty string, i.e. "", not null
+		var arg string
+		if a.arg != nil {
+			arg = *a.arg
+		}
+		return json.Marshal(arg)
+	}
+
+	return json.Marshal(&struct {
+		Root interface{} `json:"alfredworkflow"`
+	}{
+		Root: &struct {
+			Arg  *string           `json:"arg,omitempty"`
+			Vars map[string]string `json:"variables"`
+		}{
+			Arg:  a.arg,
+			Vars: a.vars,
+		},
+	})
 }

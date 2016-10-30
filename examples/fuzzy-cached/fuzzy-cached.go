@@ -268,10 +268,10 @@ func run() {
 
 	// Feedback
 	for _, book := range books {
-		it := wf.NewItem(book.Title)
-		it.Subtitle = book.Author
-		it.Arg = book.URL
-		it.Valid = true
+		wf.NewItem(book.Title).
+			Subtitle(book.Author).
+			Arg(book.URL).
+			Valid(true)
 		// log.Printf("item=%v", it)
 	}
 	wf.SendFeedback()
