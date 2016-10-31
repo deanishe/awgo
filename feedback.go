@@ -6,7 +6,7 @@
 // Created on 2016-10-23
 //
 
-package workflow
+package aw
 
 import (
 	"encoding/json"
@@ -27,41 +27,22 @@ const (
 	ModFn    = "fn"
 )
 
-// Valid icon types for ItemIcon. You can use an image file, the icon of a file,
-// e.g. an application's icon, or the icon for a filetype (specified by a UTI).
-const (
-	// Use with image files you wish to show in Alfred.
-	IconTypeImageFile = ""
-	// Use to show the icon of a file, e.g. combine with "/Applications/Safari.app"
-	// to show Safari's icon in Alfred.
-	IconTypeFileIcon = "fileicon"
-	// Use together with a UTI to show the icon for a filetype, e.g. "public.folder",
-	// which will give you the icon for a folder.
-	IconTypeFileType = "filetype"
-)
-
 var (
-	// ValidModifiers are permitted modifier keys for Modifiers.
-	// See Item.NewModifier() for application.
-	ValidModifiers = []string{ModCmd, ModAlt, ModCtrl, ModShift, ModFn}
-
-	// ValidIconTypes are the values you may specify for an icon type.
-	ValidIconTypes = []string{IconTypeImageFile, IconTypeFileIcon, IconTypeFileType}
-
-	// Maps to shadow the above to make lookup easier.
-	validModifiers = make(map[string]bool, len(ValidModifiers))
-	validIconTypes = make(map[string]bool, len(ValidIconTypes))
+	// Permitted modifiers
+	validModifiers = map[string]bool{
+		ModCmd:   true,
+		ModAlt:   true,
+		ModCtrl:  true,
+		ModShift: true,
+		ModFn:    true,
+	}
+	// Permitted icon types
+	validIconTypes = map[string]bool{
+		IconTypeImageFile: true,
+		IconTypeFileIcon:  true,
+		IconTypeFileType:  true,
+	}
 )
-
-func init() {
-	// Build lookup maps (why doesn't Go have sets?)
-	for _, s := range ValidModifiers {
-		validModifiers[s] = true
-	}
-	for _, s := range ValidIconTypes {
-		validIconTypes[s] = true
-	}
-}
 
 // Item is a single Alfred result. Add them to a Feedback struct to
 // generate valid Alfred JSON.
@@ -362,37 +343,6 @@ func (m *Modifier) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// Icon represents the icon for an Item.
-//
-// Alfred supports PNG or ICNS files, UTIs (e.g. "public.folder") or
-// can use the icon of a specific file (e.g. "/Applications/Safari.app"
-// to use Safari's icon.
-//
-// Type = "" (the default) will treat Value as the path to a PNG or ICNS
-// file.
-//
-// Type = "fileicon" will treat Value as the path to a file or directory
-// and use that file's icon, e.g:
-//
-//    icon := Icon{"/Applications/Mail.app", "fileicon"}
-//
-// will display Mail.app's icon.
-//
-// Type = "filetype" will treat Value as a UTI, such as "public.movie"
-// or "com.microsoft.word.doc". UTIs are useful when you don't have
-// a local path to point to.
-//
-// You can find out the UTI of a filetype by dragging one of the files
-// to a File Filter's File Types list in Alfred, or in a shell with:
-//
-//    mdls -name kMDItemContentType -raw /path/to/the/file
-//
-// This will only work on Spotlight-indexed files.
-type Icon struct {
-	Value string `json:"path"`
-	Type  string `json:"type,omitempty"`
-}
-
 // Feedback contains Items. This is the top-level object for generating
 // Alfred JSON (i.e. serialise this and send it to Alfred).
 //
@@ -401,6 +351,7 @@ type Icon struct {
 // It is important to use the constructor functions for Feedback, Item
 // and Modifier structs.
 type Feedback struct {
+	// Items are the results to be sent to Alfred.
 	Items []*Item `json:"items"`
 	// Set to true when feedback has been sent.
 	sent bool
@@ -437,7 +388,7 @@ func (fb *Feedback) Vars() map[string]string {
 // Clear removes any items.
 func (fb *Feedback) Clear() {
 	if len(fb.Items) > 0 {
-		fb.Items = nil
+		fb.Items = []*Item{}
 	}
 }
 
@@ -460,25 +411,27 @@ func (fb *Feedback) NewItem(title string) *Item {
 }
 
 // NewFileItem adds and returns a pointer to a new item pre-populated from path.
-// Title is the base name of the file
-// Subtitle is the path to the file (using "~" for $HOME)
-// Valid is `true`
-// UID, Arg and Autocomplete are set to path
-// Type is "file"
-// Icon is the icon of the file at path
+// Title and Autocomplete are the base name of the file;
+// Subtitle is the path to the file (using "~" for $HOME);
+// Valid is true;
+// UID and Arg are set to path;
+// Type is "file"; and
+// Icon is the icon of the file at path.
 func (fb *Feedback) NewFileItem(path string) *Item {
-	it := fb.NewItem(filepath.Base(path))
+	t := filepath.Base(path)
+	it := fb.NewItem(t)
 	it.Subtitle(ShortenPath(path)).
 		Arg(path).
 		Valid(true).
 		UID(path).
-		Autocomplete(path).
+		Autocomplete(t).
 		IsFile(true).
 		Icon(&Icon{path, "fileicon"})
 	return it
 }
 
-// Send generates JSON from this struct and sends it to Alfred.
+// Send generates JSON from this struct and sends it to Alfred
+// (by writing the JSON to STDOUT).
 func (fb *Feedback) Send() error {
 	if fb.sent {
 		log.Printf("Feedback already sent. Ignoring.")
@@ -554,18 +507,18 @@ func NewArgVars() *ArgVars {
 	return &ArgVars{vars: map[string]string{}}
 }
 
-// Arg sets Arg's arg.
+// Arg sets the arg/query to be passed to the next workflow action.
 func (a *ArgVars) Arg(s string) *ArgVars {
 	a.arg = &s
 	return a
 }
 
-// Vars returns Arg's variables.
+// Vars returns ArgVars' variables.
 func (a *ArgVars) Vars() map[string]string {
 	return a.vars
 }
 
-// Var sets the value of a variable.
+// Var sets the value of a workflow variable.
 func (a *ArgVars) Var(k, v string) *ArgVars {
 	a.vars[k] = v
 	return a
@@ -590,7 +543,7 @@ func (a *ArgVars) String() (string, error) {
 	return string(data), nil
 }
 
-// MarshalJSON serialises Arg to JSON.
+// MarshalJSON serialises ArgVars to JSON.
 func (a *ArgVars) MarshalJSON() ([]byte, error) {
 
 	// Return arg regardless of whether it's empty or not:

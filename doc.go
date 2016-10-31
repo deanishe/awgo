@@ -1,9 +1,9 @@
 /*
-Package workflow provides utilities for building workflows for Alfred 3.
+Package aw provides utilities for building workflows for Alfred 3.
 https://www.alfredapp.com/
 
-NOTE: This library is currently very alpha. I'm new to Go (and Alfred 3 is new),
-so doubtless will change as I figure out what I'm doing.
+NOTE: This library is currently rather alpha. I'm new to Go (and Alfred 3 is new),
+so doubtless a lot will change as I figure out what I'm doing.
 
 This library is released under the MIT licence, which you can read online at
 https://opensource.org/licenses/MIT
@@ -25,6 +25,9 @@ The current main features are:
 
 	TODO: Starting background processes
 	TODO: Caching and storing data
+	TODO: Workflow update via GitHub releases
+	TODO: Magic arguments
+	TODO: Alfred/AppleScript helpers
 
 
 Usage
@@ -39,21 +42,20 @@ program.go:
 
 	import "gogs.deanishe.net/deanishe/awgo"
 
-	var wf *workflow.Workflow
+	// Package is called aw
+	var wf *aw.Workflow
 
 	func init() {
-		wf = workflow.NewWorkflow(nil)
+		wf = aw.NewWorkflow(nil)
 	}
 
 	func run() {
 		// Your workflow starts here
-		it := wf.NewItem()
-		it.Title = "First result!"
+		it := wf.NewItem("First result!")
 		wf.SendFeedback()
 	}
 
 	func main() {
-		// Package is called workflow
 		wf.Run(run)
 	}
 
@@ -63,17 +65,23 @@ In the Script Filter's Script box (Language = /bin/bash with input as argv):
 
 
 The Item struct isn't intended to be used as the workflow's data model,
-just as a way to encapsulate search results for Alfred.
-
-You may want your own data model to implement fuzzy.Interface to enable...
+just as a way to encapsulate search results for Alfred. In particular,
+its variables are only settable, not gettable.
 
 
 Fuzzy sorting
 
-fuzzy.Sort() implements Alfred-like fuzzy search, e.g. "of" will match
+Sort() implements Alfred-like fuzzy search, e.g. "of" will match
 "OmniFocus" and "got" will match "Game of Thrones".
 
-See subpackage fuzzy for more details.
+The algorithm is based on Forrest Smith's reverse engineering of Sublime
+Text's search: https://blog.forrestthewoods.com/reverse-engineering-sublime-text-s-fuzzy-match-4cffeed33fdb
+
+The Feedback struct implements Sortable, so you can sort/filter feedback items.
+See examples/fuzzy-simple for a basic example.
+
+See examples/fuzzy-cached for a demonstration of implementing
+Sortable on your own structs and customising the sort settings.
 
 
 Sending results to Alfred
@@ -88,6 +96,7 @@ calls to sending methods are logged and ignored. Sending methods are:
 
 	SendFeedback()
 	Fatal()
+	Fatalf()
 	FatalError()
 	Warn()
 
@@ -98,14 +107,14 @@ when all your results are ready.
 There are additional helper methods for specific situations.
 
 NewFileItem() returns an Item pre-populated from a filepath (title,
-subtitle, icon, arg etc.).
+subtitle, icon, arg, etc.).
 
-FatalError() and Fatal() will immediately send a single result to
+FatalError(), Fatal() and Fatalf() will immediately send a single result to
 Alfred with an error message and then call log.Fatalf(), terminating
 the workflow.
 
-Warn() also immediately sends a single result to Alfred
-with a warning message (and icon), but does not terminate the workflow.
+Warn() also immediately sends a single result to Alfred with a warning
+message (and icon), but does not terminate the workflow.
 However, because the JSON has already been sent to Alfred, you can't
 send any more results after calling Warn().
 
@@ -115,13 +124,13 @@ If you want to include a warning with other results, use NewWarningItem().
 Logging
 
 Awgo uses the default log package. It is automatically configured to log to
-STDERR (Alfred's debugger) and to a file in the workflow's cache directory.
+STDERR (Alfred's debugger) and to a logfile in the workflow's cache directory.
 
 The log file is rotated when it exceeds 200 KiB in size.
 One previous log is kept.
 
-Awgo automatically detects when Alfred's debugger is open (Workflow.Debug()
-returns true) and adds filename:linenumber: to the logged output.
+Awgo detects when Alfred's debugger is open (Workflow.Debug()
+returns true) and in this case prepends filename:linenumber: to log messages.
 
 
 Performance
@@ -133,9 +142,9 @@ workflow not to feel sluggish.
 As a rough guideline, loading and sorting/filtering ~20K is about the
 limit before performance becomes noticeably hesitant.
 
-If you have a larger dataset, consider using something like sqlite,
-which can easily handle hundreds of thousands of items, for your
+If you have a larger dataset, consider using something like sqlite—which
+can easily handle hundreds of thousands of items—for your
 datastore.
 
 */
-package workflow
+package aw

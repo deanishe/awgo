@@ -25,34 +25,21 @@ import (
 )
 
 var (
-	startDir     string             // Directory to read
-	minimumScore float64            // Search score cutoff
-	wf           *workflow.Workflow // Our Workflow object
+	startDir     string       // Directory to read
+	minimumScore float64      // Search score cutoff
+	wf           *aw.Workflow // Our Workflow object
 )
-
-// Folders is a simple slice of strings that supports fuzzy.Interface
-// to allow fuzzy searching.
-type Folders []string
-
-// Default sort.Interface methods
-func (f Folders) Len() int           { return len(f) }
-func (f Folders) Less(i, j int) bool { return f[i] < f[j] }
-func (f Folders) Swap(i, j int)      { f[i], f[j] = f[j], f[i] }
-
-// SortKey implements Sortable. Comparisons are based on the
-// basename of the filepath.
-func (f Folders) SortKey(i int) string { return filepath.Base(f[i]) }
 
 func init() {
 	// Where we'll look for directories
 	startDir = os.Getenv("HOME")
 	// Initialise workflow
-	wf = workflow.NewWorkflow(nil)
+	wf = aw.NewWorkflow(nil)
 }
 
 // readDir returns the paths to all the visible subdirectories of `dirpath`
-func readDir(dirpath string) Folders {
-	paths := Folders{}
+func readDir(dirpath string) []string {
+	paths := []string{}
 	files, _ := ioutil.ReadDir(dirpath)
 	for _, fi := range files {
 		// Ignore files and hidden files
@@ -79,6 +66,8 @@ func run() {
 	// Generate feedback for Alfred
 	for _, path := range paths {
 
+		// Convenience method. Sets Item title to filename, subtitle
+		// to shortened path, arg to full path, and icon to file icon.
 		it := wf.NewFileItem(path)
 
 		// We could set this modifier via Alfred's GUI.

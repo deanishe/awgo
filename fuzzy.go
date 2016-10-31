@@ -6,45 +6,47 @@
 // Created on 2016-10-30
 //
 
-package workflow
+package aw
 
 import (
 	"sort"
 	"strings"
 )
 
-var (
-	// DefaultAdjacencyBonus is the bonus for adjacent matches
-	DefaultAdjacencyBonus = 5.0
-	// DefaultSeparatorBonus is the bonus if the match is after a separator
-	DefaultSeparatorBonus = 10.0
-	// DefaultCamelBonus is the bonus if match is uppercase and previous is lower
-	DefaultCamelBonus = 10.0
-	// DefaultLeadingLetterPenalty is the penalty applied for every letter in string before first match
-	DefaultLeadingLetterPenalty = -3.0
-	// DefaultMaxLeadingLetterPenalty is the maximum penalty for leading letters
-	DefaultMaxLeadingLetterPenalty = -9.0
-	// DefaultUnmatchedLetterPenalty is the penalty for every letter that doesn't match
-	DefaultUnmatchedLetterPenalty = -1.0
+// Default bonuses and penalties for fuzzy sorting. To customise
+// sorting behaviour, create a SortOptions object with NewSortOptions().
+// Pass this to NewSorter(), or if you're using a Workflow object,
+// set Workflow.SortOptions or Options.SortOptions.
+const (
+	DefaultAdjacencyBonus          = 5.0  // Bonus for adjacent matches
+	DefaultSeparatorBonus          = 10.0 // Bonus if the match is after a separator
+	DefaultCamelBonus              = 10.0 // Bonus if match is uppercase and previous is lower
+	DefaultLeadingLetterPenalty    = -3.0 // Penalty applied for every letter in string before first match
+	DefaultMaxLeadingLetterPenalty = -9.0 // Maximum penalty for leading letters
+	DefaultUnmatchedLetterPenalty  = -1.0 // Penalty for every letter that doesn't match
 )
 
 // Sortable makes the implementer fuzzy-sortable. It is a superset
-// of sort.Interface.
+// of sort.Interface (i.e. your struct must also implement sort.Interface).
 type Sortable interface {
-	sort.Interface
 	// Return the string that should be compared to the sort query
 	SortKey(i int) string
+	sort.Interface
 }
 
-// Result stores the result of a single fuzzy comparison.
+// Result stores the result of a single fuzzy ranking.
 type Result struct {
 	// Match is whether or not the string matched the query,
 	// i.e. if all characters in the query are present,
 	// in order, in the string.
 	Match bool
+	// Query is the query that was matched against.
+	Query string
 	// Score is how well the string matched the query.
 	// Higher is better.
 	Score float64
+	// SortKey is the string Query was compared to.
+	SortKey string
 }
 
 // SortOptions sets bonuses and penalties for Sorter.
@@ -71,9 +73,9 @@ func NewSortOptions() *SortOptions {
 
 // Sorter sorts Data based on the query passsed to Sorter.Sort().
 type Sorter struct {
-	// Data is an object implementing Interface
+	// Data is an object implementing Sortable interface
 	Data Sortable
-	// Options is the bonus and penalties
+	// Options contains the bonuses and penalties
 	Options *SortOptions
 	// // AdjacencyBonus is the bonus for adjacent matches
 	// AdjacencyBonus float64
@@ -91,9 +93,8 @@ type Sorter struct {
 	results []*Result
 }
 
-// NewSorter returns a new Sorter initialised with the default
-// sort parameters from the global variables at time of Sorter
-// creation.
+// NewSorter returns a new Sorter. If opts is nil, Sorter is initialised
+// with the default sort parameters.
 func NewSorter(data Sortable, opts *SortOptions) *Sorter {
 	if opts == nil {
 		opts = NewSortOptions()
@@ -111,17 +112,17 @@ func NewSorter(data Sortable, opts *SortOptions) *Sorter {
 	}
 }
 
-// Match is true if s.Data[i] matched query.
+// Match is true if s.Data[i] matched query. Can only be called after Sort().
 func (s *Sorter) Match(i int) bool {
 	return s.results[i].Match
 }
 
-// Result returns the Results for s.Data[i].
+// Result returns the Results for s.Data[i]. Can only be called after Sort().
 func (s *Sorter) Result(i int) *Result {
 	return s.results[i]
 }
 
-// Score returns score for s.Data[i].
+// Score returns score for s.Data[i]. Can only be called after Sort().
 func (s *Sorter) Score(i int) float64 {
 	return s.results[i].Score
 }
@@ -151,13 +152,12 @@ func (s *Sorter) Sort(query string) []*Result {
 	if s.results == nil {
 		s.results = make([]*Result, s.Data.Len())
 	}
-	var match bool
-	var score float64
+
 	for i := 0; i < s.Data.Len(); i++ {
-		match, score = calculateScore(s.Data.SortKey(i), query, s.Options)
+		key := s.Data.SortKey(i)
 		// s.matches[i] = match
 		// s.scores[i] = score
-		s.results[i] = &Result{match, score}
+		s.results[i] = Match(key, query, s.Options)
 	}
 	sort.Sort(s)
 	return s.results
@@ -193,9 +193,11 @@ func SortStrings(data []string, query string) []*Result {
 	return s.Sort(query)
 }
 
-// calculateScore scores str for query.
-func calculateScore(str, query string, o *SortOptions) (match bool, score float64) {
+// Match scores str for query.
+func Match(str, query string, o *SortOptions) *Result {
 	var (
+		match    = false
+		score    = 0.0
 		uStr     = []rune(str)
 		uQuery   = []rune(query)
 		strLen   = len(uStr)
@@ -334,5 +336,5 @@ func calculateScore(str, query string, o *SortOptions) (match bool, score float6
 	}
 
 	// log.Printf("query=%#v, str=%#v", match=%v, score=%v, query, str, match, score)
-	return match, score
+	return &Result{match, query, score, str}
 }

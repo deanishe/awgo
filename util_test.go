@@ -6,7 +6,7 @@
 // Created on 2016-05-23
 //
 
-package workflow
+package aw
 
 import (
 	"fmt"

@@ -6,7 +6,7 @@
 // Created on 2016-10-30
 //
 
-package workflow
+package aw
 
 import "testing"
 

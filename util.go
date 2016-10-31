@@ -4,7 +4,7 @@
 // MIT Licence. See http://opensource.org/licenses/MIT
 //
 
-package workflow
+package aw
 
 import (
 	"fmt"

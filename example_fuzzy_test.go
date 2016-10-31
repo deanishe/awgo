@@ -6,7 +6,7 @@
 // Created on 2016-10-30
 //
 
-package workflow_test
+package aw_test
 
 import (
 	"fmt"
@@ -52,31 +52,31 @@ func ExampleSort() {
 	// Unsorted
 	fmt.Println(c[0].Name())
 
-	workflow.Sort(c, "mw")
+	aw.Sort(c, "mw")
 	fmt.Println(c[0].Name())
 
-	workflow.Sort(c, "meg")
+	aw.Sort(c, "meg")
 	fmt.Println(c[0].Name())
 
-	workflow.Sort(c, "voll")
+	aw.Sort(c, "voll")
 	fmt.Println(c[0].Name())
 
-	workflow.Sort(c, "ser")
+	aw.Sort(c, "ser")
 	fmt.Println(c[0].Name())
 
-	workflow.Sort(c, "ss")
+	aw.Sort(c, "ss")
 	fmt.Println(c[0].Name())
 
-	workflow.Sort(c, "jim")
+	aw.Sort(c, "jim")
 	fmt.Println(c[0].Name())
 
-	workflow.Sort(c, "jj")
+	aw.Sort(c, "jj")
 	fmt.Println(c[0].Name())
 
-	workflow.Sort(c, "jjo")
+	aw.Sort(c, "jjo")
 	fmt.Println(c[0].Name())
 
-	workflow.Sort(c, "kg")
+	aw.Sort(c, "kg")
 	fmt.Println(c[0].Name())
 	// Output:
 	// Meggan Siering

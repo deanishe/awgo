@@ -6,8 +6,9 @@
 
 /*
 
-fuzzy-cached demonstrates how to handle larger datasets in awgo, caching
-the data in a format that's more quickly loaded.
+fuzzy-cached demonstrates custom fuzzy-sortable objects and handling
+larger datasets in awgo, caching the data in a format that's
+more quickly loaded.
 
 It filters a list of the books from the Gutenberg project. The list
 (a TSV file) is downloaded on first run, parsed and cached to disk
@@ -17,7 +18,7 @@ The gob file loads ~5 times faster than the TSV.
 
 There are >45K books in the list.
 
-This runs in ~0.5s on my machine, which is really pushing the limits of
+This runs in ~1s on my machine, which is *really* pushing the limits of
 acceptable performance, imo.
 
 A dataset of this size would be better off in an sqlite database, which
@@ -46,26 +47,32 @@ import (
 
 var (
 	// maxResults is the maximum number of results to sent to Alfred
-	maxResults = 50
+	maxResults = 200
+	// minScore is the minimum score for a result
+	minScore = 10.0
 	// tsvURL is the source of the workflow's data
 	tsvURL = "https://raw.githubusercontent.com/deanishe/alfred-index-demo/master/src/books.tsv"
-	usage  = `fuzzy-big [options] [<query>]
+	usage  = `fuzzy-cached [options] [<query>]
 
 Usage:
-	fuzzy-big <query>
-	fuzzy-big -h|--version
+	fuzzy-cached <query>
+	fuzzy-cached -h|--version
 
 Options:
 	-h, --help  Show this message and exit.
 	--version   Show version number and exit.
 `
-	wf *workflow.Workflow
+	sopts *aw.SortOptions
+	wf    *aw.Workflow
 )
 
 func init() {
-	wf = workflow.NewWorkflow(&workflow.Options{
-		MaxResults: maxResults,
-	})
+	sopts = aw.NewSortOptions()
+	sopts.AdjacencyBonus = 5.0
+	sopts.LeadingLetterPenalty = -0.1
+	sopts.MaxLeadingLetterPenalty = -3.0
+	sopts.UnmatchedLetterPenalty = -0.5
+	wf = aw.NewWorkflow(nil)
 }
 
 // Book is a single work on Gutenberg.org.
@@ -78,42 +85,65 @@ type Book struct {
 }
 
 // Books is a sequence of Book structs that implements the Fuzzy interface.
-type Books []Book
+type Books struct {
+	Items []*Book
+}
 
 // Len implements sort.Interface
-func (b Books) Len() int { return len(b) }
+func (b *Books) Len() int { return len(b.Items) }
 
 // Less implements sort.Interface
-func (b Books) Less(i, j int) bool { return b[i].Title < b[j].Title }
+func (b *Books) Less(i, j int) bool { return b.Items[i].Title < b.Items[j].Title }
 
 // Swap implements sort.Interface
-func (b Books) Swap(i, j int) { b[i], b[j] = b[j], b[i] }
+func (b *Books) Swap(i, j int) { b.Items[i], b.Items[j] = b.Items[j], b.Items[i] }
 
-// Keywords implements the Fuzzy interface
-func (b Books) Keywords(i int) string {
-	return fmt.Sprintf("%v %v", b[i].Title, b[i].Author)
+// SortKey implements Sortable interface
+func (b *Books) SortKey(i int) string {
+	return fmt.Sprintf("%v %v", b.Items[i].Title, b.Items[i].Author)
+}
+
+// Filter removes non-matching Book objects.
+func (b *Books) Filter(query string, max int) {
+	items := b.Items[:0]
+	s := aw.NewSorter(b, sopts)
+	res := s.Sort(query)
+	var n int
+	for i, it := range b.Items {
+		r := res[i]
+		if r.Match && r.Score >= minScore {
+			n++
+			items = append(items, it)
+			log.Printf("%3d. score=%5.2f title=%s, author=%s",
+				n, r.Score, it.Title, it.Author)
+			if max > 0 && n == max {
+				break
+			}
+		}
+	}
+	b.Items = items
 }
 
 // loadFromGob reads the book list from the cache.
-func loadFromGob(path string) (Books, error) {
+func loadFromGob(path string) (*Books, error) {
 	s := time.Now()
-	books := Books{}
+	b := &Books{}
 	fp, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
 	defer fp.Close()
 	dec := gob.NewDecoder(fp)
-	err = dec.Decode(&books)
+	err = dec.Decode(b)
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("[gob] loaded %d books in %v", len(books), time.Now().Sub(s))
-	return books, nil
+	log.Printf("[gob] loaded %d books in %v", b.Len(), time.Now().Sub(s))
+	return b, nil
 }
 
 // saveToGob serialises the books to disk.
-func saveToGob(books Books, path string) error {
+func saveToGob(b *Books, path string) error {
 	s := time.Now()
 	fp, err := os.Create(path)
 	if err != nil {
@@ -121,11 +151,11 @@ func saveToGob(books Books, path string) error {
 	}
 	defer fp.Close()
 	enc := gob.NewEncoder(fp)
-	err = enc.Encode(books)
+	err = enc.Encode(b)
 	if err != nil {
 		return err
 	}
-	log.Printf("[gob] saved %d books in %v", len(books), time.Now().Sub(s))
+	log.Printf("[gob] saved %d books in %v", b.Len(), time.Now().Sub(s))
 	return nil
 }
 
@@ -154,9 +184,9 @@ func downloadTSV(path string) error {
 }
 
 // loadFromTSV loads the list of books from a TSV file.
-func loadFromTSV(path string) (Books, error) {
+func loadFromTSV(path string) (*Books, error) {
 	s := time.Now()
-	books := Books{}
+	b := &Books{}
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -180,29 +210,29 @@ func loadFromTSV(path string) (Books, error) {
 			continue
 		}
 		author, title, url = record[1], record[2], record[3]
-		books = append(books, Book{id, author, title, url})
+		b.Items = append(b.Items, &Book{id, author, title, url})
 		// books = append(books, record...)
 	}
-	log.Printf("%d books loaded from %s", len(books), workflow.ShortenPath(path))
-	log.Printf("[tsv] loaded %d books in %v", len(books), time.Now().Sub(s))
-	return books, nil
+	log.Printf("%d books loaded from %s", b.Len(), aw.ShortenPath(path))
+	log.Printf("[tsv] loaded %d books in %v", b.Len(), time.Now().Sub(s))
+	return b, nil
 }
 
 // loadBooks loads the Gutenberg books from the cache. If the cache
 // file doesn't exist, the source data is downloaded and the cache
 // generated.
-func loadBooks() Books {
+func loadBooks() *Books {
 	csvpath := filepath.Join(wf.DataDir(), "books.tsv")
 	gobpath := filepath.Join(wf.DataDir(), "books.gob")
-	if workflow.PathExists(gobpath) {
-		books, err := loadFromGob(gobpath)
+	if aw.PathExists(gobpath) {
+		b, err := loadFromGob(gobpath)
 		if err != nil {
 			wf.FatalError(err)
 		}
-		return books
+		return b
 	}
 
-	if !workflow.PathExists(csvpath) {
+	if !aw.PathExists(csvpath) {
 		c := make(chan error)
 		wf.Warn("Downloading book database…",
 			"Try again in a few seconds.")
@@ -212,15 +242,15 @@ func loadBooks() Books {
 		}(c)
 		<-c // Wait for download to finish
 	}
-	books, err := loadFromTSV(csvpath)
+	b, err := loadFromTSV(csvpath)
 	if err != nil {
 		wf.FatalError(err)
 	}
-	err = saveToGob(books, gobpath)
+	err = saveToGob(b, gobpath)
 	if err != nil {
 		wf.FatalError(err)
 	}
-	return books
+	return b
 }
 
 func run() {
@@ -238,21 +268,21 @@ func run() {
 		query = s
 	}
 
-	books := loadBooks()
-	total = len(books)
+	b := loadBooks()
+	total = b.Len()
+
+	b.Filter(query, maxResults)
 
 	// Feedback
-	for _, book := range books {
+	for _, book := range b.Items {
 		wf.NewItem(book.Title).
 			Subtitle(book.Author).
 			Arg(book.URL).
-			SortKey(book.Title + " " + book.Author).
 			Valid(true)
 	}
 
 	// Filter books based on query
-	res := wf.Filter(query)
-	log.Printf("%d/%d books match `%v`", len(res), total, query)
+	log.Printf("%d/%d books match `%v`", b.Len(), total, query)
 
 	wf.SendFeedback()
 }

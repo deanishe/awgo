@@ -4,7 +4,7 @@
 // MIT Licence. See http://opensource.org/licenses/MIT
 //
 
-package workflow
+package aw
 
 import (
 	"fmt"
@@ -102,8 +102,7 @@ type Options struct {
 // entry-point via Workflow.Run(). Use Workflow.NewItem() to create new
 // feedback Items and Workflow.SendFeedback() to send the results to Alfred.
 //
-// See "fuzzy-simple" and "fuzzy-big" in the examples/ subdirectory for full
-// examples of workflows.
+// See the examples/ subdirectory for some full examples of workflows.
 type Workflow struct {
 	// The response that will be sent to Alfred. Workflow provides
 	// convenience wrapper methods, so you don't have to interact
@@ -135,7 +134,7 @@ type Workflow struct {
 	//     workflow_bundleid            Workflow's bundle ID from info.plist
 	//     workflow_version             Workflow's version number from info.plist
 	//
-	// TODO: Replace Env with something better
+	// TODO: Replace Env with something better (Context object?)
 	Env map[string]string
 	// LogPrefix is the character printed to the log at the start of each run.
 	LogPrefix string
@@ -598,12 +597,8 @@ func SendFeedback() { wf.SendFeedback() }
 
 // DefaultWorkflow returns the Workflow object used by the
 // package-level functions.
-func DefaultWorkflow() *Workflow {
-	return wf
-}
+func DefaultWorkflow() *Workflow { return wf }
 
 // SetDefaultWorkflow changes the Workflow object used by the
 // package-level functions.
-func SetDefaultWorkflow(w *Workflow) {
-	wf = w
-}
+func SetDefaultWorkflow(w *Workflow) { wf = w }
