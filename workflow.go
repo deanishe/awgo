@@ -21,7 +21,7 @@ import (
 
 const (
 	// AwgoVersion is the semantic version number of this library.
-	AwgoVersion = "0.3.0"
+	AwgoVersion = "0.4.0"
 )
 
 var (

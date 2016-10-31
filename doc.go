@@ -40,23 +40,17 @@ program.go:
 
 	package main
 
-	import "gogs.deanishe.net/deanishe/awgo"
-
 	// Package is called aw
-	var wf *aw.Workflow
-
-	func init() {
-		wf = aw.NewWorkflow(nil)
-	}
+	import "gogs.deanishe.net/deanishe/awgo"
 
 	func run() {
 		// Your workflow starts here
-		it := wf.NewItem("First result!")
-		wf.SendFeedback()
+		it := aw.NewItem("First result!")
+		aw.SendFeedback()
 	}
 
 	func main() {
-		wf.Run(run)
+		aw.Run(run)
 	}
 
 In the Script Filter's Script box (Language = /bin/bash with input as argv):
