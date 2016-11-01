@@ -21,19 +21,10 @@ import (
 
 const (
 	// AwgoVersion is the semantic version number of this library.
-	AwgoVersion = "0.4.0"
+	AwgoVersion = "0.4.1"
 )
 
 var (
-	// LogPrefix is the character printed to the log at the start of each run.
-	// The purpose is to make log output cleaner, as it would otherwise
-	// start on the same line as Alfred's introductory blurb.
-	LogPrefix = "\U0001F49C" // Purple heart
-	// MaxLogSize is the size at which the workflow log is rotated.
-	MaxLogSize = 1048576 // 1 MiB
-	// MaxResults is the maximum number of results to send to Alfred.
-	// 0 means send all results.
-	MaxResults = 0
 	// The workflow object operated on by top-level functions.
 	// It can be retrieved/replaced with DefaultWorkflow() and
 	// SetDefaultWorkflow() respectively.
@@ -43,6 +34,11 @@ var (
 	// TODO: Better, more pluggable logging
 	logInitialized bool
 )
+
+// init creates the default Workflow.
+func init() {
+	wf = NewWorkflow(nil)
+}
 
 // InfoPlist contains meta information extracted from info.plist.
 // Use Workflow.Info() to retrieve the Info for the running
@@ -84,11 +80,16 @@ func (i *InfoPlist) Var(name string) string {
 type Options struct {
 	// LogPrefix is the character printed to the log at the start of each run.
 	LogPrefix string
+	// MaxLogSize is the size (in bytes) at which the workflow log is rotated.
+	MaxLogSize int
 	// MaxResults is the maximum number of results to send to Alfred.
 	// 0 means send all results.
 	MaxResults int
 	// Fuzzy sort options.
 	SortOptions *SortOptions
+	// TextErrors tells Workflow to print errors as text, not JSON
+	// Set to true if output goes to a Notification
+	TextErrors bool
 	// The version of your workflow. Use semver. The version string is
 	// read from the envvar set by Alfred or info.plist by default.
 	// This overrides that.
@@ -100,7 +101,12 @@ type Options struct {
 //
 // As a rule, you should create a Workflow in main() and call your main
 // entry-point via Workflow.Run(). Use Workflow.NewItem() to create new
-// feedback Items and Workflow.SendFeedback() to send the results to Alfred.
+// feedback Items and Workflow.SendFeedback() to send the results to
+// Alfred.
+//
+// If you don't need to customise Workflow's behaviour in any way, you
+// can use the package-level functions, which call the corresponding
+// methods on the default Workflow object.
 //
 // See the examples/ subdirectory for some full examples of workflows.
 type Workflow struct {
@@ -137,15 +143,27 @@ type Workflow struct {
 	// TODO: Replace Env with something better (Context object?)
 	Env map[string]string
 	// LogPrefix is the character printed to the log at the start of each run.
+	// Its purpose is to ensure the first real log message starts on its own line,
+	// instead of sharing a line with Alfred's blurb in the debugger.
+	// Default: Purple Heart (\U0001F49C)
 	LogPrefix string
+	// MaxLogSize is the size (in bytes) at which the workflow log is rotated.
+	// Default: 1 MiB
+	MaxLogSize int
 	// MaxResults is the maximum number of results to send to Alfred.
 	// 0 means send all results.
-	MaxResults  int
-	SortOptions *SortOptions // Fuzzy search bonuses and penalties
-
+	// Default: 0
+	MaxResults int
+	// Fuzzy search bonuses and penalties
+	// See constants for defaults
+	SortOptions *SortOptions
+	// TextErrors tells Workflow to print errors as text, not JSON
+	// Set to true if output goes to a Notification
+	TextErrors bool
 	// debug is set from Alfred's `alfred_debug` environment variable.
 	debug bool
-
+	// Time the workflow run started
+	startTime time.Time
 	// version holds value set by user or read from environment variable or info.plist
 	version string
 
@@ -165,16 +183,25 @@ type Workflow struct {
 // uninitialised maps.
 func NewWorkflow(o *Options) *Workflow {
 	w := &Workflow{
-		LogPrefix:   LogPrefix,
+		Env:         map[string]string{},
+		Feedback:    &Feedback{},
+		info:        &InfoPlist{},
+		LogPrefix:   "\U0001F49C", // Purple heart
+		MaxLogSize:  1048576,      // 1 MiB
+		MaxResults:  0,            // Send all results to Alfred
 		SortOptions: NewSortOptions(),
 	}
-	// Configure workflow
+
+	// Configure workflow from options
 	if o != nil {
 		if o.Version != "" {
 			w.version = o.Version
 		}
 		if o.LogPrefix != "" {
 			w.LogPrefix = o.LogPrefix
+		}
+		if o.MaxLogSize > 0 {
+			w.MaxLogSize = o.MaxLogSize
 		}
 		if o.MaxResults > 0 {
 			w.MaxResults = o.MaxResults
@@ -183,12 +210,14 @@ func NewWorkflow(o *Options) *Workflow {
 			w.SortOptions = o.SortOptions
 		}
 	}
-	w.Feedback = &Feedback{}
-	w.info = &InfoPlist{}
+
 	w.loadEnv()
 	w.initializeLogging()
 	return w
 }
+
+// --------------------------------------------------------------------
+// Initialisation methods
 
 // readInfoPlist loads the data in `info.plist`
 func (wf *Workflow) readInfoPlist() error {
@@ -277,7 +306,7 @@ func (wf *Workflow) initializeLogging() {
 	// Rotate log file if larger than MaxLogSize
 	fi, err := os.Stat(wf.LogFile())
 	if err == nil {
-		if fi.Size() >= int64(MaxLogSize) {
+		if fi.Size() >= int64(wf.MaxLogSize) {
 			new := wf.LogFile() + ".1"
 			if err := os.Rename(wf.LogFile(), new); err != nil {
 				fmt.Fprintf(os.Stderr, "Error rotating log: %v", err)
@@ -307,15 +336,39 @@ func (wf *Workflow) initializeLogging() {
 	logInitialized = true
 }
 
-// Debug returns true if Alfred's debugger is open.
-func (wf *Workflow) Debug() bool {
-	return wf.debug
+// outputErrorMsg prints and logs error, then exits process.
+func (wf *Workflow) outputErrorMsg(msg string) {
+	if wf.TextErrors {
+		fmt.Print(msg)
+	} else {
+		wf.Feedback.Clear()
+		wf.NewItem(msg).Icon(IconError)
+		wf.SendFeedback()
+	}
+	log.Printf("[ERROR] %s", msg)
+	wf.finishLog(true)
 }
 
-// Debug calls method of the same name on the default Workflow.
-func Debug() bool { return wf.debug }
+// finishLog outputs the workflow duration
+func (wf *Workflow) finishLog(fatal bool) {
+	elapsed := time.Now().Sub(wf.startTime)
+	s := Pad(fmt.Sprintf(" %v ", elapsed), "-", 50)
+	if fatal {
+		log.Fatalln(s)
+	} else {
+		log.Println(s)
+	}
+}
+
+// --------------------------------------------------------------------
+// API methods
+
+// Debug returns true if Alfred's debugger is open.
+func Debug() bool                { return wf.debug }
+func (wf *Workflow) Debug() bool { return wf.debug }
 
 // Info returns the metadata read from the workflow's info.plist.
+func Info() *InfoPlist { return wf.Info() }
 func (wf *Workflow) Info() *InfoPlist {
 	if err := wf.readInfoPlist(); err != nil {
 		wf.FatalError(err)
@@ -323,11 +376,9 @@ func (wf *Workflow) Info() *InfoPlist {
 	return wf.info
 }
 
-// Info calls method of the same name on the default Workflow.
-func Info() *InfoPlist { return wf.Info() }
-
 // BundleID returns the workflow's bundle ID. This library will not
 // work without a bundle ID, which is set in info.plist.
+func BundleID() string { return wf.BundleID() }
 func (wf *Workflow) BundleID() string {
 	if wf.bundleID == "" { // Really old version of Alfred with no envvars?
 		if err := wf.readInfoPlist(); err != nil {
@@ -340,10 +391,8 @@ func (wf *Workflow) BundleID() string {
 	return wf.bundleID
 }
 
-// BundleID calls method of the same name on the default Workflow.
-func BundleID() string { return wf.BundleID() }
-
 // Name returns the workflow's name as specified in info.plist.
+func Name() string { return wf.Name() }
 func (wf *Workflow) Name() string {
 	if wf.name == "" { // Really old version of Alfred with no envvars?
 		if err := wf.readInfoPlist(); err != nil {
@@ -353,10 +402,8 @@ func (wf *Workflow) Name() string {
 	return wf.name
 }
 
-// Name calls method of the same name on the default Workflow.
-func Name() string { return wf.Name() }
-
 // Version returns the workflow's version from info.plist.
+func Version() string { return wf.Version() }
 func (wf *Workflow) Version() string {
 	if wf.version == "" {
 		if err := wf.readInfoPlist(); err != nil {
@@ -366,16 +413,12 @@ func (wf *Workflow) Version() string {
 	return wf.version
 }
 
-// Version calls method of the same name on the default Workflow.
-func Version() string { return wf.Version() }
-
 // SetVersion sets the workflow's version string.
+func SetVersion(v string)                { wf.SetVersion(v) }
 func (wf *Workflow) SetVersion(v string) { wf.version = v }
 
-// SetVersion calls method of the same name on the default Workflow.
-func SetVersion(v string) { wf.SetVersion(v) }
-
 // Dir returns the path to the workflow's root directory.
+func Dir() string { return wf.Dir() }
 func (wf *Workflow) Dir() string {
 	if wf.workflowDir == "" {
 		dir, err := FindWorkflowRoot()
@@ -387,11 +430,9 @@ func (wf *Workflow) Dir() string {
 	return wf.workflowDir
 }
 
-// Dir calls method of the same name on the default Workflow.
-func Dir() string { return wf.Dir() }
-
 // CacheDir returns the path to the workflow's cache directory.
 // The directory will be created if it does not already exist.
+func CacheDir() string { return wf.CacheDir() }
 func (wf *Workflow) CacheDir() string {
 	if wf.cacheDir == "" { // Really old version of Alfred with no envvars?
 		wf.cacheDir = os.ExpandEnv(fmt.Sprintf(
@@ -401,11 +442,9 @@ func (wf *Workflow) CacheDir() string {
 	return EnsureExists(wf.cacheDir)
 }
 
-// CacheDir calls method of the same name on the default Workflow.
-func CacheDir() string { return wf.CacheDir() }
-
 // DataDir returns the path to the workflow's data directory.
 // The directory will be created if it does not already exist.
+func DataDir() string { return wf.DataDir() }
 func (wf *Workflow) DataDir() string {
 	if wf.dataDir == "" { // Really old version of Alfred with no envvars?
 		wf.dataDir = os.ExpandEnv(fmt.Sprintf(
@@ -415,80 +454,64 @@ func (wf *Workflow) DataDir() string {
 	return EnsureExists(wf.dataDir)
 }
 
-// DataDir calls method of the same name on the default Workflow.
-func DataDir() string { return wf.DataDir() }
-
 // LogFile returns the path to the workflow's log file.
+func LogFile() string { return wf.LogFile() }
 func (wf *Workflow) LogFile() string {
 	return path.Join(wf.CacheDir(), fmt.Sprintf("%s.log", wf.BundleID()))
 }
 
-// LogFile calls method of the same name on the default Workflow.
-func LogFile() string { return wf.LogFile() }
-
 // Vars returns the workflow variables set on Workflow.Feedback.
 // See Feedback.Vars() for more information.
+func Vars() map[string]string { return wf.Feedback.Vars() }
 func (wf *Workflow) Vars() map[string]string {
 	return wf.Feedback.Vars()
 }
 
-// Vars calls method of the same name on the default Workflow.
-func Vars() map[string]string { return wf.Feedback.Vars() }
-
 // Var sets the value of workflow variable k on Workflow.Feedback to v.
 // See Feedback.Var() for more information.
+func Var(k, v string) *Workflow { return wf.Var(k, v) }
 func (wf *Workflow) Var(k, v string) *Workflow {
 	wf.Feedback.Var(k, v)
 	return wf
 }
 
-// Var calls method of the same name on the default Workflow.
-func Var(k, v string) *Workflow { return wf.Var(k, v) }
-
 // NewItem adds and returns a new feedback Item.
 // See Feedback.NewItem() for more information.
+func NewItem(title string) *Item { return wf.NewItem(title) }
 func (wf *Workflow) NewItem(title string) *Item {
 	return wf.Feedback.NewItem(title)
 }
 
-// NewItem calls method of the same name on the default Workflow.
-func NewItem(title string) *Item { return wf.NewItem(title) }
-
 // NewFileItem adds and returns a new feedback Item pre-populated from path.
 // See Feedback.NewFileItem() for more information.
+func NewFileItem(path string) *Item { return wf.NewFileItem(path) }
 func (wf *Workflow) NewFileItem(path string) *Item {
 	return wf.Feedback.NewFileItem(path)
 }
 
-// NewFileItem calls method of the same name on the default Workflow.
-func NewFileItem(path string) *Item { return wf.NewFileItem(path) }
-
 // NewWarningItem adds and returns a new Feedback Item with the system
 // warning icon (exclamation mark on yellow triangle).
+func NewWarningItem(title, subtitle string) *Item { return wf.NewWarningItem(title, subtitle) }
 func (wf *Workflow) NewWarningItem(title, subtitle string) *Item {
 	return wf.Feedback.NewItem(title).
 		Subtitle(subtitle).
 		Icon(IconWarning)
 }
 
-// NewWarningItem calls method of the same name on the default Workflow.
-func NewWarningItem(title, subtitle string) *Item { return wf.NewWarningItem(title, subtitle) }
-
 // Filter fuzzy-sorts feedback Items against query and deletes Items that
 // don't match.
+func Filter(query string) []*Result { return wf.Filter(query) }
 func (wf *Workflow) Filter(query string) []*Result {
 	return wf.Feedback.Filter(query, wf.SortOptions)
 }
 
-// Filter calls method of the same name on the default Workflow.
-func Filter(query string) []*Result { return wf.Filter(query) }
-
 // Run runs your workflow function, catching any errors.
 // If the workflow panics, Run rescues and displays an error
 // message in Alfred.
+func Run(fn func()) { wf.Run(fn) }
 func (wf *Workflow) Run(fn func()) {
 	var vstr string
-	startTime := time.Now()
+	wf.startTime = time.Now()
 	if wf.Version() != "" {
 		vstr = fmt.Sprintf("%s/%v", wf.Name(), wf.Version())
 	} else {
@@ -509,60 +532,54 @@ func (wf *Workflow) Run(fn func()) {
 		if r := recover(); r != nil {
 			log.Println(Pad(" FATAL ERROR ", "-", 50))
 			log.Printf("%s : %s", r, debug.Stack())
-			log.Println(Pad("", "-", 50))
+			log.Println(Pad(" END STACK TRACE ", "-", 50))
 			// log.Printf("Recovered : %x", r)
 			err, ok := r.(error)
 			if ok {
-				wf.FatalError(err)
+				wf.outputErrorMsg(err.Error())
+				// wf.FatalError(err)
+				// if wf.TextErrors {
+				// 	fmt.Print(err.Error())
+				// } else {
+				// 	wf.FatalError(err)
+				// }
 			}
-			wf.Fatal(fmt.Sprintf("%v", err))
+			wf.outputErrorMsg(fmt.Sprintf("%v", r))
+			// if wf.TextErrors {
+			// 	fmt.Printf("%v", r)
+			// } else {
+			// 	wf.Fatal(fmt.Sprintf("[ERROR] %v", r))
+			// }
 		}
 	}()
 
 	// Call the workflow's main function.
 	fn()
 
-	elapsed := time.Now().Sub(startTime)
-	log.Println(Pad(fmt.Sprintf(" %v ", elapsed), "-", 50))
+	wf.finishLog(false)
 }
-
-// Run calls method of the same name on the default Workflow.
-func Run(fn func()) { wf.Run(fn) }
 
 // FatalError displays an error message in Alfred, then calls log.Fatal(),
 // terminating the workflow.
-func (wf *Workflow) FatalError(err error) {
-	msg := fmt.Sprintf("%v", err)
-	wf.Fatal(msg)
-}
-
-// FatalError calls method of the same name on the default Workflow.
-func FatalError(err error) { wf.FatalError(err) }
+func FatalError(err error)                { wf.FatalError(err) }
+func (wf *Workflow) FatalError(err error) { wf.Fatal(err.Error()) }
 
 // Fatal displays an error message in Alfred, then calls log.Fatal(),
 // terminating the workflow.
-func (wf *Workflow) Fatal(errMsg string) {
-	wf.Feedback.Clear()
-	wf.NewItem(errMsg).Icon(IconError)
-	wf.SendFeedback()
-	log.Fatal(errMsg)
-}
-
-// Fatal calls method of the same name on the default Workflow.
-func Fatal(msg string) { wf.Fatal(msg) }
+func Fatal(msg string)                { wf.Fatal(msg) }
+func (wf *Workflow) Fatal(msg string) { wf.outputErrorMsg(msg) }
 
 // Fatalf displays an error message in Alfred, then calls log.Fatal(),
 // terminating the workflow.
+func Fatalf(format string, args ...interface{}) { wf.Fatalf(format, args...) }
 func (wf *Workflow) Fatalf(format string, args ...interface{}) {
 	wf.Fatal(fmt.Sprintf(format, args...))
 }
 
-// Fatalf calls method of the same name on the default Workflow.
-func Fatalf(format string, args ...interface{}) { wf.Fatalf(format, args...) }
-
 // Warn displays a warning message in Alfred immediately. Unlike
 // FatalError()/Fatal(), this does not terminate the workflow,
 // but you can't send any more results to Alfred.
+func Warn(title, subtitle string) *Workflow { return wf.Warn(title, subtitle) }
 func (wf *Workflow) Warn(title, subtitle string) *Workflow {
 	wf.Feedback.Clear()
 	wf.NewItem(title).
@@ -571,12 +588,10 @@ func (wf *Workflow) Warn(title, subtitle string) *Workflow {
 	return wf.SendFeedback()
 }
 
-// Warn calls method of the same name on the default Workflow.
-func Warn(title, subtitle string) *Workflow { return wf.Warn(title, subtitle) }
-
 // SendFeedback generates and sends the JSON response to Alfred.
 // The JSON is output to STDOUT. At this point, Alfred considers your
 // workflow complete; sending further responses will have no effect.
+func SendFeedback() { wf.SendFeedback() }
 func (wf *Workflow) SendFeedback() *Workflow {
 	// Truncate Items if MaxResults is set
 	if wf.MaxResults > 0 && len(wf.Feedback.Items) > wf.MaxResults {
@@ -587,13 +602,6 @@ func (wf *Workflow) SendFeedback() *Workflow {
 	}
 	return wf
 }
-
-func init() {
-	wf = NewWorkflow(nil)
-}
-
-// SendFeedback calls method of the same name on the default Workflow.
-func SendFeedback() { wf.SendFeedback() }
 
 // DefaultWorkflow returns the Workflow object used by the
 // package-level functions.
