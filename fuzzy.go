@@ -49,7 +49,7 @@ type Result struct {
 	SortKey string
 }
 
-// SortOptions sets bonuses and penalties for Sorter.
+// SortOptions sets bonuses and penalties for Sorter/Match.
 type SortOptions struct {
 	AdjacencyBonus          float64 // Bonus for adjacent matches
 	SeparatorBonus          float64 // Bonus if the match is after a separator
@@ -193,7 +193,7 @@ func SortStrings(data []string, query string) []*Result {
 	return s.Sort(query)
 }
 
-// Match scores str for query.
+// Match scores str against query using fuzzy matching and the specified sort options.
 func Match(str, query string, o *SortOptions) *Result {
 	var (
 		match    = false

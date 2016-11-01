@@ -8,6 +8,7 @@ package aw
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -318,4 +319,15 @@ func TestFeedbackVars(t *testing.T) {
 	if m.Vars()["foo"] != "bar" {
 		t.Fatalf("Modifier var has wrong value. Expected=bar, Received=%v", m.Vars()["foo"])
 	}
+}
+
+func ExampleArgVars() {
+	// Set workflow variables from Alfred's Run Script Action
+	av := NewArgVars()
+	av.Arg("baz")        // Set output (i.e. next action's {query}) to "baz"
+	av.Var("foo", "bar") // Set workflow variable "foo" to "bar"
+	if s, err := av.String(); err == nil {
+		fmt.Print(s)
+	}
+	// Output: {"alfredworkflow":{"arg":"baz","variables":{"foo":"bar"}}}
 }

@@ -2,11 +2,11 @@
 Package aw provides utilities for building workflows for Alfred 3.
 https://www.alfredapp.com/
 
-NOTE: This library is currently rather alpha. I'm new to Go (and Alfred 3 is new),
-so doubtless a lot will change as I figure out what I'm doing.
+NOTE: This library is currently rather alpha. I'm new to Go, so
+doubtless a lot will change as I figure out what I'm doing.
 
-This library is released under the MIT licence, which you can read online at
-https://opensource.org/licenses/MIT
+This library is released under the MIT licence, which you can read
+online at https://opensource.org/licenses/MIT
 
 To read this documentation on godoc.org, see
 http://godoc.org/gogs.deanishe.net/deanishe/awgo
@@ -42,6 +42,7 @@ program.go:
 
 	// Package is called aw
 	import "gogs.deanishe.net/deanishe/awgo"
+import "github.com/mvdan/interfacer"
 
 	func run() {
 		// Your workflow starts here
@@ -53,7 +54,8 @@ program.go:
 		aw.Run(run)
 	}
 
-In the Script Filter's Script box (Language = /bin/bash with input as argv):
+In the Script Filter's Script box (Language = /bin/bash with input as
+argv):
 
 	./program "$1"
 
@@ -65,24 +67,28 @@ its variables are only settable, not gettable.
 
 Fuzzy sorting
 
-Sort() implements Alfred-like fuzzy search, e.g. "of" will match
-"OmniFocus" and "got" will match "Game of Thrones".
+Sort() and Match() implement Alfred-like fuzzy search, e.g. "of" will
+match "OmniFocus" and "got" will match "Game of Thrones".
+
+Match() compares a query and a string, while Sort() sorts an object that
+implements the Sortable interface. Both return Result structs for each
+compared string.
 
 The algorithm is based on Forrest Smith's reverse engineering of Sublime
 Text's search: https://blog.forrestthewoods.com/reverse-engineering-sublime-text-s-fuzzy-match-4cffeed33fdb
 
-The Feedback struct implements Sortable, so you can sort/filter feedback items.
-See examples/fuzzy-simple for a basic example.
+The Feedback struct implements Sortable, so you can sort/filter feedback
+Items. See examples/fuzzy-simple for a basic example.
 
-See examples/fuzzy-cached for a demonstration of implementing
-Sortable on your own structs and customising the sort settings.
+See examples/fuzzy-cached for a demonstration of implementing Sortable
+on your own structs and customising the sort settings.
 
 
 Sending results to Alfred
 
 Generally, you'll want to use NewItem() to create items, then
-SendFeedback() to generate the JSON and send it to Alfred
-(i.e. print it to STDOUT).
+SendFeedback() to generate the JSON and send it to Alfred (i.e. print
+it to STDOUT).
 
 You can only call a sending method once: multiple calls would result in
 invalid JSON, as there'd be multiple root objects, so any subsequent
@@ -95,36 +101,37 @@ calls to sending methods are logged and ignored. Sending methods are:
 	Warn()
 
 The Workflow struct (more precisely, its Feedback struct) retains the
-Item, so you don't need to. Just populate it and then call SendFeedback()
-when all your results are ready.
+Item, so you don't need to. Just populate it and then call
+SendFeedback() when all your results are ready.
 
 There are additional helper methods for specific situations.
 
 NewFileItem() returns an Item pre-populated from a filepath (title,
 subtitle, icon, arg, etc.).
 
-FatalError(), Fatal() and Fatalf() will immediately send a single result to
-Alfred with an error message and then call log.Fatalf(), terminating
+FatalError(), Fatal() and Fatalf() will immediately send a single result
+to Alfred with an error message and then call log.Fatalf(), terminating
 the workflow.
 
 Warn() also immediately sends a single result to Alfred with a warning
-message (and icon), but does not terminate the workflow.
-However, because the JSON has already been sent to Alfred, you can't
-send any more results after calling Warn().
+message (and icon), but does not terminate the workflow. However,
+because the JSON has already been sent to Alfred, you can't send any
+more results after calling Warn().
 
 If you want to include a warning with other results, use NewWarningItem().
 
 
 Logging
 
-Awgo uses the default log package. It is automatically configured to log to
-STDERR (Alfred's debugger) and to a logfile in the workflow's cache directory.
+Awgo uses the default log package. It is automatically configured to log
+to STDERR (Alfred's debugger) and to a logfile in the workflow's cache
+directory.
 
-The log file is rotated when it exceeds 200 KiB in size.
-One previous log is kept.
+The log file is rotated when it exceeds 1 MiB in size. One previous
+log is kept.
 
-Awgo detects when Alfred's debugger is open (Workflow.Debug()
-returns true) and in this case prepends filename:linenumber: to log messages.
+Awgo detects when Alfred's debugger is open (Workflow.Debug() returns
+true) and in this case prepends filename:linenumber: to log messages.
 
 
 Performance

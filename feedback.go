@@ -493,10 +493,10 @@ func (fb *Feedback) Less(i, j int) bool { return fb.SortKey(i) < fb.SortKey(j) }
 // Swap implements sort.Interface.
 func (fb *Feedback) Swap(i, j int) { fb.Items[i], fb.Items[j] = fb.Items[j], fb.Items[i] }
 
-// ArgVars is an Alfred "arg" plus workflow variables to set
-// output and workflow variables from a non-Script Filter action.
+// ArgVars lets you set workflow variables from a non-Script Filter action.
 //
-// Write to STDOUT to pass variables to downstream workflow elements.
+// Write output of ArgVars.String() to STDOUT to pass variables to downstream
+// workflow elements.
 type ArgVars struct {
 	arg  *string
 	vars map[string]string
