@@ -90,7 +90,7 @@ type Options struct {
 	// HelpURL is a link to your issues page/forum thread where users can
 	// report bugs. It is shown in the debugger if the workflow crashes.
 	// If no HelpURL is specified, the Website specified in the main
-	// workflow setup dialog will be shown (if one is set)
+	// workflow setup dialog will be shown (if one is set).
 	HelpURL string
 
 	// LogPrefix is the character printed to the log at the start of each run.
@@ -116,8 +116,8 @@ type Options struct {
 	// See constants for defaults
 	SortOptions *SortOptions
 
-	// TextErrors tells Workflow to print errors as text, not JSON
-	// Set to true if output goes to a Notification
+	// TextErrors tells Workflow to print errors as text, not JSON.
+	// Set to true if output goes to a Notification.
 	TextErrors bool
 }
 
@@ -172,7 +172,7 @@ type Workflow struct {
 	// HelpURL is a link to your issues page/forum thread where users can
 	// report bugs. It is shown in the debugger if the workflow crashes.
 	// If no HelpURL is specified, the Website specified in the main
-	// workflow setup dialog will be shown (if one is set)
+	// workflow setup dialog will be shown (if one is set).
 	HelpURL string
 
 	// LogPrefix is the character printed to the log at the start of each run.
@@ -191,12 +191,11 @@ type Workflow struct {
 	// Default: 0
 	MaxResults int
 
-	// Fuzzy search bonuses and penalties
-	// See constants for defaults
+	// Fuzzy search bonuses and penalties. See constants for defaults.
 	SortOptions *SortOptions
 
 	// TextErrors tells Workflow to print errors as text, not JSON
-	// Set to true if output goes to a Notification
+	// Set to true if output goes to a Notification.
 	TextErrors bool
 
 	// debug is set from Alfred's `alfred_debug` environment variable.
@@ -204,7 +203,7 @@ type Workflow struct {
 
 	magicPrefix string // Overrides DefaultMagicPrefix for magic actions.
 
-	// version holds value set by user or read from environment variable or info.plist
+	// version holds value set by user or read from environment variable or info.plist.
 	version string
 
 	// updater is configured if GitHub is specified in Options.

@@ -56,16 +56,15 @@ program.go:
 
 	// Package is called aw
 	import "gogs.deanishe.net/deanishe/awgo"
-import "9fans.net/go/plan9"
 
 	func run() {
-		// Your workflow starts here
-		it := aw.NewItem("First result!")
-		aw.SendFeedback()
+	    // Your workflow starts here
+	    aw.NewItem("First result!")
+	    aw.SendFeedback()
 	}
 
 	func main() {
-		aw.Run(run)
+	    aw.Run(run)
 	}
 
 In the Script Filter's Script box (Language = /bin/bash with input as
