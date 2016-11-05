@@ -9,14 +9,15 @@ package aw
 import (
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 )
 
-// FindWorkflowRoot returns the workflow root directory.
+// FindWorkflowRoot returns the workflow's root directory.
 // Tries to find info.plist in or above current working directory
 // and the executable's parent directory.
+//
+// TODO: Make function FindWorkflowRoot private.
 func FindWorkflowRoot() (string, error) {
 	candidateDirs := []string{}
 	// Current working directory
@@ -63,15 +64,17 @@ func PathExists(path string) bool {
 
 // FindFileUpwards searches for a file named filename. It first looks in startdir,
 // then its parent directory and so on until it reaches /
+//
+// TODO: Make function FindFileUpwards private.
 func FindFileUpwards(filename string, startdir string) (string, error) {
 	dirpath, _ := filepath.Abs(startdir)
 	for dirpath != "/" {
-		p := path.Join(dirpath, filename)
+		p := filepath.Join(dirpath, filename)
 		if PathExists(p) {
 			// log.Printf("%v found at %v", filename, p)
 			return p, nil
 		}
-		dirpath = path.Dir(dirpath)
+		dirpath = filepath.Dir(dirpath)
 	}
 	err := fmt.Errorf("File %v not found in or above %v", filename, startdir)
 	return "", err

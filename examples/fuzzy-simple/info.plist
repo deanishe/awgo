@@ -37,7 +37,7 @@
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
-	<string>Awgo Demo: Fuzzy Search</string>
+	<string>AwGo Demo: Fuzzy Search</string>
 	<key>objects</key>
 	<array>
 		<dict>

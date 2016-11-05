@@ -29,6 +29,7 @@ const (
 // for Python. Preview them here:
 // http://www.deanishe.net/alfred-workflow/user-manual/icons.html#list-of-icons
 var (
+	IconWorkflow  *Icon // icon.png (workflow's own icon)
 	IconAccount   *Icon // Accounts.icns
 	IconBurn      *Icon // BurningIcon.icns
 	IconClock     *Icon // Clock.icns
@@ -81,8 +82,8 @@ var (
 //
 // This will only work on Spotlight-indexed files.
 type Icon struct {
-	Value string `json:"path"`
-	Type  string `json:"type,omitempty"`
+	Value string `json:"path"`           // Path or UTI
+	Type  string `json:"type,omitempty"` // "fileicon", "filetype" or ""
 }
 
 func systemIcon(filename string) *Icon {
@@ -96,6 +97,7 @@ func systemIcon(filename string) *Icon {
 }
 
 func init() {
+	IconWorkflow = &Icon{"icon.png", ""}
 	IconAccount = systemIcon("Accounts")
 	IconBurn = systemIcon("BurningIcon")
 	IconClock = systemIcon("Clock")

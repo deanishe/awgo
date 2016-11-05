@@ -206,6 +206,18 @@ var stringifyArgTests = []struct {
 		ExpectedString: "\x00"},
 }
 
+// TestEmpty asserts feedback is empty.
+func TestEmpty(t *testing.T) {
+	fb := NewFeedback()
+	if !fb.IsEmpty() {
+		t.Errorf("Feedback not empty.")
+	}
+	fb.NewItem("test")
+	if fb.IsEmpty() {
+		t.Errorf("Feedback empty.")
+	}
+}
+
 func TestMarshalItem(t *testing.T) {
 	for i, test := range marshalItemTests {
 		// log.Printf("#%d: %v", i, test.Item)

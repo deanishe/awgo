@@ -72,7 +72,7 @@ func init() {
 	sopts.LeadingLetterPenalty = -0.1
 	sopts.MaxLeadingLetterPenalty = -3.0
 	sopts.UnmatchedLetterPenalty = -0.5
-	wf = aw.NewWorkflow(nil)
+	wf = aw.NewWorkflow(&aw.Options{HelpURL: "http://www.deanishe.net/"})
 }
 
 // Book is a single work on Gutenberg.org.
@@ -111,6 +111,8 @@ func (b *Books) Filter(query string, max int) {
 	var n int
 	for i, it := range b.Items {
 		r := res[i]
+		// Ignore items that are no match (i.e. not all characters in query
+		// are in the item) or whose score is below minScore.
 		if r.Match && r.Score >= minScore {
 			n++
 			items = append(items, it)
@@ -283,6 +285,8 @@ func run() {
 
 	// Filter books based on query
 	log.Printf("%d/%d books match `%v`", b.Len(), total, query)
+
+	wf.WarnEmpty("No books found", "Try a different query?")
 
 	wf.SendFeedback()
 }

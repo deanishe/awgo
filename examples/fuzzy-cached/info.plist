@@ -27,7 +27,7 @@
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
-	<string>Awgo Demo: Fuzzy Search (Very Large) Cached Dataset</string>
+	<string>AwGo Demo: Fuzzy Search (Very Large) Cached Dataset</string>
 	<key>objects</key>
 	<array>
 		<dict>

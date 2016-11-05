@@ -392,6 +392,9 @@ func (fb *Feedback) Clear() {
 	}
 }
 
+// IsEmpty returns true if Feedback contains no items.
+func (fb *Feedback) IsEmpty() bool { return len(fb.Items) == 0 }
+
 // NewItem adds a new Item and returns a pointer to it.
 //
 // The Item inherits and workflow variables set on the Feedback parent at

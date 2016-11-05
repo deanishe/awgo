@@ -65,7 +65,6 @@ func run() {
 
 	// Generate feedback for Alfred
 	for _, path := range paths {
-
 		// Convenience method. Sets Item title to filename, subtitle
 		// to shortened path, arg to full path, and icon to file icon.
 		it := wf.NewFileItem(path)

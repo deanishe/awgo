@@ -3,7 +3,10 @@ Package aw provides utilities for building workflows for Alfred 3.
 https://www.alfredapp.com/
 
 NOTE: This library is currently rather alpha. I'm new to Go, so
-doubtless a lot will change as I figure out what I'm doing.
+doubtless a lot will change as I figure out what I'm doing. The plan
+is to implement something in idiomatic Go that is functionally similar
+to my Alfred-Workflow library for Python:
+http://www.deanishe.net/alfred-workflow/index.html
 
 This library is released under the MIT licence, which you can read
 online at https://opensource.org/licenses/MIT
@@ -18,23 +21,29 @@ The current main features are:
 
 	- Easy access to Alfred context, such as data and cache directories.
 	- Simple generation of Alfred JSON feedback.
-	- Fuzzy sorting.
+	- Fuzzy sorting/filtering.
 	- Catches panics, logs stack trace and shows user an error message.
+	- Workflow updates API with built-in support for GitHub releases.
 	- (Rotated) Log file for easier debugging.
 	- OS X system icons.
 
-	TODO: Starting background processes
+
+Upcoming features
+
+These features are planned:
+
+	TODO: Starting and managing background processes
 	TODO: Caching and storing data
-	TODO: Workflow update via GitHub releases
-	TODO: Magic arguments
-	TODO: Alfred/AppleScript helpers
+	TODO: "Magic" arguments. See http://www.deanishe.net/alfred-workflow/user-manual/magic-arguments.html
+	TODO: Alfred/AppleScript helpers?
+	TODO: Implement standard-compliant pre-release comparison in SemVer?
 
 
 Usage
 
 Typically, you'd call your program's main entry point via Run(). This
 way, the library will rescue any panic, log the stack trace and show
-an error to the user.
+an error message to the user in Alfred.
 
 program.go:
 
@@ -42,7 +51,7 @@ program.go:
 
 	// Package is called aw
 	import "gogs.deanishe.net/deanishe/awgo"
-import "github.com/mvdan/interfacer"
+import "9fans.net/go/plan9"
 
 	func run() {
 		// Your workflow starts here
@@ -65,23 +74,26 @@ just as a way to encapsulate search results for Alfred. In particular,
 its variables are only settable, not gettable.
 
 
-Fuzzy sorting
+Fuzzy sorting/filtering
 
-Sort() and Match() implement Alfred-like fuzzy search, e.g. "of" will
-match "OmniFocus" and "got" will match "Game of Thrones".
+Sort() and Match() implement fuzzy search, e.g. "of" will match "OmniFocus"
+and "got" will match "Game of Thrones".
 
 Match() compares a query and a string, while Sort() sorts an object that
 implements the Sortable interface. Both return Result structs for each
 compared string.
 
-The algorithm is based on Forrest Smith's reverse engineering of Sublime
-Text's search: https://blog.forrestthewoods.com/reverse-engineering-sublime-text-s-fuzzy-match-4cffeed33fdb
+The Workflow and Feedback structs provide an additional Filter() method,
+which fuzzy-sorts Items and removes any that do not match the query.
 
 The Feedback struct implements Sortable, so you can sort/filter feedback
 Items. See examples/fuzzy-simple for a basic example.
 
 See examples/fuzzy-cached for a demonstration of implementing Sortable
 on your own structs and customising the sort settings.
+
+The algorithm is based on Forrest Smith's reverse engineering of Sublime
+Text's search: https://blog.forrestthewoods.com/reverse-engineering-sublime-text-s-fuzzy-match-4cffeed33fdb
 
 
 Sending results to Alfred
@@ -132,6 +144,16 @@ log is kept.
 
 Awgo detects when Alfred's debugger is open (Workflow.Debug() returns
 true) and in this case prepends filename:linenumber: to log messages.
+
+
+Updates
+
+The Updater/Releaser API provides the ability to check for newer versions
+of your workflow. A GitHub Releaser that updates from GitHub releases is built in.
+You can use your own backend by implementing the Releaser interface.
+
+The only hard requirement is support for (mostly) semantic version numbers.
+See http://semver.org for details.
 
 
 Performance
