@@ -621,11 +621,17 @@ func TestGHUpdater(t *testing.T) {
 	}
 
 	// v6.0 is available
-	u := NewUpdater(gh)
+	if err := clearUpdateCache(); err != nil {
+		t.Fatal(err)
+	}
+	u, err := NewUpdater(gh)
+	if err != nil {
+		t.Fatalf("Error creating updater: %s", err)
+	}
 	u.CurrentVersion = mustVersion("2")
 
 	// Update releases
-	if err := u.CheckUpdate(); err != nil {
+	if err := u.CheckForUpdate(); err != nil {
 		t.Fatalf("Couldn't retrieve releases: %s", err)
 	}
 
@@ -641,5 +647,8 @@ func TestGHUpdater(t *testing.T) {
 	u.Prereleases = true
 	if !u.UpdateAvailable() {
 		t.Fatal("No update found")
+	}
+	if err := clearUpdateCache(); err != nil {
+		t.Fatal(err)
 	}
 }

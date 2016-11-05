@@ -10,6 +10,7 @@ package aw
 
 import "testing"
 import "time"
+import "fmt"
 
 func mustVersion(s string) SemVer {
 	v, _ := NewSemVer(s)
@@ -30,10 +31,25 @@ func (r testReleaser) Releases() ([]*Release, error) {
 	}, nil
 }
 
+func clearUpdateCache() error {
+	u, err := NewUpdater(testReleaser{})
+	if err != nil {
+		return fmt.Errorf("Error creating updater: %s", err)
+	}
+	u.clearCache()
+	return nil
+}
+
 func TestUpdater(t *testing.T) {
+	if err := clearUpdateCache(); err != nil {
+		t.Fatal(err)
+	}
 	rl := testReleaser{}
-	u := NewUpdater(rl)
-	if err := u.CheckUpdate(); err != nil {
+	u, err := NewUpdater(rl)
+	if err != nil {
+		t.Fatalf("Error creating updater: %s", err)
+	}
+	if err := u.CheckForUpdate(); err != nil {
 		t.Fatalf("Error getting releases: %s", err)
 	}
 	u.CurrentVersion = mustVersion("1")
@@ -53,12 +69,21 @@ func TestUpdater(t *testing.T) {
 	if !u.UpdateAvailable() {
 		t.Fatal("Bad update #4")
 	}
+	if err := clearUpdateCache(); err != nil {
+		t.Fatal(err)
+	}
 }
 
 // TestUpdateInterval tests caching of LastCheck.
 func TestUpdateInterval(t *testing.T) {
-	NewUpdater(testReleaser{}).clearCache()
-	u := NewUpdater(testReleaser{})
+	if err := clearUpdateCache(); err != nil {
+		t.Fatal(err)
+	}
+	u, err := NewUpdater(testReleaser{})
+	if err != nil {
+		t.Fatalf("Error creating updater: %s", err)
+	}
+
 	// UpdateInterval is set
 	if !u.LastCheck.IsZero() {
 		t.Fatalf("LastCheck is not zero.")
@@ -67,7 +92,7 @@ func TestUpdateInterval(t *testing.T) {
 		t.Fatalf("Update is not due.")
 	}
 	// LastCheck is updated
-	if err := u.CheckUpdate(); err != nil {
+	if err := u.CheckForUpdate(); err != nil {
 		t.Fatalf("Error fetching releases: %s", err)
 	}
 	if u.LastCheck.IsZero() {
@@ -80,5 +105,8 @@ func TestUpdateInterval(t *testing.T) {
 	u.UpdateInterval = time.Duration(1 * time.Nanosecond)
 	if !u.CheckDue() {
 		t.Fatalf("Update is not due.")
+	}
+	if err := clearUpdateCache(); err != nil {
+		t.Fatal(err)
 	}
 }

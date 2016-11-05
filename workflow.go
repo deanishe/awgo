@@ -7,6 +7,7 @@
 package aw
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -76,17 +77,31 @@ func (i *InfoPlist) Var(name string) string {
 // Options contains the configuration options for a Workflow struct.
 // Currently not a whole lot of options supported...
 type Options struct {
+	// GitHub is the GitHub repo the workflow should pull updates from.
+	// It should have the form "username/reponame", e.g. "deanishe/alfred-ssh".
+	// Specify this to use workflow methods UpdateCheckDue(), UpdateAvailable(),
+	// UpdateCheck() and UpdateInstall().
+	GitHub string
 	// HelpURL is a link to your issues page/forum thread where users can
-	// report bugs. It is shown in the debugger if the workflow crashes
+	// report bugs. It is shown in the debugger if the workflow crashes.
+	// If no HelpURL is specified, the Website specified in the main
+	// workflow setup dialog will be shown (if one is set)
 	HelpURL string
 	// LogPrefix is the character printed to the log at the start of each run.
+	// Its purpose is to ensure the first real log message starts on its own line,
+	// instead of sharing a line with Alfred's blurb in the debugger. This is only
+	// printed to STDERR (i.e. Alfred's debugger), not written to the log file.
+	// Default: Purple Heart (\U0001F49C)
 	LogPrefix string
 	// MaxLogSize is the size (in bytes) at which the workflow log is rotated.
+	// Default: 1 MiB
 	MaxLogSize int
 	// MaxResults is the maximum number of results to send to Alfred.
 	// 0 means send all results.
+	// Default: 0
 	MaxResults int
-	// Fuzzy sort options.
+	// Fuzzy sort bonuses and penalties
+	// See constants for defaults
 	SortOptions *SortOptions
 	// TextErrors tells Workflow to print errors as text, not JSON
 	// Set to true if output goes to a Notification
@@ -94,7 +109,6 @@ type Options struct {
 	// The version of your workflow. Use semver. The version string is
 	// read from the envvar set by Alfred or info.plist by default.
 	// This overrides that.
-	Version string
 }
 
 // Workflow provides a simple, consolidated API for building Script
@@ -182,6 +196,9 @@ type Workflow struct {
 	// version holds value set by user or read from environment variable or info.plist
 	version string
 
+	// updater is configured if GitHub is specified in Options.
+	updater *Updater
+
 	// Populated by readInfoPlist()
 	info       *InfoPlist
 	infoLoaded bool
@@ -212,9 +229,9 @@ func NewWorkflow(o *Options) *Workflow {
 		if o.HelpURL != "" {
 			w.HelpURL = o.HelpURL
 		}
-		if o.Version != "" {
-			w.version = o.Version
-		}
+		// if o.Version != "" {
+		// 	w.version = o.Version
+		// }
 		if o.LogPrefix != "" {
 			w.LogPrefix = o.LogPrefix
 		}
@@ -226,6 +243,13 @@ func NewWorkflow(o *Options) *Workflow {
 		}
 		if o.SortOptions != nil {
 			w.SortOptions = o.SortOptions
+		}
+		if o.GitHub != "" {
+			var err error
+			w.updater, err = NewUpdater(&GitHub{Repo: o.GitHub})
+			if err != nil {
+				log.Printf("Error configuring updater: %s", err)
+			}
 		}
 	}
 
@@ -354,56 +378,6 @@ func (wf *Workflow) initializeLogging() {
 	logInitialized = true
 }
 
-// outputErrorMsg prints and logs error, then exits process.
-func (wf *Workflow) outputErrorMsg(msg string) {
-	if wf.TextErrors {
-		fmt.Print(msg)
-	} else {
-		wf.Feedback.Clear()
-		wf.NewItem(msg).Icon(IconError)
-		wf.SendFeedback()
-	}
-	log.Printf("[ERROR] %s", msg)
-	// Show help URL or website URL
-	if u := wf.helpURL(); u != "" {
-		log.Printf("Get help at %s", u)
-	}
-	wf.finishLog(true)
-}
-
-func (wf *Workflow) helpURL() string {
-	if wf.HelpURL != "" {
-		return wf.HelpURL
-	}
-	if wf.Info().Website != "" {
-		return wf.Info().Website
-	}
-	return ""
-}
-
-// finishLog outputs the workflow duration
-func (wf *Workflow) finishLog(fatal bool) {
-	elapsed := time.Now().Sub(wf.startTime)
-	s := Pad(fmt.Sprintf(" %v ", elapsed), "-", 50)
-	if fatal {
-		log.Fatalln(s)
-	} else {
-		log.Println(s)
-	}
-}
-
-// awDataDir is the directory for awgo's own data.
-func awDataDir() string { return wf.awDataDir() }
-func (wf *Workflow) awDataDir() string {
-	return EnsureExists(filepath.Join(wf.DataDir(), "_aw"))
-}
-
-// awCacheDir is the directory for awgo's own cache.
-func awCacheDir() string { return wf.awCacheDir() }
-func (wf *Workflow) awCacheDir() string {
-	return EnsureExists(filepath.Join(wf.CacheDir(), "_aw"))
-}
-
 // --------------------------------------------------------------------
 // API methods
 
@@ -526,6 +500,9 @@ func LogFile() string { return wf.LogFile() }
 func (wf *Workflow) LogFile() string {
 	return filepath.Join(wf.CacheDir(), fmt.Sprintf("%s.log", wf.BundleID()))
 }
+
+// --------------------------------------------------------------------
+// Feedback
 
 // Vars returns the workflow variables set on Workflow.Feedback.
 // See Feedback.Vars() for more information.
@@ -713,6 +690,99 @@ func (wf *Workflow) SendFeedback() *Workflow {
 	}
 	return wf
 }
+
+// --------------------------------------------------------------------
+// Updating
+
+// UpdateCheckDue returns true if an update is available.
+func (wf *Workflow) UpdateCheckDue() bool {
+	if wf.updater == nil {
+		log.Println("No GitHub repo configured")
+		return false
+	}
+	return wf.updater.CheckDue()
+}
+
+// CheckForUpdate retrieves and caches the list of available releases.
+func (wf *Workflow) CheckForUpdate() error {
+	if wf.updater == nil {
+		return errors.New("No GitHub repo configured")
+	}
+	return wf.updater.CheckForUpdate()
+}
+
+// UpdateAvailable returns true if a newer version is available to install.
+func (wf *Workflow) UpdateAvailable() bool {
+	if wf.updater == nil {
+		log.Println("No GitHub repo configured")
+		return false
+	}
+	return wf.updater.UpdateAvailable()
+}
+
+// InstallUpdate downloads and installs the latest version of the workflow.
+func (wf *Workflow) InstallUpdate() error {
+	if wf.updater == nil {
+		return errors.New("No GitHub repo configured")
+	}
+	return wf.updater.Install()
+}
+
+// --------------------------------------------------------------------
+// Helper methods
+
+// outputErrorMsg prints and logs error, then exits process.
+func (wf *Workflow) outputErrorMsg(msg string) {
+	if wf.TextErrors {
+		fmt.Print(msg)
+	} else {
+		wf.Feedback.Clear()
+		wf.NewItem(msg).Icon(IconError)
+		wf.SendFeedback()
+	}
+	log.Printf("[ERROR] %s", msg)
+	// Show help URL or website URL
+	if u := wf.helpURL(); u != "" {
+		log.Printf("Get help at %s", u)
+	}
+	wf.finishLog(true)
+}
+
+func (wf *Workflow) helpURL() string {
+	if wf.HelpURL != "" {
+		return wf.HelpURL
+	}
+	if wf.Info().Website != "" {
+		return wf.Info().Website
+	}
+	return ""
+}
+
+// finishLog outputs the workflow duration
+func (wf *Workflow) finishLog(fatal bool) {
+	elapsed := time.Now().Sub(wf.startTime)
+	s := Pad(fmt.Sprintf(" %v ", elapsed), "-", 50)
+	if fatal {
+		log.Fatalln(s)
+	} else {
+		log.Println(s)
+	}
+}
+
+// awDataDir is the directory for awgo's own data.
+func awDataDir() string { return wf.awDataDir() }
+func (wf *Workflow) awDataDir() string {
+	return EnsureExists(filepath.Join(wf.DataDir(), "_aw"))
+}
+
+// awCacheDir is the directory for awgo's own cache.
+func awCacheDir() string { return wf.awCacheDir() }
+func (wf *Workflow) awCacheDir() string {
+	return EnsureExists(filepath.Join(wf.CacheDir(), "_aw"))
+}
+
+// --------------------------------------------------------------------
+// Package-level only
 
 // DefaultWorkflow returns the Workflow object used by the
 // package-level functions.

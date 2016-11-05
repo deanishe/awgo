@@ -48,6 +48,33 @@ func TestParseVars(t *testing.T) {
 	}
 }
 
+// TestUpdates ensures an unconfigured workflow doesn't think it can update
+func TestUpdates(t *testing.T) {
+	if err := clearUpdateCache(); err != nil {
+		t.Fatal(err)
+	}
+	wf := NewWorkflow(nil)
+	if wf.UpdateCheckDue() != false {
+		t.Fatal("Unconfigured workflow wants to update")
+	}
+	if wf.UpdateAvailable() != false {
+		t.Fatal("Unconfigured workflow wants to update")
+	}
+	if err := wf.CheckForUpdate(); err == nil {
+		t.Fatal("Unconfigured workflow didn't error on update check")
+	}
+	if err := wf.InstallUpdate(); err == nil {
+		t.Fatal("Unconfigured workflow didn't error on update install")
+	}
+	wf = NewWorkflow(&Options{GitHub: "deanishe/alfred-ssh"})
+	if wf.UpdateCheckDue() != true {
+		t.Fatal("Workflow doesn't want to update")
+	}
+	if err := clearUpdateCache(); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func ExampleInfo_Var() {
 	i := Info()
 	fmt.Println(i.Var("exported_var"))
@@ -65,13 +92,6 @@ func ExampleNewWorkflow() {
 	// Output:
 	// net.deanishe.awgo
 	// 0.2.2
-}
-
-func ExampleNewWorkflow_overrideVersion() {
-	// Override the version string read from info.plist (if present)
-	wf := NewWorkflow(&Options{Version: "1.1.0"})
-	fmt.Println(wf.Version())
-	// Output: 1.1.0
 }
 
 // The normal way to create a new Item, but not the normal way to use it.

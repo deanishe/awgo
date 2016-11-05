@@ -23,28 +23,23 @@ var (
 	iconAvailable = &aw.Icon{Value: "update-available.png"}
 	iconUpToDate  = &aw.Icon{Value: "up-to-date.png"}
 	repo          = "deanishe/alfred-ssh"
-	updater       *aw.Updater
 	opts          *aw.Options
 	wf            *aw.Workflow
 )
 
 func init() {
-	opts = &aw.Options{}
+	opts = &aw.Options{GitHub: repo}
 	wf = aw.NewWorkflow(opts)
 }
 
 func run() {
-	// Create updater within run, as it may panic if the workflow
-	// version is invalid.
-	updater = aw.NewUpdater(&aw.GitHub{Repo: repo})
-
 	// Alternate action: Get available releases from remote
 	if os.Getenv("check_update") == "true" {
 		// Tell Workflow to print any errors as simple text messages to
 		// STDOUT, so they'll be shown in the Post Notification
 		wf.TextErrors = true
 		log.Println("Checking for updates...")
-		if err := updater.CheckUpdate(); err != nil {
+		if err := wf.CheckForUpdate(); err != nil {
 			wf.FatalError(err)
 		}
 		return
@@ -54,7 +49,7 @@ func run() {
 	if os.Getenv("do_update") == "true" {
 		// Not a Script Filter action
 		wf.TextErrors = true
-		if err := updater.Install(); err != nil {
+		if err := wf.InstallUpdate(); err != nil {
 			wf.FatalError(err)
 		}
 		return
@@ -64,7 +59,7 @@ func run() {
 	// Main script
 
 	// Call self in background to update local releases cache
-	if updater.CheckDue() { // Run check update in background
+	if wf.UpdateCheckDue() { // Run check update in background
 		log.Println("Starting update checker in background...")
 		cmd := exec.Command("./update")
 		env := os.Environ()
@@ -78,7 +73,7 @@ func run() {
 	}
 
 	// Send update status to Alfred
-	if updater.UpdateAvailable() {
+	if wf.UpdateAvailable() {
 		wf.NewItem("Update available!").
 			Subtitle("↩ to install").
 			Valid(true).

@@ -77,19 +77,7 @@ type Sorter struct {
 	Data Sortable
 	// Options contains the bonuses and penalties
 	Options *SortOptions
-	// // AdjacencyBonus is the bonus for adjacent matches
-	// AdjacencyBonus float64
-	// // SeparatorBonus is the bonus if the match is after a separator
-	// SeparatorBonus float64
-	// // CamelBonus is the bonus if match is uppercase and previous is lower
-	// CamelBonus float64
-	// // LeadingLetterPenalty is the penalty applied for every letter in string before first match
-	// LeadingLetterPenalty float64
-	// // MaxLeadingLetterPenalty is the maximum penalty for leading letters
-	// MaxLeadingLetterPenalty float64
-	// // UnmatchedLetterPenalty is the penalty for every letter that doesn't match
-	// UnmatchedLetterPenalty float64
-	// // results stores the results of the fuzzy sort
+	// results stores the results of the fuzzy sort
 	results []*Result
 }
 
@@ -102,29 +90,8 @@ func NewSorter(data Sortable, opts *SortOptions) *Sorter {
 	return &Sorter{
 		Data:    data,
 		Options: opts,
-		// AdjacencyBonus:          AdjacencyBonus,
-		// SeparatorBonus:          SeparatorBonus,
-		// CamelBonus:              CamelBonus,
-		// LeadingLetterPenalty:    LeadingLetterPenalty,
-		// MaxLeadingLetterPenalty: MaxLeadingLetterPenalty,
-		// UnmatchedLetterPenalty:  UnmatchedLetterPenalty,
 		results: make([]*Result, data.Len()),
 	}
-}
-
-// Match is true if s.Data[i] matched query. Can only be called after Sort().
-func (s *Sorter) Match(i int) bool {
-	return s.results[i].Match
-}
-
-// Result returns the Results for s.Data[i]. Can only be called after Sort().
-func (s *Sorter) Result(i int) *Result {
-	return s.results[i]
-}
-
-// Score returns score for s.Data[i]. Can only be called after Sort().
-func (s *Sorter) Score(i int) float64 {
-	return s.results[i].Score
 }
 
 // Len implements sort.Interface.

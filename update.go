@@ -11,7 +11,6 @@ package aw
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -68,7 +67,7 @@ func SortReleases(releases []*Release) {
 // provided by a Releaser, such as the built-in GitHub releaser, which
 // reads the releases in a GitHub repo.
 //
-// CheckUpdate() retrieves the list of available releases from the
+// CheckForUpdate() retrieves the list of available releases from the
 // releaser and caches them. UpdateAvailable() reads the cache. Install()
 // downloads the latest version and asks Alfred to install it.
 //
@@ -95,11 +94,12 @@ type Updater struct {
 //
 // LastCheck is loaded from the cache, and UpdateInterval is set to
 // DefaultUpdateInterval.
-func NewUpdater(r Releaser) *Updater {
+func NewUpdater(r Releaser) (*Updater, error) {
 	vstr := Version()
 	v, err := NewSemVer(vstr)
 	if err != nil {
-		panic(fmt.Sprintf("Invalid version number: %s (%s)", vstr, err))
+		return nil, err
+		// panic(fmt.Sprintf("Invalid version number: %s (%s)", vstr, err))
 	}
 	u := &Updater{
 		CurrentVersion: v,
@@ -120,11 +120,11 @@ func NewUpdater(r Releaser) *Updater {
 			u.LastCheck = t
 		}
 	}
-	return u
+	return u, nil
 }
 
 // UpdateAvailable returns true if an update is available. Retrieves
-// the list of releases from the cache written by CheckUpdate.
+// the list of releases from the cache written by CheckForUpdate.
 func (u *Updater) UpdateAvailable() bool {
 	r := u.latest()
 	if r == nil {
@@ -147,9 +147,9 @@ func (u *Updater) CheckDue() bool {
 	return elapsed.Nanoseconds() > u.UpdateInterval.Nanoseconds()
 }
 
-// CheckUpdate fetches the list of releases from remote (via Releaser)
+// CheckForUpdate fetches the list of releases from remote (via Releaser)
 // and caches it locally.
-func (u *Updater) CheckUpdate() error {
+func (u *Updater) CheckForUpdate() error {
 	u.clearCache()
 	rels, err := u.Releaser.Releases()
 	if err != nil {
