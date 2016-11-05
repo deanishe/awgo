@@ -27,7 +27,7 @@ import (
 const DefaultUpdateInterval = time.Duration(24 * time.Hour)
 
 // HTTPTimeout is the timeout for HTTP requests
-var HTTPTimeout = (10 * time.Second)
+var HTTPTimeout = (60 * time.Second)
 
 // Releaser is what concrete updaters should implement.
 // The Updater should call the Releaser after every update interval
@@ -71,10 +71,17 @@ func SortReleases(releases []*Release) {
 // releaser and caches them. UpdateAvailable() reads the cache. Install()
 // downloads the latest version and asks Alfred to install it.
 //
-// Because downloading releases is slow and workflows need to run fast,
-// you should not run CheckUpdate() or Install() in a Script Filter.
+// LastCheck and available releases are cached.
 //
-// See examples/update for an example implementation of updates.
+// Because downloading releases is slow and workflows need to run fast,
+// you should not run CheckForUpdate() in a Script Filter.
+//
+// If an Updater is set, an magic argument will be set for updates, so
+// you can just add an Item that autocompletes to the update magic argument
+// ("workflow:update" by default), and AwGo will check for an update and install
+// it if available.
+//
+// See examples/update for a full example implementation of updates.
 type Updater struct {
 	CurrentVersion SemVer        // Version of the installed workflow
 	LastCheck      time.Time     // When the remote release list was last checked
@@ -196,8 +203,7 @@ func (u *Updater) cachePath(filename string) string {
 
 // clearCache removes the update cache.
 func (u *Updater) clearCache() {
-	os.RemoveAll(u.cachePath(""))
-	EnsureExists(u.cachePath(""))
+	clearDirectory(u.cachePath(""))
 }
 
 // cacheLastCheck saves time to cachepath.

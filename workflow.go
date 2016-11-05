@@ -17,6 +17,8 @@ import (
 	"runtime/debug"
 	"time"
 
+	"os/exec"
+
 	"github.com/mkrautz/plist"
 )
 
@@ -24,6 +26,8 @@ import (
 const AwgoVersion = "0.5.0"
 
 var (
+	startTime time.Time // Time execution started
+
 	// The workflow object operated on by top-level functions.
 	// It can be retrieved/replaced with DefaultWorkflow() and
 	// SetDefaultWorkflow() respectively.
@@ -36,6 +40,7 @@ var (
 
 // init creates the default Workflow.
 func init() {
+	startTime = time.Now()
 	wf = NewWorkflow(nil)
 }
 
@@ -79,36 +84,41 @@ func (i *InfoPlist) Var(name string) string {
 type Options struct {
 	// GitHub is the GitHub repo the workflow should pull updates from.
 	// It should have the form "username/reponame", e.g. "deanishe/alfred-ssh".
-	// Specify this to use workflow methods UpdateCheckDue(), UpdateAvailable(),
-	// UpdateCheck() and UpdateInstall().
+	// If set, a GitHub updater will be created and passed to SetUpdater().
 	GitHub string
+
 	// HelpURL is a link to your issues page/forum thread where users can
 	// report bugs. It is shown in the debugger if the workflow crashes.
 	// If no HelpURL is specified, the Website specified in the main
 	// workflow setup dialog will be shown (if one is set)
 	HelpURL string
+
 	// LogPrefix is the character printed to the log at the start of each run.
 	// Its purpose is to ensure the first real log message starts on its own line,
 	// instead of sharing a line with Alfred's blurb in the debugger. This is only
 	// printed to STDERR (i.e. Alfred's debugger), not written to the log file.
 	// Default: Purple Heart (\U0001F49C)
 	LogPrefix string
+
+	// MagicPrefix overrides the default prefix for magic actions.
+	MagicPrefix string
+
 	// MaxLogSize is the size (in bytes) at which the workflow log is rotated.
 	// Default: 1 MiB
 	MaxLogSize int
+
 	// MaxResults is the maximum number of results to send to Alfred.
 	// 0 means send all results.
 	// Default: 0
 	MaxResults int
+
 	// Fuzzy sort bonuses and penalties
 	// See constants for defaults
 	SortOptions *SortOptions
+
 	// TextErrors tells Workflow to print errors as text, not JSON
 	// Set to true if output goes to a Notification
 	TextErrors bool
-	// The version of your workflow. Use semver. The version string is
-	// read from the envvar set by Alfred or info.plist by default.
-	// This overrides that.
 }
 
 // Workflow provides a simple, consolidated API for building Script
@@ -191,8 +201,9 @@ type Workflow struct {
 
 	// debug is set from Alfred's `alfred_debug` environment variable.
 	debug bool
-	// Time the workflow run started
-	startTime time.Time
+
+	magicPrefix string // Overrides DefaultMagicPrefix for magic actions.
+
 	// version holds value set by user or read from environment variable or info.plist
 	version string
 
@@ -235,6 +246,9 @@ func NewWorkflow(o *Options) *Workflow {
 		if o.LogPrefix != "" {
 			w.LogPrefix = o.LogPrefix
 		}
+		if o.MagicPrefix != "" {
+			w.magicPrefix = o.MagicPrefix
+		}
 		if o.MaxLogSize > 0 {
 			w.MaxLogSize = o.MaxLogSize
 		}
@@ -246,15 +260,19 @@ func NewWorkflow(o *Options) *Workflow {
 		}
 		if o.GitHub != "" {
 			var err error
-			w.updater, err = NewUpdater(&GitHub{Repo: o.GitHub})
+			u, err := NewUpdater(&GitHub{Repo: o.GitHub})
 			if err != nil {
 				log.Printf("Error configuring updater: %s", err)
+			} else {
+				w.SetUpdater(u)
 			}
 		}
 	}
 
 	w.loadEnv()
 	w.initializeLogging()
+	EnsureExists(w.DataDir())
+	EnsureExists(w.CacheDir())
 	return w
 }
 
@@ -463,6 +481,20 @@ func (wf *Workflow) Dir() string {
 	return wf.workflowDir
 }
 
+// Args returns command-line arguments passed to the program.
+// It intercepts "magic args" and runs the corresponding actions, terminating
+// the workflow.
+// See MagicAction for full documentation.
+func (wf *Workflow) Args() []string {
+	if wf.magicPrefix != "" {
+		return parseArgs(os.Args[1:], wf.magicPrefix)
+	}
+	return Args()
+}
+
+// --------------------------------------------------------------------
+// Cache & Data
+
 // CacheDir returns the path to the workflow's cache directory.
 // The directory will be created if it does not already exist.
 func CacheDir() string { return wf.CacheDir() }
@@ -476,6 +508,24 @@ func (wf *Workflow) CacheDir() string {
 			wf.BundleID()))
 	}
 	return EnsureExists(wf.cacheDir)
+}
+
+// OpenCache opens the workflow's cache directory in the default application (usually Finder).
+func OpenCache() error { return wf.OpenCache() }
+
+// OpenCache opens the workflow's data directory in the default application (usually Finder).
+func (wf *Workflow) OpenCache() error {
+	EnsureExists(wf.DataDir())
+	cmd := exec.Command("open", wf.CacheDir())
+	return cmd.Run()
+}
+
+// ClearCache deletes all files from the workflow's cache directory.
+func ClearCache() error { return wf.ClearCache() }
+
+// ClearCache deletes all files from the workflow's cache directory.
+func (wf *Workflow) ClearCache() error {
+	return clearDirectory(wf.CacheDir())
 }
 
 // DataDir returns the path to the workflow's data directory.
@@ -493,12 +543,60 @@ func (wf *Workflow) DataDir() string {
 	return EnsureExists(wf.dataDir)
 }
 
+// OpenData opens the workflow's data directory in the default application (usually Finder).
+func OpenData() error { return wf.OpenData() }
+
+// OpenData opens the workflow's data directory in the default application (usually Finder).
+func (wf *Workflow) OpenData() error {
+	EnsureExists(wf.DataDir())
+	cmd := exec.Command("open", wf.DataDir())
+	return cmd.Run()
+}
+
+// ClearData deletes all files from the workflow's cache directory.
+func ClearData() error { return wf.ClearData() }
+
+// ClearData deletes all files from the workflow's cache directory.
+func (wf *Workflow) ClearData() error {
+	return clearDirectory(wf.DataDir())
+}
+
+// Reset deletes all workflow data (cache and data directories).
+func Reset() error { return wf.Reset() }
+
+// Reset deletes all workflow data (cache and data directories).
+func (wf *Workflow) Reset() error {
+	errs := []error{}
+	if err := wf.ClearCache(); err != nil {
+		errs = append(errs, err)
+	}
+	if err := wf.ClearData(); err != nil {
+		errs = append(errs, err)
+	}
+	if len(errs) > 0 {
+		return errs[0]
+	}
+	return nil
+}
+
 // LogFile returns the path to the workflow's log file.
 func LogFile() string { return wf.LogFile() }
 
 // LogFile returns the path to the workflow's log file.
 func (wf *Workflow) LogFile() string {
 	return filepath.Join(wf.CacheDir(), fmt.Sprintf("%s.log", wf.BundleID()))
+}
+
+// OpenLog opens the workflow's logfile in the default application (usually Console.app).
+func OpenLog() error { return wf.OpenLog() }
+
+// OpenLog opens the workflow's logfile in the default application (usually Console.app).
+func (wf *Workflow) OpenLog() error {
+	if !PathExists(wf.LogFile()) {
+		log.Println("Creating log file...")
+	}
+	cmd := exec.Command("open", wf.LogFile())
+	return cmd.Run()
 }
 
 // --------------------------------------------------------------------
@@ -583,7 +681,6 @@ func Run(fn func()) { wf.Run(fn) }
 // message in Alfred.
 func (wf *Workflow) Run(fn func()) {
 	var vstr string
-	wf.startTime = time.Now()
 	if wf.Version() != "" {
 		vstr = fmt.Sprintf("%s/%v", wf.Name(), wf.Version())
 	} else {
@@ -617,7 +714,7 @@ func (wf *Workflow) Run(fn func()) {
 	// Call the workflow's main function.
 	fn()
 
-	wf.finishLog(false)
+	finishLog(false)
 }
 
 // FatalError displays an error message in Alfred, then calls log.Fatal(),
@@ -694,6 +791,18 @@ func (wf *Workflow) SendFeedback() *Workflow {
 // --------------------------------------------------------------------
 // Updating
 
+// SetUpdater sets an updater for the workflow.
+func SetUpdater(u *Updater) { wf.SetUpdater(u) }
+
+// SetUpdater sets an updater for the workflow.
+func (wf *Workflow) SetUpdater(u *Updater) {
+	wf.updater = u
+	RegisterMagic(&updateMagic{wf.updater})
+}
+
+// UpdateCheckDue returns true if an update is available.
+func UpdateCheckDue() bool { return wf.UpdateCheckDue() }
+
 // UpdateCheckDue returns true if an update is available.
 func (wf *Workflow) UpdateCheckDue() bool {
 	if wf.updater == nil {
@@ -704,12 +813,18 @@ func (wf *Workflow) UpdateCheckDue() bool {
 }
 
 // CheckForUpdate retrieves and caches the list of available releases.
+func CheckForUpdate() error { return wf.CheckForUpdate() }
+
+// CheckForUpdate retrieves and caches the list of available releases.
 func (wf *Workflow) CheckForUpdate() error {
 	if wf.updater == nil {
 		return errors.New("No GitHub repo configured")
 	}
 	return wf.updater.CheckForUpdate()
 }
+
+// UpdateAvailable returns true if a newer version is available to install.
+func UpdateAvailable() bool { return wf.UpdateAvailable() }
 
 // UpdateAvailable returns true if a newer version is available to install.
 func (wf *Workflow) UpdateAvailable() bool {
@@ -719,6 +834,9 @@ func (wf *Workflow) UpdateAvailable() bool {
 	}
 	return wf.updater.UpdateAvailable()
 }
+
+// InstallUpdate downloads and installs the latest version of the workflow.
+func InstallUpdate() error { return wf.InstallUpdate() }
 
 // InstallUpdate downloads and installs the latest version of the workflow.
 func (wf *Workflow) InstallUpdate() error {
@@ -745,7 +863,7 @@ func (wf *Workflow) outputErrorMsg(msg string) {
 	if u := wf.helpURL(); u != "" {
 		log.Printf("Get help at %s", u)
 	}
-	wf.finishLog(true)
+	finishLog(true)
 }
 
 func (wf *Workflow) helpURL() string {
@@ -756,17 +874,6 @@ func (wf *Workflow) helpURL() string {
 		return wf.Info().Website
 	}
 	return ""
-}
-
-// finishLog outputs the workflow duration
-func (wf *Workflow) finishLog(fatal bool) {
-	elapsed := time.Now().Sub(wf.startTime)
-	s := Pad(fmt.Sprintf(" %v ", elapsed), "-", 50)
-	if fatal {
-		log.Fatalln(s)
-	} else {
-		log.Println(s)
-	}
 }
 
 // awDataDir is the directory for awgo's own data.
@@ -783,6 +890,17 @@ func (wf *Workflow) awCacheDir() string {
 
 // --------------------------------------------------------------------
 // Package-level only
+
+// finishLog outputs the workflow duration
+func finishLog(fatal bool) {
+	elapsed := time.Now().Sub(startTime)
+	s := Pad(fmt.Sprintf(" %v ", elapsed), "-", 50)
+	if fatal {
+		log.Fatalln(s)
+	} else {
+		log.Println(s)
+	}
+}
 
 // DefaultWorkflow returns the Workflow object used by the
 // package-level functions.

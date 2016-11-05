@@ -260,9 +260,8 @@ type itemText struct {
 //
 // Create new Modifiers via Item.NewModifier(). This binds the Modifier to the
 // Item, initializes Modifier's map and inherits Item's workflow variables.
-//
-// A Modifier created via Item.NewModifier() also inherits its parent Item's
-// workflow variables.
+// Variables are inherited at creation time, so any Item variables you set
+// after creating the Modifier are not inherited.
 type Modifier struct {
 	// The modifier key. May be any of ValidModifiers.
 	Key         string

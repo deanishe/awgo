@@ -6,9 +6,30 @@
 // Created on 2016-11-05
 //
 
+/*
+This workflow is an example of how to use AwGo's update API.
+
+Its own version (set in info.plist) is 0.1 and it's pointing to the
+GitHub repo of "alfred-ssh" (a completely different workflow), which
+is several version ahead.
+
+The first time you run the workflow, it will call itself in the background
+with the environment variable "check_update=true".
+
+When this variable is set, the program calls CheckForUpdate(), which
+retrieves and caches the available releases. When this is complete,
+you will see an "Update available!" message in Alfred's results.
+
+Actioning (hitting ↩ or ⌘+1) or completing it (hitting ⇥) auto-completes
+the item's text to "workflow:update", which is one of AwGo's "magic"
+arguments. At this point, AwGo will take control of execution, and
+download & install the newer version of the workflow (except it's a
+different workflow).
+*/
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -35,9 +56,6 @@ func init() {
 func run() {
 	// Alternate action: Get available releases from remote
 	if os.Getenv("check_update") == "true" {
-		// Tell Workflow to print any errors as simple text messages to
-		// STDOUT, so they'll be shown in the Post Notification
-		wf.TextErrors = true
 		log.Println("Checking for updates...")
 		if err := wf.CheckForUpdate(); err != nil {
 			wf.FatalError(err)
@@ -45,18 +63,15 @@ func run() {
 		return
 	}
 
-	// Alternate action: Download and install update
-	if os.Getenv("do_update") == "true" {
-		// Not a Script Filter action
-		wf.TextErrors = true
-		if err := wf.InstallUpdate(); err != nil {
-			wf.FatalError(err)
-		}
-		return
-	}
-
 	// ----------------------------------------------------------------
 	// Main script
+
+	var query string
+	args := wf.Args()
+	if len(args) > 0 {
+		query = args[0]
+	}
+	log.Printf("query=%s", query)
 
 	// Call self in background to update local releases cache
 	if wf.UpdateCheckDue() { // Run check update in background
@@ -70,20 +85,32 @@ func run() {
 		if err := cmd.Start(); err != nil {
 			wf.FatalError(err)
 		}
+	} else {
+		log.Println("Update check not due")
 	}
 
-	// Send update status to Alfred
-	if wf.UpdateAvailable() {
-		wf.NewItem("Update available!").
-			Subtitle("↩ to install").
-			Valid(true).
-			Icon(iconAvailable).
-			Var("do_update", "true")
-	} else {
-		wf.NewItem("Your workflow is up to date").
-			Valid(false).
-			Icon(iconUpToDate)
+	if query == "" { // Only show update status if query is empty
+		// Send update status to Alfred
+		if wf.UpdateAvailable() {
+			wf.NewItem("Update available!").
+				Subtitle("↩ to install").
+				Autocomplete("workflow:update").
+				Valid(false).
+				Icon(iconAvailable)
+		}
 	}
+
+	// Actual Script Filter items
+	for i := 1; i < 21; i++ {
+		wf.NewItem(fmt.Sprintf("Item #%d", i)).
+			Icon(aw.IconFavourite)
+	}
+
+	if query != "" {
+		wf.Filter(query)
+	}
+
+	wf.WarnEmpty("No matching items", "Try a different query?")
 	wf.SendFeedback()
 }
 

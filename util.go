@@ -8,6 +8,7 @@ package aw
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -122,4 +123,17 @@ func Pad(str, pad string, n int) string {
 			return str[len(str)-n:]
 		}
 	}
+}
+
+// clearDirectory deletes all files within a directory.
+func clearDirectory(p string) error {
+	if !PathExists(p) {
+		return nil
+	}
+	err := os.RemoveAll(p)
+	EnsureExists(p)
+	if err == nil {
+		log.Printf("Delete contents of `%s`", p)
+	}
+	return err
 }

@@ -56,11 +56,12 @@ func run() {
 	var query string
 	paths := readDir(startDir)
 
-	if len(os.Args) > 1 {
+	args := wf.Args()
+	if len(args) > 0 {
 		// When run from a workflow, because the program is called from Alfred
 		// with "{query}" or "$1", $1 will always be set, even if to an
 		// emtpy string.
-		query = os.Args[1]
+		query = args[0]
 	}
 
 	// Generate feedback for Alfred
@@ -84,6 +85,7 @@ func run() {
 		}
 	}
 
+	wf.WarnEmpty("No matching folders found", "Try a different query?")
 	// Send JSON to Alfred. After calling this function, you can't send
 	// any more results to Alfred.
 	wf.SendFeedback()
