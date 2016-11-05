@@ -97,7 +97,7 @@
 	<string>Awgo: Large Fuzzy Search Demo
 =============================
 
-This workflow demonstrates Awgo's performance on a large dataset (&gt;45K books).
+This workflow demonstrates AwGo's performance on a large dataset (&gt;45K books).
 
 It fetches TSV data from a server and caches it locally in a more efficient format (gob) that loads ~5 times faster.
 

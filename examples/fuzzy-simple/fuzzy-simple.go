@@ -5,7 +5,7 @@
 //
 
 /*
-fuzzy-simple shows how to fuzzy filter results using awgo.
+fuzzy-simple shows how to fuzzy filter results using AwGo.
 
 It displays and filters a list of subdirectories of ~/ in Alfred, and
 allows you to open the folders or browse them in Alfred.

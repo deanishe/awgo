@@ -2,6 +2,8 @@
 Package aw provides utilities for building workflows for Alfred 3.
 https://www.alfredapp.com/
 
+Alfred 2 is not supported.
+
 NOTE: This library is currently rather alpha. I'm new to Go, so
 doubtless a lot will change as I figure out what I'm doing. The plan
 is to implement something in idiomatic Go that is functionally similar
@@ -20,11 +22,13 @@ Features
 The current main features are:
 
 	- Easy access to Alfred context, such as data and cache directories.
-	- Simple generation of Alfred JSON feedback.
+	- Straightforward generation of Alfred JSON feedback.
+	- Support for all applicable Alfred features up to v3.1.
 	- Fuzzy sorting/filtering.
 	- Catches panics, logs stack trace and shows user an error message.
 	- Workflow updates API with built-in support for GitHub releases.
 	- (Rotated) Log file for easier debugging.
+	- "Magic" arguments/actions for simplified development and user support.
 	- OS X system icons.
 
 
@@ -32,9 +36,10 @@ Upcoming features
 
 These features are planned:
 
+	TODO: Add support for Alfred v3.2 feedback-level variables
+	TODO: Add support for Alfred v3.2 re-run feature
 	TODO: Starting and managing background processes
 	TODO: Caching and storing data
-	TODO: "Magic" arguments. See http://www.deanishe.net/alfred-workflow/user-manual/magic-arguments.html
 	TODO: Alfred/AppleScript helpers?
 	TODO: Implement standard-compliant pre-release comparison in SemVer?
 
@@ -137,14 +142,14 @@ If you want to include a warning with other results, use NewWarningItem().
 
 Logging
 
-Awgo uses the default log package. It is automatically configured to log
+AwGo uses the default log package. It is automatically configured to log
 to STDERR (Alfred's debugger) and to a logfile in the workflow's cache
 directory.
 
 The log file is rotated when it exceeds 1 MiB in size. One previous
 log is kept.
 
-Awgo detects when Alfred's debugger is open (Workflow.Debug() returns
+AwGo detects when Alfred's debugger is open (Workflow.Debug() returns
 true) and in this case prepends filename:linenumber: to log messages.
 
 

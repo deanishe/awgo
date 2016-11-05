@@ -9,11 +9,11 @@
 	<key>createdby</key>
 	<string>Dean Jackson</string>
 	<key>description</key>
-	<string>awgo sample info.plist</string>
+	<string>AwGo sample info.plist</string>
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
-	<string>awgo</string>
+	<string>AwGo</string>
 	<key>objects</key>
 	<array/>
 	<key>readme</key>

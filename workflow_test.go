@@ -22,11 +22,11 @@ func TestParseInfo(t *testing.T) {
 		t.Fatalf("Incorrect author: %v", info.Author)
 	}
 
-	if info.Description != "awgo sample info.plist" {
+	if info.Description != "AwGo sample info.plist" {
 		t.Fatalf("Incorrect description: %v", info.Description)
 	}
 
-	if info.Name != "awgo" {
+	if info.Name != "AwGo" {
 		t.Fatalf("Incorrect name: %v", info.Name)
 	}
 

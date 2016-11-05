@@ -22,8 +22,8 @@ import (
 	"github.com/mkrautz/plist"
 )
 
-// AwgoVersion is the semantic version number of this library.
-const AwgoVersion = "0.5.0"
+// AwGoVersion is the semantic version number of this library.
+const AwGoVersion = "0.5.0"
 
 var (
 	startTime time.Time // Time execution started
@@ -428,7 +428,7 @@ func (wf *Workflow) BundleID() string {
 			wf.FatalError(err)
 		}
 		if wf.bundleID == "" {
-			wf.Fatal("No bundle ID set in info.plist. You *must* set a bundle ID to use awgo.")
+			wf.Fatal("No bundle ID set in info.plist. You *must* set a bundle ID to use AwGo.")
 		}
 	}
 	return wf.bundleID
@@ -686,7 +686,7 @@ func (wf *Workflow) Run(fn func()) {
 	} else {
 		vstr = wf.Name()
 	}
-	vstr = fmt.Sprintf(" %s (awgo/%v) ", vstr, AwgoVersion)
+	vstr = fmt.Sprintf(" %s (AwGo/%v) ", vstr, AwGoVersion)
 
 	// Print right after Alfred's introductory blurb in the debugger.
 	// Alfred strips whitespace.
@@ -876,13 +876,13 @@ func (wf *Workflow) helpURL() string {
 	return ""
 }
 
-// awDataDir is the directory for awgo's own data.
+// awDataDir is the directory for AwGo's own data.
 func awDataDir() string { return wf.awDataDir() }
 func (wf *Workflow) awDataDir() string {
 	return EnsureExists(filepath.Join(wf.DataDir(), "_aw"))
 }
 
-// awCacheDir is the directory for awgo's own cache.
+// awCacheDir is the directory for AwGo's own cache.
 func awCacheDir() string { return wf.awCacheDir() }
 func (wf *Workflow) awCacheDir() string {
 	return EnsureExists(filepath.Join(wf.CacheDir(), "_aw"))

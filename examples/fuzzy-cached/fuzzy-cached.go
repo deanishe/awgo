@@ -7,7 +7,7 @@
 /*
 
 fuzzy-cached demonstrates custom fuzzy-sortable objects and handling
-larger datasets in awgo, caching the data in a format that's
+larger datasets in AwGo, caching the data in a format that's
 more quickly loaded.
 
 It filters a list of the books from the Gutenberg project. The list

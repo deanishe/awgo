@@ -320,7 +320,7 @@ func (s stringSlice) SortKey(i int) string { return s.data[i] }
 // Sort is a convenience method.
 func (s stringSlice) Sort(query string) []*Result { return Sort(s, query) }
 
-// SortStrings is a convenience function.
+// SortStrings is a convenience function for fuzzy-sorting a slice of strings.
 func SortStrings(data []string, query string) []*Result {
 	s := stringSlice{data}
 	return s.Sort(query)

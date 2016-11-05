@@ -396,7 +396,7 @@ func (fb *Feedback) IsEmpty() bool { return len(fb.Items) == 0 }
 
 // NewItem adds a new Item and returns a pointer to it.
 //
-// The Item inherits and workflow variables set on the Feedback parent at
+// The Item inherits any workflow variables set on the Feedback parent at
 // time of creation.
 func (fb *Feedback) NewItem(title string) *Item {
 	it := &Item{title: title, vars: map[string]string{}}
