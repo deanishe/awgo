@@ -95,6 +95,8 @@ on your own structs and customising the sort settings.
 The algorithm is based on Forrest Smith's reverse engineering of Sublime
 Text's search: https://blog.forrestthewoods.com/reverse-engineering-sublime-text-s-fuzzy-match-4cffeed33fdb
 
+It additionally strips diacritics from sort keys if the query is ASCII.
+
 
 Sending results to Alfred
 

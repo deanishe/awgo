@@ -191,3 +191,24 @@ func TestFilterFeedback(t *testing.T) {
 		}
 	}
 }
+
+// TestStripDiacritics
+func TestStripDiacritics(t *testing.T) {
+	o := NewSortOptions()
+	// Non-ASCII query and data
+	if r := Match("fün", "fün", o); r.Match == false {
+		t.Fatalf("fün != fün (diacritic stripping on): %v", r)
+	}
+	// Non-ASCII data
+	if r := Match("fün", "fun", o); r.Match == false {
+		t.Fatalf("fun != fün (diacritic stripping on): %v", r)
+	}
+	// No diacritic stripping
+	o.StripDiacritics = false
+	if r := Match("fün", "fün", o); r.Match == false {
+		t.Fatalf("fün != fün (diacritic stripping off): %s", r)
+	}
+	if r := Match("fün", "fun", o); r.Match == true {
+		t.Fatalf("fun != fün (diacritic stripping off): %s", r)
+	}
+}
