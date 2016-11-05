@@ -78,7 +78,7 @@ just as a way to encapsulate search results for Alfred. In particular,
 its variables are only settable, not gettable.
 
 
-Fuzzy sorting/filtering
+Fuzzy sorting and filtering
 
 Sort() and Match() implement fuzzy search, e.g. "of" will match "OmniFocus"
 and "got" will match "Game of Thrones".
