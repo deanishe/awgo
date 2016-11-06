@@ -123,10 +123,7 @@ func parseArgs(args []string, prefix string) []string {
 						Autocomplete(prefix + kw).
 						SortKey(fmt.Sprintf("%s %s", ma.Keyword(), ma.Description()))
 				}
-				res := Filter(query)
-				for _, r := range res {
-					log.Printf("%4.2f `%s`", r.Score, r.SortKey)
-				}
+				Filter(query)
 				WarnEmpty("No matching action", "Try another query?")
 				SendFeedback()
 				os.Exit(0)

@@ -150,7 +150,7 @@ func (u *Updater) CheckDue() bool {
 		return true
 	}
 	elapsed := time.Now().Sub(u.LastCheck)
-	log.Printf("%v since last check for update.", elapsed)
+	log.Printf("%s since last check for update.", SensibleDuration(elapsed))
 	return elapsed.Nanoseconds() > u.UpdateInterval.Nanoseconds()
 }
 

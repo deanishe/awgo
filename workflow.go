@@ -473,7 +473,8 @@ func (wf *Workflow) Dir() string {
 	if wf.workflowDir == "" {
 		dir, err := FindWorkflowRoot()
 		if err != nil {
-			wf.FatalError(err)
+			panic(err)
+			// wf.FatalError(err)
 		}
 		wf.workflowDir = dir
 	}
@@ -893,7 +894,7 @@ func (wf *Workflow) awCacheDir() string {
 // finishLog outputs the workflow duration
 func finishLog(fatal bool) {
 	elapsed := time.Now().Sub(startTime)
-	s := Pad(fmt.Sprintf(" %v ", elapsed), "-", 50)
+	s := Pad(fmt.Sprintf(" %s ", SensibleDuration(elapsed)), "-", 50)
 	if fatal {
 		log.Fatalln(s)
 	} else {
