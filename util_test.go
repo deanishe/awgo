@@ -11,6 +11,7 @@ package aw
 import (
 	"fmt"
 	"testing"
+	"time"
 )
 
 type padTest struct {
@@ -92,4 +93,27 @@ func ExamplePadRight() {
 func ExamplePad() {
 	fmt.Println(Pad("wow", "-", 10))
 	// Output: ---wow----
+}
+
+func ExampleSensibleDuration() {
+	fmt.Println(SensibleDuration(time.Hour * 96))
+	fmt.Println(SensibleDuration(time.Hour * 48))
+	fmt.Println(SensibleDuration(time.Hour * 12))
+	fmt.Println(SensibleDuration(time.Minute * 130))
+	fmt.Println(SensibleDuration(time.Minute * 90))
+	fmt.Println(SensibleDuration(time.Second * 315))
+	fmt.Println(SensibleDuration(time.Second * 70))
+	fmt.Println(SensibleDuration(time.Second * 5))
+	fmt.Println(SensibleDuration(time.Millisecond * 320))
+	fmt.Println(SensibleDuration(time.Millisecond * 50))
+	// Output: 4d
+	// 48h
+	// 12h0m
+	// 2h10m
+	// 90m
+	// 5m15s
+	// 70s
+	// 5.00s
+	// 0.320s
+	// 50ms
 }
