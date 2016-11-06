@@ -48,7 +48,7 @@ func (gh *GitHub) Releases() ([]*Release, error) {
 		}
 		gh.releases = rels
 	}
-	log.Printf("%d releases in repo %s", len(gh.releases), gh.Repo)
+	log.Printf("%d release(s) in repo %s", len(gh.releases), gh.Repo)
 	return gh.releases, nil
 }
 
