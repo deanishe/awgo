@@ -7,7 +7,18 @@
 	<key>connections</key>
 	<dict>
 		<key>F3DFD0D4-B306-48DD-A915-34D3CF427B73</key>
-		<array/>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>09D5F8E4-239F-449C-955E-C52F9C6F1DF0</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 	</dict>
 	<key>createdby</key>
 	<string>Dean Jackson</string>
@@ -41,7 +52,7 @@
 				<key>runningsubtext</key>
 				<string></string>
 				<key>script</key>
-				<string>./update "$1"</string>
+				<string>./update search "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -62,11 +73,39 @@
 			<key>version</key>
 			<integer>2</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>lastpathcomponent</key>
+				<false/>
+				<key>onlyshowifquerypopulated</key>
+				<true/>
+				<key>removeextension</key>
+				<false/>
+				<key>text</key>
+				<string>{query}</string>
+				<key>title</key>
+				<string>You chose…</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.notification</string>
+			<key>uid</key>
+			<string>09D5F8E4-239F-449C-955E-C52F9C6F1DF0</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
 	</array>
 	<key>readme</key>
 	<string>AwGo demo workflow</string>
 	<key>uidata</key>
 	<dict>
+		<key>09D5F8E4-239F-449C-955E-C52F9C6F1DF0</key>
+		<dict>
+			<key>xpos</key>
+			<integer>230</integer>
+			<key>ypos</key>
+			<integer>30</integer>
+		</dict>
 		<key>F3DFD0D4-B306-48DD-A915-34D3CF427B73</key>
 		<dict>
 			<key>xpos</key>

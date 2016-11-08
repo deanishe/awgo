@@ -168,7 +168,7 @@ func clearDirectory(p string) error {
 	err := os.RemoveAll(p)
 	EnsureExists(p)
 	if err == nil {
-		log.Printf("Delete contents of `%s`", p)
+		log.Printf("Deleted contents of `%s`", p)
 	}
 	return err
 }

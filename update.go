@@ -224,7 +224,7 @@ func (u *Updater) cacheLastCheck() {
 func (u *Updater) latest() *Release {
 	if u.releases == nil {
 		if !PathExists(u.pathReleases) {
-			log.Println("No releases in cache. Run CheckUpdate()?")
+			log.Println("No cached releases.")
 			return nil
 		}
 		// Load from cache

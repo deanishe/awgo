@@ -13,12 +13,15 @@ Its own version (set in info.plist) is 0.1 and it's pointing to the
 GitHub repo of "alfred-ssh" (a completely different workflow), which
 is several version ahead.
 
-The first time you run the workflow, it will call itself in the background
-with the environment variable "check_update=true".
+The Script Filter code checks the last update check status, and if
+a check is due, it calls this program with the "check" command via
+AwGo's background job API.
 
-When this variable is set, the program calls CheckForUpdate(), which
-retrieves and caches the available releases. When this is complete,
-you will see an "Update available!" message in Alfred's results.
+When run with "check", the program calls CheckForUpdate() to cache
+the available releases.
+
+After that has completed, subsequent runs of the Script Filter will
+show an "Update available!" item (if the query is empty).
 
 Actioning (hitting ↩ or ⌘+1) or completing it (hitting ⇥) auto-completes
 the item's text to "workflow:update", which is one of AwGo's "magic"
@@ -31,62 +34,70 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
-
 	"os/exec"
 
-	"syscall"
-
+	"github.com/docopt/docopt-go"
 	"gogs.deanishe.net/deanishe/awgo"
 )
+
+// Name of the background job that checks for updates
+const updateJobName = "checkForUpdate"
+
+var usage = `update [search|check] [<query>]
+
+Demonstrates self-updating using AwGo.
+
+Usage:
+    update search [<query>]
+    update check
+    update -h
+
+Options:
+    -h, --help    Show this message and exit.
+`
 
 var (
 	iconAvailable = &aw.Icon{Value: "update-available.png"}
 	iconUpToDate  = &aw.Icon{Value: "up-to-date.png"}
 	repo          = "deanishe/alfred-ssh"
-	opts          *aw.Options
 	wf            *aw.Workflow
 )
 
 func init() {
-	opts = &aw.Options{GitHub: repo}
-	wf = aw.NewWorkflow(opts)
+	wf = aw.NewWorkflow(&aw.Options{GitHub: repo})
 }
 
 func run() {
+	// Pass wf.Args() to docopt because our update logic relies on
+	// AwGo's magic actions.
+	args, _ := docopt.Parse(usage, wf.Args(), true, wf.Version(), false, true)
+
 	// Alternate action: Get available releases from remote
-	if os.Getenv("check_update") == "true" {
+	if args["check"] != false {
+		wf.TextErrors = true
 		log.Println("Checking for updates...")
 		if err := wf.CheckForUpdate(); err != nil {
 			wf.FatalError(err)
 		}
 		return
 	}
-
 	// ----------------------------------------------------------------
-	// Main script
-
+	// Script Filter
 	var query string
-	args := wf.Args()
-	if len(args) > 0 {
-		query = args[0]
+	if args["<query>"] != nil {
+		query = args["<query>"].(string)
 	}
+
 	log.Printf("query=%s", query)
 
-	// Call self in background to update local releases cache
-	if wf.UpdateCheckDue() { // Run check update in background
-		log.Println("Starting update checker in background...")
-		cmd := exec.Command("./update")
-		env := os.Environ()
-		env = append(env, "check_update=true")
-		cmd.Env = env
-		// Ensure process isn't killed if parent (this process) is
-		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-		if err := cmd.Start(); err != nil {
-			wf.FatalError(err)
+	// Call self with "check" command if an update is due and a
+	// check job isn't already running.
+	if wf.UpdateCheckDue() && !aw.IsRunning(updateJobName) {
+		log.Println("Running update check in background...")
+		cmd := exec.Command("./update", "check")
+		if err := aw.RunInBackground(updateJobName, cmd); err != nil {
+			log.Printf("Error starting update check: %s", err)
 		}
-	} else {
-		log.Println("Update check not due")
 	}
 
 	if query == "" { // Only show update status if query is empty
@@ -100,11 +111,20 @@ func run() {
 		}
 	}
 
-	// Actual Script Filter items
-	for i := 1; i < 21; i++ {
-		wf.NewItem(fmt.Sprintf("Item #%d", i)).
-			Icon(aw.IconFavourite)
+	// Script Filter results
+	for i := 1; i <= 20; i++ {
+		t := fmt.Sprintf("Item #%d", i)
+		wf.NewItem(t).
+			Icon(aw.IconFavourite).
+			Arg(t).
+			Valid(true)
 	}
+
+	// Add an extra item to reset update status for demo purposes
+	wf.NewItem("Reset update status").
+		Valid(false).
+		Autocomplete("workflow:delcache").
+		Icon(aw.IconTrash)
 
 	if query != "" {
 		wf.Filter(query)
