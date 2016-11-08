@@ -113,7 +113,7 @@ func ExampleSensibleDuration() {
 	// 90m
 	// 5m15s
 	// 70s
-	// 5.00s
-	// 0.320s
+	// 5.0s
+	// 0.32s
 	// 50ms
 }

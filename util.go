@@ -152,10 +152,10 @@ func SensibleDuration(d time.Duration) string {
 		return fmt.Sprintf("%ds", int(d.Seconds()))
 	}
 	if d.Seconds() > 1 {
-		return fmt.Sprintf("%0.2fs", d.Seconds())
+		return fmt.Sprintf("%0.1fs", d.Seconds())
 	}
 	if d.Seconds() >= 0.1 {
-		return fmt.Sprintf("%0.3fs", d.Seconds())
+		return fmt.Sprintf("%0.2fs", d.Seconds())
 	}
 	return fmt.Sprintf("%dms", d.Nanoseconds()/1000000)
 }
