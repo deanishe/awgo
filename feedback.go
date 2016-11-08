@@ -351,10 +351,10 @@ func (m *Modifier) MarshalJSON() ([]byte, error) {
 // and Modifier structs.
 type Feedback struct {
 	// Items are the results to be sent to Alfred.
-	Items []*Item `json:"items"`
-	// Set to true when feedback has been sent.
-	sent bool
-	vars map[string]string
+	Items []*Item
+	rerun float64           // Tell Alfred to re-run Script Filter.
+	sent  bool              // Set to true when feedback has been sent.
+	vars  map[string]string // Top-level feedback variables.
 }
 
 // NewFeedback creates a new, initialised Feedback struct.
@@ -374,10 +374,11 @@ func (fb *Feedback) Var(k, v string) *Feedback {
 	return fb
 }
 
-// Var returns the value of Feedback's workflow variable for key k.
-// func (fb *Feedback) Var(k string) string {
-// 	return fb.vars[k]
-// }
+// Rerun tells Alfred to re-run the Script Filter after `secs` seconds.
+func (fb *Feedback) Rerun(secs float64) *Feedback {
+	fb.rerun = secs
+	return fb
+}
 
 // Vars returns the Feedback's workflow variables.
 func (fb *Feedback) Vars() map[string]string {
@@ -402,11 +403,11 @@ func (fb *Feedback) NewItem(title string) *Item {
 	it := &Item{title: title, vars: map[string]string{}}
 
 	// Variables
-	if len(fb.vars) > 0 {
-		for k, v := range fb.vars {
-			it.Var(k, v)
-		}
-	}
+	// if len(fb.vars) > 0 {
+	// 	for k, v := range fb.vars {
+	// 		it.Var(k, v)
+	// 	}
+	// }
 
 	fb.Items = append(fb.Items, it)
 	return it
@@ -430,6 +431,20 @@ func (fb *Feedback) NewFileItem(path string) *Item {
 		IsFile(true).
 		Icon(&Icon{path, "fileicon"})
 	return it
+}
+
+// MarshalJSON serializes Feedback to Alfred 3's JSON format.
+// You shouldn't need to call this: use Send() instead.
+func (fb *Feedback) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&struct {
+		Variables map[string]string `json:"variables,omitempty"`
+		Rerun     float64           `json:"rerun,omitempty"`
+		Items     []*Item           `json:"items"`
+	}{
+		Items:     fb.Items,
+		Rerun:     fb.rerun,
+		Variables: fb.vars,
+	})
 }
 
 // Send generates JSON from this struct and sends it to Alfred

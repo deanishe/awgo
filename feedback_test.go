@@ -289,13 +289,16 @@ func TestMarshalFeedback(t *testing.T) {
 
 	// Feedback with item
 	// want = `<items><item valid="no"><title>item 1</title></item></items>`
-	want = `{"items":[{"title":"item 1"}]}`
+	want = `{"items":[{"title":"item 1","valid":false}]}`
 	fb.NewItem("item 1")
 
 	got, err = json.Marshal(fb)
 	if err != nil {
 		t.Fatalf("Error marshalling feedback: got: %s want: %s: %v",
 			got, want, err)
+	}
+	if string(got) != want {
+		t.Fatalf("Wrong feedback JSON. Expected=%s, got=%s", want, got)
 	}
 
 }
@@ -313,6 +316,22 @@ func TestModifiersInheritVars(t *testing.T) {
 	}
 }
 
+// TestFeedbackRerun verifies that rerun is properly set.
+func TestFeedbackRerun(t *testing.T) {
+	fb := NewFeedback()
+
+	fb.Rerun(1.5)
+
+	want := `{"rerun":1.5,"items":[]}`
+	got, err := json.Marshal(fb)
+	if err != nil {
+		t.Fatalf("Error serializing feedback: got: %s want: %s: %s", got, want, err)
+	}
+	if string(got) != want {
+		t.Fatalf("Wrong feedback JSON. Expected=%s, got=%s", want, got)
+	}
+}
+
 // TestFeedbackVars tests if vars are properly inherited by Items and Modifiers
 func TestFeedbackVars(t *testing.T) {
 	fb := NewFeedback()
@@ -322,14 +341,26 @@ func TestFeedbackVars(t *testing.T) {
 		t.Fatalf("Feedback var has wrong value. Expected=bar, Received=%v", fb.Vars()["foo"])
 	}
 
-	it := fb.NewItem("title")
-	if it.Vars()["foo"] != "bar" {
-		t.Fatalf("Item var has wrong value. Expected=bar, Received=%v", it.Vars()["foo"])
+	want := `{"variables":{"foo":"bar"},"items":[]}`
+	got, err := json.Marshal(fb)
+	if err != nil {
+		t.Fatalf("Error serializing feedback: got: %s want: %s: %s", got, want, err)
+	}
+	if string(got) != want {
+		t.Fatalf("Wrong feedback JSON. Expected=%s, got=%s", want, got)
 	}
 
+	// Top-level vars are not inherited
+	it := fb.NewItem("title")
+	if it.Vars()["foo"] != "" {
+		t.Fatalf("Item var has wrong value. Expected='', Received=%v", it.Vars()["foo"])
+	}
+
+	// Modifier inherits Item vars
+	it.Var("foo", "baz")
 	m := it.NewModifier("cmd")
-	if m.Vars()["foo"] != "bar" {
-		t.Fatalf("Modifier var has wrong value. Expected=bar, Received=%v", m.Vars()["foo"])
+	if m.Vars()["foo"] != "baz" {
+		t.Fatalf("Modifier var has wrong value. Expected=baz, Received=%v", m.Vars()["foo"])
 	}
 }
 

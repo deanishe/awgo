@@ -602,9 +602,18 @@ func (wf *Workflow) OpenLog() error {
 // --------------------------------------------------------------------
 // Feedback
 
+// Rerun tells Alfred to re-run the Script Filter after `secs` seconds.
+func Rerun(secs float64) *Workflow { return wf.Rerun(secs) }
+
+// Rerun tells Alfred to re-run the Script Filter after `secs` seconds.
+func (wf *Workflow) Rerun(secs float64) *Workflow {
+	wf.Feedback.Rerun(secs)
+	return wf
+}
+
 // Vars returns the workflow variables set on Workflow.Feedback.
 // See Feedback.Vars() for more information.
-func Vars() map[string]string { return wf.Feedback.Vars() }
+func Vars() map[string]string { return wf.Vars() }
 
 // Vars returns the workflow variables set on Workflow.Feedback.
 // See Feedback.Vars() for more information.
