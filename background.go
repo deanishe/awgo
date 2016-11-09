@@ -18,8 +18,8 @@ import (
 	"syscall"
 )
 
-// AlreadyRunning is the error returned if a job of the given name
-// is already running.
+// AlreadyRunning is the error returned by RunInBackground if a job with
+// the given name is already running.
 type AlreadyRunning struct {
 	Name string
 	Pid  int
@@ -30,7 +30,8 @@ func (a AlreadyRunning) Error() string {
 	return fmt.Sprintf("Job '%s' already running with PID %d", a.Name, a.Pid)
 }
 
-// RunInBackground executes cmd in the background.
+// RunInBackground executes cmd in the background. It returns an
+// AlreadyRunning error if a job of the same name is already running.
 func RunInBackground(jobName string, cmd *exec.Cmd) error {
 	if IsRunning(jobName) {
 		pid, _ := getPid(jobName)
@@ -82,6 +83,7 @@ func IsRunning(jobName string) bool {
 	return true
 }
 
+// Save PID a job-specific file.
 func savePid(jobName string, pid int) error {
 	p := pidFile(jobName)
 	if err := ioutil.WriteFile(p, []byte(fmt.Sprintf("%d", pid)), 0600); err != nil {
@@ -90,6 +92,7 @@ func savePid(jobName string, pid int) error {
 	return nil
 }
 
+// Return PID for job.
 func getPid(jobName string) (int, error) {
 	p := pidFile(jobName)
 	data, err := ioutil.ReadFile(p)
@@ -103,7 +106,7 @@ func getPid(jobName string) (int, error) {
 	return pid, nil
 }
 
-// Path to PID file for jobName
+// Path to PID file for job.
 func pidFile(jobName string) string {
 	dir := EnsureExists(filepath.Join(awCacheDir(), "jobs"))
 	return filepath.Join(dir, jobName+".pid")

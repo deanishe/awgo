@@ -36,9 +36,6 @@ Upcoming features
 
 These features are planned:
 
-	TODO: Add support for Alfred v3.2 feedback-level variables
-	TODO: Add support for Alfred v3.2 re-run feature
-	TODO: Starting and managing background processes
 	TODO: Caching and storing data
 	TODO: Alfred/AppleScript helpers?
 	TODO: Implement standard-compliant pre-release comparison in SemVer?
@@ -160,6 +157,19 @@ You can use your own backend by implementing the Releaser interface.
 
 The only hard requirement is support for (mostly) semantic version numbers.
 See http://semver.org for details.
+
+See examples/update for one possible way to use this API.
+
+
+Background jobs
+
+AwGo provides a simple API to start/stop background processes via the
+RunInBackground(), IsRunning() and Kill() functions. This is useful
+for running checks for updates and other jobs that hit the network or
+take a significant amount of time to complete, allowing you to keep
+your Script Filters extremely responsive.
+
+See examples/update for one possible way to use this API.
 
 
 Performance

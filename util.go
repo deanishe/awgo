@@ -126,9 +126,9 @@ func Pad(str, pad string, n int) string {
 	}
 }
 
-// SensibleDuration returns a sensibly-formatted string for
+// ReadableDuration returns a sensibly-formatted string for
 // non-benchmarking purposes.
-func SensibleDuration(d time.Duration) string {
+func ReadableDuration(d time.Duration) string {
 	if d.Hours() >= 72 { // 3 days
 		return fmt.Sprintf("%dd", int(d.Hours()/24))
 	}

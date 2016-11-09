@@ -903,7 +903,7 @@ func (wf *Workflow) awCacheDir() string {
 // finishLog outputs the workflow duration
 func finishLog(fatal bool) {
 	elapsed := time.Now().Sub(startTime)
-	s := Pad(fmt.Sprintf(" %s ", SensibleDuration(elapsed)), "-", 50)
+	s := Pad(fmt.Sprintf(" %s ", ReadableDuration(elapsed)), "-", 50)
 	if fatal {
 		log.Fatalln(s)
 	} else {
