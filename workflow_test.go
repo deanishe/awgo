@@ -30,7 +30,7 @@ func TestParseInfo(t *testing.T) {
 		t.Fatalf("Incorrect name: %v", info.Name)
 	}
 
-	if info.Website != "https://gogs.deanishe.net/deanishe/awgo" {
+	if info.Website != "https://git.deanishe.net/deanishe/awgo" {
 		t.Fatalf("Incorrect website: %v", info.Website)
 	}
 }

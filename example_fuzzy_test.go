@@ -11,7 +11,7 @@ package aw_test
 import (
 	"fmt"
 
-	"gogs.deanishe.net/deanishe/awgo"
+	"git.deanishe.net/deanishe/awgo"
 )
 
 // Contact is a very simple data model.

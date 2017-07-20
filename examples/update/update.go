@@ -36,8 +36,8 @@ import (
 	"log"
 	"os/exec"
 
+	"git.deanishe.net/deanishe/awgo"
 	"github.com/docopt/docopt-go"
-	"gogs.deanishe.net/deanishe/awgo"
 )
 
 // Name of the background job that checks for updates

@@ -21,7 +21,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"gogs.deanishe.net/deanishe/awgo"
+	"git.deanishe.net/deanishe/awgo"
 )
 
 var (

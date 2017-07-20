@@ -146,6 +146,6 @@ The alternate actions are all configured in the Script Filter code/output (which
 	<key>version</key>
 	<string>0.1</string>
 	<key>webaddress</key>
-	<string>https://godoc.org/gogs.deanishe.net/deanishe/awgo</string>
+	<string>https://godoc.org/git.deanishe.net/deanishe/awgo</string>
 </dict>
 </plist>

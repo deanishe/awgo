@@ -130,6 +130,6 @@ There are &gt;45K books, and a proper database (e.g. sqlite) would be better sui
 	<key>version</key>
 	<string>0.1</string>
 	<key>webaddress</key>
-	<string>https://godoc.org/gogs.deanishe.net/deanishe/awgo</string>
+	<string>https://godoc.org/git.deanishe.net/deanishe/awgo</string>
 </dict>
 </plist>

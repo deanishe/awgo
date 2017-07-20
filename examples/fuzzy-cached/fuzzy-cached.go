@@ -41,8 +41,8 @@ import (
 	"strconv"
 	"time"
 
+	"git.deanishe.net/deanishe/awgo"
 	"github.com/docopt/docopt-go"
-	"gogs.deanishe.net/deanishe/awgo"
 )
 
 var (

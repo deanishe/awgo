@@ -14,7 +14,7 @@ This library is released under the MIT licence, which you can read
 online at https://opensource.org/licenses/MIT
 
 To read this documentation on godoc.org, see
-http://godoc.org/gogs.deanishe.net/deanishe/awgo
+http://godoc.org/git.deanishe.net/deanishe/awgo
 
 
 Features
@@ -52,7 +52,7 @@ program.go:
 	package main
 
 	// Package is called aw
-	import "gogs.deanishe.net/deanishe/awgo"
+	import "git.deanishe.net/deanishe/awgo"
 
 	func run() {
 	    // Your workflow starts here
