@@ -130,7 +130,8 @@ var marshalItemTests = []struct {
 		ExpectedJSON: `{"title":"title","valid":false,"text":{"copy":"copy","largetype":"large"}}`},
 	// With arg and variable
 	{Item: &Item{title: "title", arg: p("value"), vars: map[string]string{"foo": "bar"}},
-		ExpectedJSON: `{"title":"title","arg":"{\"alfredworkflow\":{\"arg\":\"value\",\"variables\":{\"foo\":\"bar\"}}}","valid":false}`},
+		// ExpectedJSON: `{"title":"title","arg":"{\"alfredworkflow\":{\"arg\":\"value\",\"variables\":{\"foo\":\"bar\"}}}","valid":false}`},
+		ExpectedJSON: `{"title":"title","arg":"value","valid":false,"variables":{"foo":"bar"}}`},
 }
 
 var marshalModifierTests = []struct {
@@ -152,6 +153,9 @@ var marshalModifierTests = []struct {
 	// valid
 	{Mod: &Modifier{valid: true, validSet: true},
 		ExpectedJSON: `{"valid":true}`},
+	// icon
+	{Mod: &Modifier{icon: &Icon{"icon.png", ""}},
+		ExpectedJSON: `{"icon":{"path":"icon.png"}}`},
 	// With all
 	{Mod: &Modifier{
 		arg:      p("title"),
@@ -159,6 +163,14 @@ var marshalModifierTests = []struct {
 		valid:    true,
 	},
 		ExpectedJSON: `{"arg":"title","subtitle":"sub here","valid":true}`},
+	// With variable
+	{Mod: &Modifier{
+		arg:      p("title"),
+		subtitle: p("sub here"),
+		valid:    true,
+		vars:     map[string]string{"foo": "bar"},
+	},
+		ExpectedJSON: `{"arg":"title","subtitle":"sub here","valid":true,"variables":{"foo":"bar"}}`},
 }
 
 var marshalArgTests = []struct {

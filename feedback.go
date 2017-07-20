@@ -187,10 +187,11 @@ func (it *Item) Vars() map[string]string {
 // MarshalJSON serializes Item to Alfred 3's JSON format. You shouldn't
 // need to call this directly: use Feedback.Send() instead.
 func (it *Item) MarshalJSON() ([]byte, error) {
-	var typ string
-	var qlurl string
-	var text *itemText
-	arg := it.arg
+	var (
+		typ   string
+		qlurl string
+		text  *itemText
+	)
 
 	if it.file {
 		typ = "file"
@@ -202,21 +203,6 @@ func (it *Item) MarshalJSON() ([]byte, error) {
 
 	if it.copytext != nil || it.largetype != nil {
 		text = &itemText{Copy: it.copytext, Large: it.largetype}
-	}
-
-	if len(it.vars) > 0 {
-		a := NewArgVars()
-		if arg != nil {
-			a.Arg(*arg)
-		}
-		for k, v := range it.vars {
-			a.Var(k, v)
-		}
-		if s, err := a.String(); err == nil {
-			arg = &s
-		} else {
-			log.Printf("Error encoding variables: %v", err)
-		}
 	}
 
 	// Serialise Item
@@ -231,18 +217,20 @@ func (it *Item) MarshalJSON() ([]byte, error) {
 		Text      *itemText            `json:"text,omitempty"`
 		Icon      *Icon                `json:"icon,omitempty"`
 		Quicklook string               `json:"quicklookurl,omitempty"`
+		Variables map[string]string    `json:"variables,omitempty"`
 		Mods      map[string]*Modifier `json:"mods,omitempty"`
 	}{
 		Title:     it.title,
 		Subtitle:  it.subtitle,
 		Auto:      it.autocomplete,
-		Arg:       arg,
+		Arg:       it.arg,
 		UID:       it.uid,
 		Valid:     it.valid,
 		Type:      typ,
 		Text:      text,
 		Icon:      it.icon,
 		Quicklook: qlurl,
+		Variables: it.vars,
 		Mods:      it.mods,
 	})
 }
@@ -270,6 +258,7 @@ type Modifier struct {
 	subtitleSet bool
 	valid       bool
 	validSet    bool
+	icon        *Icon
 	vars        map[string]string
 }
 
@@ -313,32 +302,18 @@ func (m *Modifier) Vars() map[string]string {
 // MarshalJSON implements the JSON serialization interface.
 func (m *Modifier) MarshalJSON() ([]byte, error) {
 
-	arg := m.arg
-
-	// Variables
-	if len(m.vars) > 0 {
-		a := NewArgVars()
-		if m.arg != nil {
-			a.Arg(*arg)
-		}
-		for k, v := range m.vars {
-			a.Var(k, v)
-		}
-		if s, err := a.String(); err == nil {
-			arg = &s
-		} else {
-			log.Printf("Error encoding variables: %v", err)
-		}
-	}
-
 	return json.Marshal(&struct {
-		Arg      *string `json:"arg,omitempty"`
-		Subtitle *string `json:"subtitle,omitempty"`
-		Valid    bool    `json:"valid,omitempty"`
+		Arg       *string           `json:"arg,omitempty"`
+		Subtitle  *string           `json:"subtitle,omitempty"`
+		Valid     bool              `json:"valid,omitempty"`
+		Icon      *Icon             `json:"icon,omitempty"`
+		Variables map[string]string `json:"variables,omitempty"`
 	}{
-		Arg:      arg,
-		Subtitle: m.subtitle,
-		Valid:    m.valid,
+		Arg:       m.arg,
+		Subtitle:  m.subtitle,
+		Valid:     m.valid,
+		Icon:      m.icon,
+		Variables: m.vars,
 	})
 }
 
