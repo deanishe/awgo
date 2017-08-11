@@ -6,7 +6,7 @@
 // Created on 2016-11-03
 //
 
-package aw
+package update
 
 import "testing"
 import "time"
@@ -32,7 +32,7 @@ func (r testReleaser) Releases() ([]*Release, error) {
 }
 
 func clearUpdateCache() error {
-	u, err := NewUpdater(testReleaser{})
+	u, err := New(testReleaser{})
 	if err != nil {
 		return fmt.Errorf("Error creating updater: %s", err)
 	}
@@ -45,7 +45,7 @@ func TestUpdater(t *testing.T) {
 		t.Fatal(err)
 	}
 	rl := testReleaser{}
-	u, err := NewUpdater(rl)
+	u, err := New(rl)
 	if err != nil {
 		t.Fatalf("Error creating updater: %s", err)
 	}
@@ -79,7 +79,7 @@ func TestUpdateInterval(t *testing.T) {
 	if err := clearUpdateCache(); err != nil {
 		t.Fatal(err)
 	}
-	u, err := NewUpdater(testReleaser{})
+	u, err := New(testReleaser{})
 	if err != nil {
 		t.Fatalf("Error creating updater: %s", err)
 	}

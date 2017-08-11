@@ -15,6 +15,9 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+
+	"git.deanishe.net/deanishe/awgo/fuzzy"
+	"git.deanishe.net/deanishe/awgo/util"
 )
 
 // Valid modifier keys for Item.NewModifier(). You can't combine these
@@ -257,7 +260,6 @@ type Modifier struct {
 	subtitle    *string
 	subtitleSet bool
 	valid       bool
-	validSet    bool
 	icon        *Icon
 	vars        map[string]string
 }
@@ -398,7 +400,7 @@ func (fb *Feedback) NewItem(title string) *Item {
 func (fb *Feedback) NewFileItem(path string) *Item {
 	t := filepath.Base(path)
 	it := fb.NewItem(t)
-	it.Subtitle(ShortenPath(path)).
+	it.Subtitle(util.ShortenPath(path)).
 		Arg(path).
 		Valid(true).
 		UID(path).
@@ -436,23 +438,24 @@ func (fb *Feedback) Send() error {
 
 	os.Stdout.Write(output)
 	fb.sent = true
-	log.Printf("Sent %d results to Alfred", len(fb.Items))
+	log.Printf("Sent %d result(s) to Alfred", len(fb.Items))
 	return nil
 }
 
 // Sort sorts Items against query. Uses a Sorter with the default
 // settings.
-func (fb *Feedback) Sort(query string, opts *SortOptions) []*Result {
-	s := NewSorter(fb, opts)
+func (fb *Feedback) Sort(query string, opts ...fuzzy.Option) []*fuzzy.Result {
+	s := fuzzy.New(fb, opts...)
 	return s.Sort(query)
 }
 
 // Filter fuzzy-sorts feedback Items against query and deletes Items that
 // don't match.
-func (fb *Feedback) Filter(query string, opts *SortOptions) []*Result {
+func (fb *Feedback) Filter(query string, opts ...fuzzy.Option) []*fuzzy.Result {
 	var items []*Item
-	var res []*Result
-	r := fb.Sort(query, opts)
+	var res []*fuzzy.Result
+
+	r := fb.Sort(query, opts...)
 	for i, it := range fb.Items {
 		if r[i].Match {
 			items = append(items, it)
@@ -463,7 +466,7 @@ func (fb *Feedback) Filter(query string, opts *SortOptions) []*Result {
 	return res
 }
 
-// SortKey implements Sortable interface.
+// SortKey implements fuzzy.Interface.
 //
 // Returns the fuzzy sort key for Item i. If Item has no sort key,
 // returns item title instead.

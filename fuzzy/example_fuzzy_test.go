@@ -6,12 +6,10 @@
 // Created on 2016-10-30
 //
 
-package aw_test
+package fuzzy
 
 import (
 	"fmt"
-
-	"git.deanishe.net/deanishe/awgo"
 )
 
 // Contact is a very simple data model.
@@ -52,31 +50,31 @@ func ExampleSort() {
 	// Unsorted
 	fmt.Println(c[0].Name())
 
-	aw.Sort(c, "mw")
+	Sort(c, "mw")
 	fmt.Println(c[0].Name())
 
-	aw.Sort(c, "meg")
+	Sort(c, "meg")
 	fmt.Println(c[0].Name())
 
-	aw.Sort(c, "voll")
+	Sort(c, "voll")
 	fmt.Println(c[0].Name())
 
-	aw.Sort(c, "ser")
+	Sort(c, "ser")
 	fmt.Println(c[0].Name())
 
-	aw.Sort(c, "ss")
+	Sort(c, "ss")
 	fmt.Println(c[0].Name())
 
-	aw.Sort(c, "jim")
+	Sort(c, "jim")
 	fmt.Println(c[0].Name())
 
-	aw.Sort(c, "jj")
+	Sort(c, "jj")
 	fmt.Println(c[0].Name())
 
-	aw.Sort(c, "jjo")
+	Sort(c, "jjo")
 	fmt.Println(c[0].Name())
 
-	aw.Sort(c, "kg")
+	Sort(c, "kg")
 	fmt.Println(c[0].Name())
 	// Output:
 	// Meggan Siering

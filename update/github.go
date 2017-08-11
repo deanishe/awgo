@@ -6,7 +6,7 @@
 // Created on 2016-11-03
 //
 
-package aw
+package update
 
 import (
 	"encoding/json"
@@ -15,23 +15,34 @@ import (
 	"log"
 	"net/url"
 	"strings"
+
+	aw "git.deanishe.net/deanishe/awgo"
 )
 
 const (
 	ghBaseURL = "https://api.github.com/repos/"
 )
 
-// GitHub updates from a GitHub repo's releases. Repo should be in the
-// form "username/reponame", e.g. "deanishe/alfred-ssh". Releases
+// GitHub is a Workflow Option. It sets a Workflow Updater for the specified GitHub repo.
+// Repo name should be of the form "username/repo", e.g. "deanishe/alfred-workflow".
+func GitHub(repo string) aw.Option {
+	return func(wf *aw.Workflow) aw.Option {
+		u, _ := New(wf, &GitHubReleaser{Repo: repo})
+		return aw.Update(u)(wf)
+	}
+}
+
+// GitHubReleaser updates from a GitHub repo's releases. Repo should be in
+// the form "username/reponame", e.g. "deanishe/alfred-ssh". Releases
 // are marked as pre-releases based on the "This is a pre-release"
 // checkbox on the website, *not* the version number/tag.
-type GitHub struct {
+type GitHubReleaser struct {
 	Repo     string
 	releases []*Release
 }
 
 // Releases implements Releaser.
-func (gh *GitHub) Releases() ([]*Release, error) {
+func (gh *GitHubReleaser) Releases() ([]*Release, error) {
 	if gh.releases == nil {
 		gh.releases = []*Release{}
 		// rels := []*Release{}
@@ -52,7 +63,7 @@ func (gh *GitHub) Releases() ([]*Release, error) {
 	return gh.releases, nil
 }
 
-func (gh *GitHub) url() *url.URL {
+func (gh *GitHubReleaser) url() *url.URL {
 	u, _ := url.Parse(fmt.Sprintf("%s%s/releases", ghBaseURL, gh.Repo))
 	return u
 }
@@ -81,7 +92,7 @@ func parseGitHubReleases(js []byte) ([]*Release, error) {
 	for _, ghr := range ghrels {
 		r, err := ghReleaseToRelease(ghr)
 		if err != nil {
-			log.Printf("Invalid release: %s", err)
+			log.Printf("invalid release: %s", err)
 		} else {
 			rels = append(rels, r)
 		}
@@ -94,7 +105,7 @@ func ghReleaseToRelease(ghr *ghRelease) (*Release, error) {
 	// Check version
 	v, err := NewSemVer(ghr.Tag)
 	if err != nil {
-		return nil, fmt.Errorf("Invalid version/tag %q: %s", ghr.Tag, err)
+		return nil, fmt.Errorf("invalid version/tag %q: %s", ghr.Tag, err)
 	}
 	rel.Version = v
 	// Check files (assets)
@@ -105,10 +116,10 @@ func ghReleaseToRelease(ghr *ghRelease) (*Release, error) {
 		}
 	}
 	if len(assets) > 1 {
-		return nil, fmt.Errorf("Multiple (%d) workflow files in release.", len(assets))
+		return nil, fmt.Errorf("multiple (%d) workflow files in release", len(assets))
 	}
 	if len(assets) == 0 {
-		return nil, errors.New("No workflow files in release.")
+		return nil, errors.New("no workflow files in release")
 	}
 	rel.Filename = assets[0].Name
 	u, err := url.Parse(assets[0].URL)

@@ -1,0 +1,6 @@
+Features:
+	- Caching
+		Read/write bytes to named cache/data file.
+		LoadOrSave() - Read from cache or reload and cache.
+
+#  vim: ft=taskpaper ts=2 sw=2 tw=80 noet :

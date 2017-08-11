@@ -4,7 +4,9 @@
 // MIT Licence. See http://opensource.org/licenses/MIT
 //
 
-package aw
+// Package util contains general helper functions for workflow (library)
+// authors.
+package util
 
 import (
 	"fmt"
@@ -160,8 +162,8 @@ func ReadableDuration(d time.Duration) string {
 	return fmt.Sprintf("%dms", d.Nanoseconds()/1000000)
 }
 
-// clearDirectory deletes all files within a directory.
-func clearDirectory(p string) error {
+// ClearDirectory deletes all files within a directory.
+func ClearDirectory(p string) error {
 	if !PathExists(p) {
 		return nil
 	}

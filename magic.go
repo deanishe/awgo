@@ -183,7 +183,7 @@ func (a resetMagic) Run() error          { return ClearData() }
 
 // Updates the workflow if a newer release is available.
 type updateMagic struct {
-	updater *Updater
+	updater Updater
 }
 
 func (a updateMagic) Keyword() string     { return "update" }

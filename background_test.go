@@ -11,6 +11,8 @@ package aw
 import (
 	"os/exec"
 	"testing"
+
+	"git.deanishe.net/deanishe/awgo/util"
 )
 
 // TestRunInBackground ensures background jobs work.
@@ -26,7 +28,7 @@ func TestRunInBackground(t *testing.T) {
 		t.Fatalf("Job 'sleep' is not running")
 	}
 	p := pidFile("sleep")
-	if !PathExists(p) {
+	if !util.PathExists(p) {
 		t.Fatalf("No PID file for 'sleep'")
 	}
 	// Duplicate jobs fail
@@ -45,7 +47,7 @@ func TestRunInBackground(t *testing.T) {
 	if IsRunning("sleep") {
 		t.Fatal("'sleep' job still running")
 	}
-	if PathExists(p) {
+	if util.PathExists(p) {
 		t.Fatal("'sleep' PID file not deleted")
 	}
 }

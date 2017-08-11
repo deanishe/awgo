@@ -12,6 +12,26 @@ import (
 	"testing"
 )
 
+var testOptions = []struct {
+	opt  Option
+	test func(wf *Workflow) bool
+	desc string
+}{
+	{HelpURL("http://www.example.com"), func(wf *Workflow) bool { return wf.HelpURL == "http://www.example.com" }, "Set HelpURL"},
+	{MaxResults(10), func(wf *Workflow) bool { return wf.MaxResults == 10 }, "Set MaxResults"},
+	{LogPrefix("blah"), func(wf *Workflow) bool { return wf.LogPrefix == "blah" }, "Set LogPrefix"},
+	{SortOptions(), func(wf *Workflow) bool { return wf.SortOptions == nil }, "Set SortOptions"},
+}
+
+func TestOptions(t *testing.T) {
+	for _, td := range testOptions {
+		wf := New(td.opt)
+		if !td.test(wf) {
+			t.Errorf("option %s failed", td.desc)
+		}
+	}
+}
+
 func TestParseInfo(t *testing.T) {
 	info := DefaultWorkflow().Info()
 	if info.BundleID != "net.deanishe.awgo" {
@@ -48,43 +68,16 @@ func TestParseVars(t *testing.T) {
 	}
 }
 
-// TestUpdates ensures an unconfigured workflow doesn't think it can update
-func TestUpdates(t *testing.T) {
-	if err := clearUpdateCache(); err != nil {
-		t.Fatal(err)
-	}
-	wf := NewWorkflow(nil)
-	if wf.UpdateCheckDue() != false {
-		t.Fatal("Unconfigured workflow wants to update")
-	}
-	if wf.UpdateAvailable() != false {
-		t.Fatal("Unconfigured workflow wants to update")
-	}
-	if err := wf.CheckForUpdate(); err == nil {
-		t.Fatal("Unconfigured workflow didn't error on update check")
-	}
-	if err := wf.InstallUpdate(); err == nil {
-		t.Fatal("Unconfigured workflow didn't error on update install")
-	}
-	wf = NewWorkflow(&Options{GitHub: "deanishe/alfred-ssh"})
-	if wf.UpdateCheckDue() != true {
-		t.Fatal("Workflow doesn't want to update")
-	}
-	if err := clearUpdateCache(); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func ExampleInfo_Var() {
-	i := Info()
-	fmt.Println(i.Var("exported_var"))
+func ExampleInfoPlist_Var() {
+	info := DefaultWorkflow().Info()
+	fmt.Println(info.Var("exported_var"))
 	// Output: exported_value
 }
 
-// NewWorkflow initialises a Workflow with the default settings. Name,
+// New initialises a Workflow with the default settings. Name,
 // bundle ID, version etc. are read from the environment and info.plist.
-func ExampleNewWorkflow() {
-	wf := NewWorkflow(nil)
+func ExampleNew() {
+	wf := New()
 	// BundleID is read from environment or info.plist
 	fmt.Println(wf.BundleID())
 	// Version is from info.plist

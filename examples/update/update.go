@@ -37,6 +37,7 @@ import (
 	"os/exec"
 
 	"git.deanishe.net/deanishe/awgo"
+	"git.deanishe.net/deanishe/awgo/update"
 	"github.com/docopt/docopt-go"
 )
 
@@ -58,13 +59,12 @@ Options:
 
 var (
 	iconAvailable = &aw.Icon{Value: "update-available.png"}
-	iconUpToDate  = &aw.Icon{Value: "up-to-date.png"}
 	repo          = "deanishe/alfred-ssh"
 	wf            *aw.Workflow
 )
 
 func init() {
-	wf = aw.NewWorkflow(&aw.Options{GitHub: repo})
+	wf = aw.New(update.GitHub(repo))
 }
 
 func run() {

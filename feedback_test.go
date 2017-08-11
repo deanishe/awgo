@@ -21,14 +21,14 @@ func TestNewFileItem(t *testing.T) {
 	fb := Feedback{}
 	it := fb.NewFileItem(ipPath)
 	if it.title != "info.plist" {
-		t.Fatalf("Incorrect title: %v", it.Title)
+		t.Fatalf("Incorrect title: %v", it.title)
 	}
 	if *it.subtitle != ipShort {
-		t.Fatalf("Incorrect subtitle: %v", it.Subtitle)
+		t.Fatalf("Incorrect subtitle: %v", *it.subtitle)
 	}
 
 	if *it.uid != ipPath {
-		t.Fatalf("Incorrect UID: %v", it.UID)
+		t.Fatalf("Incorrect UID: %v", *it.uid)
 	}
 
 	if it.file != true {
@@ -151,7 +151,7 @@ var marshalModifierTests = []struct {
 	{Mod: &Modifier{subtitle: p("sub here")},
 		ExpectedJSON: `{"subtitle":"sub here"}`},
 	// valid
-	{Mod: &Modifier{valid: true, validSet: true},
+	{Mod: &Modifier{valid: true},
 		ExpectedJSON: `{"valid":true}`},
 	// icon
 	{Mod: &Modifier{icon: &Icon{"icon.png", ""}},
@@ -373,6 +373,92 @@ func TestFeedbackVars(t *testing.T) {
 	m := it.NewModifier("cmd")
 	if m.Vars()["foo"] != "baz" {
 		t.Fatalf("Modifier var has wrong value. Expected=baz, Received=%v", m.Vars()["foo"])
+	}
+}
+
+// TestSortFeedback sorts Feedback.Items
+func TestSortFeedback(t *testing.T) {
+	for _, td := range feedbackTitles {
+		fb := NewFeedback()
+		for _, s := range td.in {
+			fb.NewItem(s)
+		}
+		r := fb.Sort(td.q)
+		for i, it := range fb.Items {
+			if it.title != td.out[i] {
+				t.Errorf("query=%#v, pos=%d, expected=%s, got=%s", td.q, i+1, td.out[i], it.title)
+			}
+			if r[i].Match != td.m[i] {
+				t.Errorf("query=%#v, keywords=%#v, expected=%v, got=%v", td.q, it.title, td.m[i], r[i].Match)
+			}
+		}
+	}
+}
+
+var feedbackTitles = []struct {
+	q   string
+	in  []string
+	out []string
+	m   []bool
+}{
+	{
+		q:   "got",
+		in:  []string{"game of thrones", "no match", "got milk?", "got"},
+		out: []string{"got", "game of thrones", "got milk?", "no match"},
+		m:   []bool{true, true, true, false},
+	},
+	{
+		q:   "of",
+		in:  []string{"out of time", "spelunking", "OmniFocus", "game of thrones"},
+		out: []string{"OmniFocus", "out of time", "game of thrones", "spelunking"},
+		m:   []bool{true, true, true, false},
+	},
+	{
+		q:   "safa",
+		in:  []string{"see all fellows' armpits", "Safari", "french canada", "spanish harlem"},
+		out: []string{"Safari", "see all fellows' armpits", "spanish harlem", "french canada"},
+		m:   []bool{true, true, false, false},
+	},
+}
+
+var filterTitles = []struct {
+	q   string
+	in  []string
+	out []string
+}{
+	{
+		q:   "got",
+		in:  []string{"game of thrones", "no match", "got milk?", "got"},
+		out: []string{"got", "game of thrones", "got milk?"},
+	},
+	{
+		q:   "of",
+		in:  []string{"out of time", "spelunking", "OmniFocus", "game of thrones"},
+		out: []string{"OmniFocus", "out of time", "game of thrones"},
+	},
+	{
+		q:   "safa",
+		in:  []string{"see all fellows' armpits", "Safari", "french canada", "spanish harlem"},
+		out: []string{"Safari", "see all fellows' armpits"},
+	},
+}
+
+// TestFilterFeedback filters Feedback.Items
+func TestFilterFeedback(t *testing.T) {
+	for _, td := range filterTitles {
+		fb := NewFeedback()
+		for _, s := range td.in {
+			fb.NewItem(s)
+		}
+		fb.Filter(td.q)
+		if len(fb.Items) != len(td.out) {
+			t.Errorf("query=%#v, expected %d results, got %d", td.q, len(td.out), len(fb.Items))
+		}
+		for i, it := range fb.Items {
+			if it.title != td.out[i] {
+				t.Errorf("query=%#v, pos=%d, expected=%s, got=%s", td.q, i+1, td.out[i], it.title)
+			}
+		}
 	}
 }
 

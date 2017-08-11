@@ -23,7 +23,7 @@ The current main features are:
 
 	- Easy access to Alfred context, such as data and cache directories.
 	- Straightforward generation of Alfred JSON feedback.
-	- Support for all applicable Alfred features up to v3.1.
+	- Support for all applicable Alfred features up to v3.4.1
 	- Fuzzy sorting/filtering.
 	- Catches panics, logs stack trace and shows user an error message.
 	- Workflow updates API with built-in support for GitHub releases.
@@ -75,28 +75,23 @@ just as a way to encapsulate search results for Alfred. In particular,
 its variables are only settable, not gettable.
 
 
-Fuzzy sorting and filtering
+Fuzzy filtering
 
-Sort() and Match() implement fuzzy search, e.g. "of" will match "OmniFocus"
-and "got" will match "Game of Thrones".
+Subpackage fuzzy provides a fuzzy search algorithm modelled on Sublime
+Text's search.
 
-Match() compares a query and a string, while Sort() sorts an object that
-implements the Sortable interface. Both return Result structs for each
-compared string.
+To make a slice fuzzy-filterable, implement fuzzy.Interface.
 
-The Workflow and Feedback structs provide an additional Filter() method,
+The Feedback struct implements this interface.
+
+Workflow and Feedback structs provide an additional Filter() method,
 which fuzzy-sorts Items and removes any that do not match the query.
 
 The Feedback struct implements Sortable, so you can sort/filter feedback
 Items. See examples/fuzzy-simple for a basic example.
 
-See examples/fuzzy-cached for a demonstration of implementing Sortable
+See examples/fuzzy-cached for a demonstration of implementing fuzzy.Interface
 on your own structs and customising the sort settings.
-
-The algorithm is based on Forrest Smith's reverse engineering of Sublime
-Text's search: https://blog.forrestthewoods.com/reverse-engineering-sublime-text-s-fuzzy-match-4cffeed33fdb
-
-It additionally strips diacritics from sort keys if the query is ASCII.
 
 
 Sending results to Alfred
@@ -147,18 +142,6 @@ log is kept.
 
 AwGo detects when Alfred's debugger is open (Workflow.Debug() returns
 true) and in this case prepends filename:linenumber: to log messages.
-
-
-Updates
-
-The Updater/Releaser API provides the ability to check for newer versions
-of your workflow. A GitHub Releaser that updates from GitHub releases is built in.
-You can use your own backend by implementing the Releaser interface.
-
-The only hard requirement is support for (mostly) semantic version numbers.
-See http://semver.org for details.
-
-See examples/update for one possible way to use this API.
 
 
 Background jobs

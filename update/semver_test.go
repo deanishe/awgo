@@ -6,7 +6,7 @@
 // Created on 2016-11-01
 //
 
-package aw
+package update
 
 import "testing"
 

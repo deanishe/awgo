@@ -6,9 +6,14 @@
 // Created on 2016-11-03
 //
 
-package aw
+package update
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+
+	aw "git.deanishe.net/deanishe/awgo"
+)
 
 var (
 	ghReleasesEmptyJSON = `[]`
@@ -600,8 +605,8 @@ func TestParseGH(t *testing.T) {
 }
 
 // makeGHReleaser creates a new GitHub Releaser and populates its release cache.
-func makeGHReleaser() *GitHub {
-	gh := &GitHub{Repo: "deanishe/nonexistent"}
+func makeGHReleaser() *GitHubReleaser {
+	gh := &GitHubReleaser{Repo: "deanishe/nonexistent"}
 	// Avoid network
 	rels, _ := parseGitHubReleases([]byte(ghReleasesJSON))
 	gh.releases = rels
@@ -649,6 +654,35 @@ func TestGHUpdater(t *testing.T) {
 		t.Fatal("No update found")
 	}
 	if err := clearUpdateCache(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// TestUpdates ensures an unconfigured workflow doesn't think it can update
+func TestUpdates(t *testing.T) {
+	wf := aw.New()
+	if err := wf.ClearCache(); err != nil {
+		t.Fatal(fmt.Sprintf("couldn't clear cache: %v", err))
+	}
+	if wf.UpdateCheckDue() != false {
+		t.Fatal("Unconfigured workflow wants to update")
+	}
+	if wf.UpdateAvailable() != false {
+		t.Fatal("Unconfigured workflow wants to update")
+	}
+	if err := wf.CheckForUpdate(); err == nil {
+		t.Fatal("Unconfigured workflow didn't error on update check")
+	}
+	if err := wf.InstallUpdate(); err == nil {
+		t.Fatal("Unconfigured workflow didn't error on update install")
+	}
+
+	// Now with updater
+	wf = New(GitHub("deanishe/alfred-ssh"))
+	if wf.UpdateCheckDue() != true {
+		t.Fatal("Workflow doesn't want to update")
+	}
+	if err := wf.ClearCache(); err != nil {
 		t.Fatal(err)
 	}
 }

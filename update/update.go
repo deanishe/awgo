@@ -6,11 +6,13 @@
 // Created on 2016-11-03
 //
 
-package aw
+// Package update implements an update API for workflows.
+package update
 
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -21,6 +23,8 @@ import (
 	"path/filepath"
 	"sort"
 	"time"
+
+	"git.deanishe.net/deanishe/awgo/util"
 )
 
 // DefaultUpdateInterval is how often to check for updates.
@@ -28,6 +32,12 @@ const DefaultUpdateInterval = time.Duration(24 * time.Hour)
 
 // HTTPTimeout is the timeout for HTTP requests
 var HTTPTimeout = (60 * time.Second)
+
+// Versioned is a struct with a semantic version number.
+type Versioned interface {
+	Version() string  // Returns a semantic version string
+	CacheDir() string // Path to directory to store cache files
+}
 
 // Releaser is what concrete updaters should implement.
 // The Updater should call the Releaser after every update interval
@@ -85,15 +95,16 @@ func SortReleases(releases []*Release) {
 type Updater struct {
 	CurrentVersion SemVer        // Version of the installed workflow
 	LastCheck      time.Time     // When the remote release list was last checked
-	Prereleases    bool          // Include pre-releases when checking for updates
-	UpdateInterval time.Duration // How often to check for an update
+	prereleases    bool          // Include pre-releases when checking for updates
+	updateInterval time.Duration // How often to check for an update
 	Releaser       Releaser      // Provides available versions
+	cacheDir       string        // Directory to store cache files in
 	pathLastCheck  string        // Cache path for check time
 	pathReleases   string        // Cache path for available releases
 	releases       []*Release    // Available releases
 }
 
-// NewUpdater creates a new Updater for Releaser.
+// New creates a new Updater for Releaser.
 //
 // CurrentVersion is set to the workflow's version by calling Version().
 // If you've created your own Workflow struct and called wf.SetVersion(),
@@ -101,18 +112,18 @@ type Updater struct {
 //
 // LastCheck is loaded from the cache, and UpdateInterval is set to
 // DefaultUpdateInterval.
-func NewUpdater(r Releaser) (*Updater, error) {
-	vstr := Version()
-	v, err := NewSemVer(vstr)
+func New(v Versioned, r Releaser) (*Updater, error) {
+	semver, err := NewSemVer(v.Version())
 	if err != nil {
-		return nil, err
-		// panic(fmt.Sprintf("Invalid version number: %s (%s)", vstr, err))
+		return nil, fmt.Errorf("invalid semantic version (%s): %v", v.Version(), err)
 	}
+
 	u := &Updater{
-		CurrentVersion: v,
+		CurrentVersion: semver,
 		LastCheck:      time.Time{},
 		Releaser:       r,
-		UpdateInterval: DefaultUpdateInterval,
+		cacheDir:       v.CacheDir(),
+		updateInterval: DefaultUpdateInterval,
 	}
 	u.pathLastCheck = u.cachePath("LastCheckTime")
 	u.pathReleases = u.cachePath("Releases.json")
@@ -129,6 +140,9 @@ func NewUpdater(r Releaser) (*Updater, error) {
 	}
 	return u, nil
 }
+
+// UpdateInterval sets the interval between checks for new versions.
+func (u *Updater) UpdateInterval(interval time.Duration) { u.updateInterval = interval }
 
 // UpdateAvailable returns true if an update is available. Retrieves
 // the list of releases from the cache written by CheckForUpdate.
@@ -150,8 +164,8 @@ func (u *Updater) CheckDue() bool {
 		return true
 	}
 	elapsed := time.Now().Sub(u.LastCheck)
-	log.Printf("%s since last check for update", ReadableDuration(elapsed))
-	return elapsed.Nanoseconds() > u.UpdateInterval.Nanoseconds()
+	log.Printf("%s since last check for update", util.ReadableDuration(elapsed))
+	return elapsed.Nanoseconds() > u.updateInterval.Nanoseconds()
 }
 
 // CheckForUpdate fetches the list of releases from remote (via Releaser)
@@ -181,9 +195,9 @@ func (u *Updater) CheckForUpdate() error {
 func (u *Updater) Install() error {
 	r := u.latest()
 	if r == nil {
-		return errors.New("No releases available.")
+		return errors.New("no releases available")
 	}
-	log.Printf("Downloading release %s ...", r.Version.String())
+	log.Printf("downloading release %s ...", r.Version.String())
 	p := u.cachePath(r.Filename)
 	if err := download(r.URL, p); err != nil {
 		return err
@@ -197,14 +211,12 @@ func (u *Updater) Install() error {
 
 // cachePath returns a filepath within AwGo's update cache directory.
 func (u *Updater) cachePath(filename string) string {
-	dp := EnsureExists(filepath.Join(awCacheDir(), "update"))
+	dp := util.EnsureExists(filepath.Join(u.cacheDir, "update"))
 	return filepath.Join(dp, filename)
 }
 
 // clearCache removes the update cache.
-func (u *Updater) clearCache() {
-	clearDirectory(u.cachePath(""))
-}
+func (u *Updater) clearCache() { util.ClearDirectory(u.cachePath("")) }
 
 // cacheLastCheck saves time to cachepath.
 func (u *Updater) cacheLastCheck() {
@@ -223,7 +235,7 @@ func (u *Updater) cacheLastCheck() {
 // the cache.
 func (u *Updater) latest() *Release {
 	if u.releases == nil {
-		if !PathExists(u.pathReleases) {
+		if !util.PathExists(u.pathReleases) {
 			log.Println("No cached releases.")
 			return nil
 		}
@@ -244,7 +256,7 @@ func (u *Updater) latest() *Release {
 	}
 
 	SortReleases(u.releases)
-	if u.Prereleases {
+	if u.prereleases {
 		return u.releases[len(u.releases)-1]
 	}
 
