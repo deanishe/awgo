@@ -21,6 +21,9 @@ var testOptions = []struct {
 	{MaxResults(10), func(wf *Workflow) bool { return wf.MaxResults == 10 }, "Set MaxResults"},
 	{LogPrefix("blah"), func(wf *Workflow) bool { return wf.LogPrefix == "blah" }, "Set LogPrefix"},
 	{SortOptions(), func(wf *Workflow) bool { return wf.SortOptions == nil }, "Set SortOptions"},
+	{MagicPrefix("aw:"), func(wf *Workflow) bool { return wf.magicPrefix == "aw:" }, "Set MagicPrefix"},
+	{MaxLogSize(2048), func(wf *Workflow) bool { return wf.MaxLogSize == 2048 }, "Set MaxLogSize"},
+	{TextErrors(true), func(wf *Workflow) bool { return wf.TextErrors == true }, "Set TextErrors"},
 }
 
 func TestOptions(t *testing.T) {
@@ -52,6 +55,19 @@ func TestParseInfo(t *testing.T) {
 
 	if info.Website != "https://git.deanishe.net/deanishe/awgo" {
 		t.Fatalf("Incorrect website: %v", info.Website)
+	}
+}
+
+// TestWorkflowValues tests workflow name, bundle ID etc.
+func TestWorkflowValues(t *testing.T) {
+	name := "AwGo"
+	bundleID := "net.deanishe.awgo"
+	wf := New()
+	if wf.Name() != name {
+		t.Errorf("wrong name. Expected=%s, Got=%s", name, wf.Name())
+	}
+	if wf.BundleID() != bundleID {
+		t.Errorf("wrong bundle ID. Expected=%s, Got=%s", bundleID, wf.BundleID())
 	}
 }
 

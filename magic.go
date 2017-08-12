@@ -19,18 +19,38 @@ import (
 // This can be overriden with the MagicPrefix value in Options.
 const DefaultMagicPrefix = "workflow:"
 
-// MagicActions contains the registered magic. See the MagicAction
-// interface for full documentation.
-var MagicActions map[string]MagicAction
+var (
+	// DefaultMagicActions are magic actions registered by default.
+	DefaultMagicActions MagicActions
+	magicActions        MagicActions
+)
 
 func init() {
-	MagicActions = map[string]MagicAction{}
+	magicActions = MagicActions{}
 	RegisterMagic(openLogMagic{})
 	RegisterMagic(openCacheMagic{})
 	RegisterMagic(clearCacheMagic{})
 	RegisterMagic(openDataMagic{})
 	RegisterMagic(clearDataMagic{})
 	RegisterMagic(resetMagic{})
+}
+
+// RegisterMagic registers a magic arg so it will be recognised by AwGo.
+func RegisterMagic(ma MagicAction) { magicActions.Register(ma) }
+
+// MagicActions contains the registered magic actions. See the MagicAction
+// interface for full documentation.
+type MagicActions map[string]MagicAction
+
+// Register adds a MagicArgument to the mapping. Previous entries are overwritten.
+func (ma MagicActions) Register(action MagicAction) { ma[action.Keyword()] = action }
+
+// Args runs a magic action or returns command-line arguments.
+// It parses os.Args[1:] for magic actions. If it finds one, it takes
+// control of your workflow and runs the action.
+// If not magic actions are found, it returns os.Args[1:].
+func (ma MagicActions) Args(prefix string) []string {
+	return parseArgs(os.Args[1:], prefix)
 }
 
 // MagicAction is a command that can be called directly by AwGo if its
@@ -83,11 +103,6 @@ type MagicAction interface {
 	Run() error
 }
 
-// RegisterMagic registers a magic arg so it will be recognised by AwGo.
-func RegisterMagic(ma MagicAction) {
-	MagicActions[ma.Keyword()] = ma
-}
-
 // Args returns program arguments, checking for any "magic" arguments first.
 // See MagicAction for full documentation.
 func Args() []string { return parseArgs(os.Args[1:], DefaultMagicPrefix) }
@@ -100,7 +115,7 @@ func parseArgs(args []string, prefix string) []string {
 			// log.Printf("Found magic prefix: %s", arg)
 			query := arg[len(prefix):]
 			// log.Printf("Keyword: %s", kw)
-			ma := MagicActions[query]
+			ma := magicActions[query]
 			if ma != nil {
 				log.Printf(ma.RunText())
 				NewItem(ma.RunText()).
@@ -114,7 +129,7 @@ func parseArgs(args []string, prefix string) []string {
 				finishLog(false)
 				os.Exit(0)
 			} else {
-				for kw, ma := range MagicActions {
+				for kw, ma := range magicActions {
 					NewItem(ma.Keyword()).
 						Subtitle(ma.Description()).
 						Valid(false).
