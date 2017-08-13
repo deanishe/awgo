@@ -59,7 +59,8 @@ type Result struct {
 }
 
 // Option configures a Sorter. Pass one or more Options to New() or
-// Sorter.Configure().
+// Sorter.Configure(). An Option returns another Option to revert the
+// configuration to the previous state.
 type Option func(s *Sorter) Option
 
 // AdjacencyBonus sets the bonus for adjacent matches.
