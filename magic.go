@@ -181,7 +181,7 @@ type resetMagic struct{}
 func (a resetMagic) Keyword() string     { return "reset" }
 func (a resetMagic) Description() string { return "Delete all saved and cached workflow data" }
 func (a resetMagic) RunText() string     { return "Deleted workflow saved and cached data" }
-func (a resetMagic) Run() error          { return ClearData() }
+func (a resetMagic) Run() error          { return Reset() }
 
 // Updates the workflow if a newer release is available.
 type updateMagic struct {
