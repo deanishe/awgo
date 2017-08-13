@@ -39,7 +39,6 @@ These features may be implemented:
 
 	- TODO: Alfred/AppleScript helpers?
 	- TODO: Implement standard-compliant pre-release comparison in SemVer?
-	- TODO: Session-scoped caching.
 
 
 Usage
@@ -79,17 +78,14 @@ its variables are only settable, not gettable.
 Fuzzy filtering
 
 Subpackage fuzzy provides a fuzzy search algorithm modelled on Sublime
-Text's search.
-
-To make a slice fuzzy-filterable, implement fuzzy.Interface.
+Text's search. Implement fuzzy.Interface to make an object fuzzy-sortable.
 
 The Feedback struct implements this interface.
 
 Workflow and Feedback structs provide an additional Filter() method,
 which fuzzy-sorts Items and removes any that do not match the query.
 
-The Feedback struct implements Sortable, so you can sort/filter feedback
-Items. See examples/fuzzy-simple for a basic example.
+See examples/fuzzy-simple for a basic demonstration.
 
 See examples/fuzzy-cached for a demonstration of implementing fuzzy.Interface
 on your own structs and customising the sort settings.
@@ -143,6 +139,25 @@ log is kept.
 
 AwGo detects when Alfred's debugger is open (Workflow.Debug() returns
 true) and in this case prepends filename:linenumber: to log messages.
+
+
+Saving and caching data
+
+Alfred provides data and cache directories for each workflow. The data
+directory is for permanent data and the cache directory for temporary data.
+
+AwGo's Workflow struct has a simple API for caching data to these
+directories. There are basic load/store methods for saving bytes or
+(un)marshalling structs to/from JSON, plus LoadOrStore methods that return
+cached data if they exist and are new enough, or refresh the cache via a
+provided function, then return the data.
+
+Workflow.Data points to the workflow's data directory, Workflow.Cache is
+configured to point to the workflow's cache directory, and Workflow.Session
+also uses the cache directory, but its cached data expire when the user
+closes Alfred or runs a different workflow.
+
+See the Cache and Session structs for the API.
 
 
 Background jobs

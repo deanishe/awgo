@@ -13,7 +13,7 @@ Sort() and Match() implement fuzzy search, e.g. "of" will match "OmniFocus"
 and "got" will match "Game of Thrones".
 
 Match() compares a query and a string, while Sort() sorts an object that
-implements the Sortable interface. Both return Result structs for each
+implements fuzzy.Interface. Both return Result structs for each
 compared string.
 
 

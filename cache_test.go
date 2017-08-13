@@ -6,7 +6,7 @@
 // Created on 2017-08-08
 //
 
-package cache
+package aw
 
 import (
 	"bytes"
@@ -28,10 +28,10 @@ func WithTempDir(fn func(dir string)) {
 	fn(p)
 }
 
-// TestStore checks that data are stored and loaded correctly
+// TestStoreAndLoad checks that data are stored and loaded correctly
 func TestStoreAndLoad(t *testing.T) {
 	WithTempDir(func(dir string) {
-		c := New(dir)
+		c := NewCache(dir)
 		s := "this is a test"
 		n := "test.txt"
 
@@ -117,7 +117,7 @@ func TestLoadOrStore(t *testing.T) {
 	}
 
 	WithTempDir(func(dir string) {
-		c := New(dir)
+		c := NewCache(dir)
 		n := "test.txt"
 		maxAge := time.Duration(time.Second * 1)
 
@@ -210,7 +210,7 @@ func (td *TestData) Eq(other *TestData) bool {
 func TestStoreJSON(t *testing.T) {
 	WithTempDir(func(dir string) {
 		n := "test.json"
-		c := New(dir)
+		c := NewCache(dir)
 		p := c.path(n)
 
 		// Delete non-existant store
@@ -265,7 +265,7 @@ func TestLoadOrStoreJSON(t *testing.T) {
 
 	WithTempDir(func(dir string) {
 		n := "test.json"
-		c := New(dir)
+		c := NewCache(dir)
 		maxAge := time.Duration(time.Second * 1)
 
 		// Sanity checks
@@ -356,7 +356,7 @@ func TestBadReloadError(t *testing.T) {
 	}
 
 	WithTempDir(func(dir string) {
-		c := New(dir)
+		c := NewCache(dir)
 		n := "test"
 		if _, err := c.LoadOrStore(n, 0, reloadB); err == nil {
 			t.Error("no error returned by reloadB")
@@ -364,6 +364,85 @@ func TestBadReloadError(t *testing.T) {
 		v := &TestData{}
 		if err := c.LoadOrStoreJSON(n, 0, reloadJSON, v); err == nil {
 			t.Error("no error returned by reloadJSON")
+		}
+	})
+}
+
+// TestSession tests session-scoped caching.
+func TestSession(t *testing.T) {
+	WithTempDir(func(dir string) {
+		sid := NewSessionID()
+		s := NewSession(dir, sid)
+		data := []byte("this is a test")
+		n := "test.txt"
+
+		// Sanity checks
+		p := s.cache.path(s.name(n))
+		if util.PathExists(p) {
+			t.Errorf("cache file already exists: %s", p)
+		}
+
+		// Delete non-existant store
+		if err := s.Store(n, []byte{}); err != nil {
+			t.Errorf("unexpected error clearing cache: %v", err)
+		}
+
+		// Non-existant cache exists
+		if s.Exists(n) {
+			t.Errorf("non-existant cache exists")
+		}
+
+		// Store data
+		if err := s.Store(n, data); err != nil {
+			t.Errorf("couldn't cache data to %s: %v", n, err)
+		}
+		if !util.PathExists(p) {
+			t.Errorf("cache file does not exist: %s", p)
+		}
+
+		if s.Exists(n) != util.PathExists(p) {
+			t.Errorf("cache file does not exist: %s", p)
+		}
+
+		// Load data
+		data2, err := s.Load(n)
+		if err != nil {
+			t.Errorf("couldn't load cached data: %v", err)
+		}
+		if bytes.Compare(data, data2) != 0 {
+			t.Errorf("loaded data does not match saved data: expected=%v, got=%v", data, data2)
+		}
+
+		// Clear session
+		s.Clear(false) // Leave current session data
+		if !util.PathExists(p) {
+			t.Errorf("cache file does not exist: %s", p)
+		}
+		// Clear this session's data, too
+		s.Clear(true)
+		if util.PathExists(p) {
+			t.Errorf("cache file exists: %s", p)
+		}
+
+		// Load non-existant cache
+		if _, err := s.Load(n); err == nil {
+			t.Errorf("no error loading non-existant cache")
+		}
+
+		// Clear old sessions
+		sid1 := NewSessionID()
+		sid2 := NewSessionID()
+		s = NewSession(dir, sid1)
+		s.Store(n, data)
+
+		if !s.Exists(n) {
+			t.Errorf("cached data do not exist: %s", n)
+		}
+
+		NewSession(dir, sid2)
+
+		if s.Exists(n) {
+			t.Errorf("expired data still exist: %s", n)
 		}
 	})
 }

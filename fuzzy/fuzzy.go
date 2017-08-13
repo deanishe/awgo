@@ -19,7 +19,7 @@ import (
 )
 
 // Default bonuses and penalties for fuzzy sorting. To customise
-// sorting behaviour, pass corresponding Options to New().
+// sorting behaviour, pass corresponding Options to New() or Sorter.Configure().
 const (
 	DefaultAdjacencyBonus          = 5.0  // Bonus for adjacent matches
 	DefaultSeparatorBonus          = 10.0 // Bonus if the match is after a separator
@@ -39,8 +39,7 @@ func init() {
 // Interface makes the implementer fuzzy-sortable. It is a superset
 // of sort.Interface (i.e. your struct must also implement sort.Interface).
 type Interface interface {
-	// Return the string that should be compared to the sort query
-	SortKey(i int) string
+	SortKey(i int) string // Return the string that should be compared to the sort query
 	sort.Interface
 }
 
@@ -59,31 +58,8 @@ type Result struct {
 	SortKey string
 }
 
-// Options sets bonuses and penalties for Sorter/Match.
-// type Options struct {
-// 	AdjacencyBonus          float64 // Bonus for adjacent matches
-// 	SeparatorBonus          float64 // Bonus if the match is after a separator
-// 	CamelBonus              float64 // Bonus if match is uppercase and previous is lower
-// 	LeadingLetterPenalty    float64 // Penalty applied for every letter in string before first match
-// 	MaxLeadingLetterPenalty float64 // Maximum penalty for leading letters
-// 	UnmatchedLetterPenalty  float64 // Penalty for every letter that doesn't match
-// 	StripDiacritics         bool    //  Strip diacritics from sort keys if query is plain ASCII
-// }
-
-// NewSortOptions creates a SortOptions object with the default values.
-// func NewOptions() *SortOptions {
-// 	return &SortOptions{
-// 		AdjacencyBonus:          DefaultAdjacencyBonus,
-// 		SeparatorBonus:          DefaultSeparatorBonus,
-// 		CamelBonus:              DefaultCamelBonus,
-// 		LeadingLetterPenalty:    DefaultLeadingLetterPenalty,
-// 		MaxLeadingLetterPenalty: DefaultMaxLeadingLetterPenalty,
-// 		UnmatchedLetterPenalty:  DefaultUnmatchedLetterPenalty,
-// 		StripDiacritics:         DefaultStripDiacritics,
-// 	}
-// }
-
-// Option configures a Sorter.
+// Option configures a Sorter. Pass one or more Options to New() or
+// Sorter.Configure().
 type Option func(s *Sorter) Option
 
 // AdjacencyBonus sets the bonus for adjacent matches.
@@ -178,24 +154,18 @@ func New(data Interface, opts ...Option) *Sorter {
 		stripDiacritics:         false,
 		results:                 make([]*Result, data.Len()),
 	}
-	for _, opt := range opts {
-		opt(s)
-	}
+	s.Configure(opts...)
 	return s
 }
 
-// NewSorter returns a new Sorter. If opts is nil, Sorter is initialised
-// with the default sort parameters.
-// func NewSorter(data Sortable, opts *SortOptions) *Sorter {
-// 	if opts == nil {
-// 		opts = NewSortOptions()
-// 	}
-// 	return &Sorter{
-// 		Data:    data,
-// 		Options: opts,
-// 		results: make([]*Result, data.Len()),
-// 	}
-// }
+// Configure applies one or more Options to Sorter.
+func (s *Sorter) Configure(opts ...Option) Option {
+	var undo Option
+	for _, opt := range opts {
+		undo = opt(s)
+	}
+	return undo
+}
 
 // Len implements sort.Interface.
 func (s *Sorter) Len() int { return s.Data.Len() }

@@ -1,6 +1,5 @@
 
 Features:
-	- Session-scoped cache
 
 Other:
 	- Check code for noob mistakes
@@ -8,6 +7,7 @@ Other:
 #	vim: ft=taskpaper ts=2 sw=2 tw=80 noet :
 
 Archive:
+	- Session-scoped cache @done(2017-08-13) @project(Features)
 	- Caching @done(2017-08-13) @project(Features)
 		Read/write bytes to named cache/data file.
 		LoadOrSave() - Read from cache or reload and cache.

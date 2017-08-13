@@ -6,7 +6,18 @@
 // Created on 2016-11-03
 //
 
-// Package update implements an update API for workflows.
+// Package update implements an update API for workflows. It is a concrete
+// implementation of the Updater interface in the parent package.
+//
+// The main API is the Updater struct. Using a Versioned and a Releaser
+// (both interfaces from this package), it determines if/when an update
+// is available and provides an API to retrieve and install the update.
+//
+// The Workflow struct in the parent package implements Versioned, and
+// an Updater is typically created with New(wf, ...).
+//
+// A concrete implementation of a Releaser for GitHub is included
+// (GitHubReleaser).
 package update
 
 import (
@@ -33,7 +44,7 @@ const DefaultUpdateInterval = time.Duration(24 * time.Hour)
 // HTTPTimeout is the timeout for HTTP requests
 var HTTPTimeout = (60 * time.Second)
 
-// Versioned is a struct with a semantic version number.
+// Versioned has a semantic version number and a cache directory.
 type Versioned interface {
 	Version() string  // Returns a semantic version string
 	CacheDir() string // Path to directory to store cache files
@@ -86,12 +97,12 @@ func SortReleases(releases []*Release) {
 // Because downloading releases is slow and workflows need to run fast,
 // you should not run CheckForUpdate() in a Script Filter.
 //
-// If an Updater is set, an magic argument will be set for updates, so
-// you can just add an Item that autocompletes to the update magic argument
-// ("workflow:update" by default), and AwGo will check for an update and install
-// it if available.
+// If an Updater is set on a Workflow struct, a magic action will be set for
+// updates, so you can just add an Item that autocompletes to the update
+// magic argument ("workflow:update" by default), and AwGo will check for an
+// update and install it if available.
 //
-// See examples/update for a full example implementation of updates.
+// See ../examples/update for a full example implementation of updates.
 type Updater struct {
 	CurrentVersion SemVer        // Version of the installed workflow
 	LastCheck      time.Time     // When the remote release list was last checked

@@ -22,12 +22,12 @@ const DefaultMagicPrefix = "workflow:"
 var (
 	// DefaultMagicActions are magic actions registered by default.
 	DefaultMagicActions = []MagicAction{
-		openLogMagic{},
-		openCacheMagic{},
-		clearCacheMagic{},
-		openDataMagic{},
-		clearDataMagic{},
-		resetMagic{},
+		openLogMagic{},    // Opens log file
+		openCacheMagic{},  // Opens cache directory
+		clearCacheMagic{}, // Clears cache directory
+		openDataMagic{},   // Opens data directory
+		clearDataMagic{},  // Clears data directory
+		resetMagic{},      // Clears cache and data directories
 	}
 )
 

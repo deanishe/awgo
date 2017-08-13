@@ -219,6 +219,14 @@ type Workflow struct {
 	// Set to true if output goes to a Notification.
 	TextErrors bool
 
+	// Cache is a Cache pointing to the workflow's cache directory.
+	Cache *Cache
+	// Data is a Cache pointing to the workflow's data directory.
+	Data *Cache
+	// Session is a cache that stores session-scoped data. These data
+	// persist until the user closes Alfred or runs a different workflow.
+	Session *Session
+
 	// debug is set from Alfred's `alfred_debug` environment variable.
 	debug bool
 
@@ -233,12 +241,13 @@ type Workflow struct {
 	// It is set to DefaultMagicActions by default.
 	MagicActions MagicActions
 
-	// Set from environment or info.plist
+	// Set from environment
 	bundleID    string
 	name        string
 	cacheDir    string
 	dataDir     string
 	workflowDir string
+	sessionID   string
 }
 
 // New creates and initialises a new Workflow.
@@ -255,22 +264,21 @@ func New(opts ...Option) *Workflow {
 
 	wf.MagicActions.Register(DefaultMagicActions...)
 
-	for _, opt := range opts {
-		opt(wf)
-	}
+	wf.Configure(opts...)
 
-	// wf.loadEnv()
+	wf.Cache = NewCache(wf.CacheDir())
+	wf.Data = NewCache(wf.DataDir())
+	wf.Session = NewSession(wf.CacheDir(), wf.SessionID())
 	wf.initializeLogging()
-	util.EnsureExists(wf.DataDir())
-	util.EnsureExists(wf.CacheDir())
 	return wf
 }
 
 // --------------------------------------------------------------------
 // Initialisation methods
 
-// Option applies an Option to Workflow.
-func (wf *Workflow) Option(opts ...Option) (previous Option) {
+// Configure applies an Option to Workflow.
+func Configure(opts ...Option) (previous Option) { return wf.Configure(opts...) }
+func (wf *Workflow) Configure(opts ...Option) (previous Option) {
 	for _, opt := range opts {
 		previous = opt(wf)
 	}
@@ -425,6 +433,22 @@ func (wf *Workflow) OpenData() error {
 func ClearData() error { return wf.ClearData() }
 func (wf *Workflow) ClearData() error {
 	return util.ClearDirectory(wf.DataDir())
+}
+
+// SessionID returns the session ID for this run of the workflow. This is used
+// internally for session-scoped caching.
+func SessionID() string { return wf.SessionID() }
+func (wf *Workflow) SessionID() string {
+	if wf.sessionID == "" {
+		ev := os.Getenv("AW_SESSION_ID")
+		if ev != "" {
+			wf.sessionID = ev
+		} else {
+			wf.sessionID = NewSessionID()
+			wf.Var("AW_SESSION_ID", wf.sessionID)
+		}
+	}
+	return wf.sessionID
 }
 
 // Reset deletes all workflow data (cache and data directories).

@@ -6,29 +6,44 @@
 // Created on 2017-08-08
 //
 
-// Package cache implements data caching.
-package cache
+package aw
 
 import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
+	"math/rand"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"git.deanishe.net/deanishe/awgo/util"
 )
 
+var (
+	sessionPrefix = "_aw_session"
+	sidLength     = 24
+	letters       = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+)
+
 // Cache implements a simple store/load API, saving data to specified directory.
+//
+// There are two APIs, one for storing/loading bytes and one for
+// marshalling and storing/loading and unmarshalling JSON.
+//
+// Each API has basic Store/Load functions plus a LoadOrStore function which
+// loads cached data if these exist and aren't too old, or retrieves new data
+// via the provided function, then caches and returns these.
 type Cache struct {
 	Dir string // Directory to save data in
 }
 
-// New creates a new Cache using given directory.
+// NewCache creates a new Cache using given directory.
 // Directory dir is created if it doesn't exist. The function will panic
 // if directory can't be created.
-func New(dir string) *Cache {
+func NewCache(dir string) *Cache {
 	util.EnsureExists(dir)
 	return &Cache{dir}
 }
@@ -174,3 +189,99 @@ func (c *Cache) Age(name string) (time.Duration, error) {
 
 // path returns the path to a named file within cache directory.
 func (c *Cache) path(name string) string { return filepath.Join(c.Dir, name) }
+
+// Session is a Cache that is scoped to the current workflow session.
+type Session struct {
+	SessionID string
+	cache     *Cache
+}
+
+// NewSession creates and initialises a Session.
+func NewSession(dir, sessionID string) *Session {
+	s := &Session{sessionID, NewCache(dir)}
+	s.Clear(false) // Clear old session data
+	return s
+}
+
+// NewSessionID returns a random string.
+func NewSessionID() string {
+	b := make([]rune, sidLength)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
+}
+
+// Clear removes session-scoped cache data. If current is true, it also removes
+// data cached for the current session.
+func (s *Session) Clear(current bool) error {
+	prefix := sessionPrefix + "."
+	curPrefix := fmt.Sprintf("%s.%s.", sessionPrefix, s.SessionID)
+
+	files, err := ioutil.ReadDir(s.cache.Dir)
+	if err != nil {
+		return fmt.Errorf("couldn't read directory (%s): %v", s.cache.Dir, err)
+	}
+	for _, fi := range files {
+		if !strings.HasPrefix(fi.Name(), prefix) {
+			continue
+		}
+		if !current && strings.HasPrefix(fi.Name(), curPrefix) {
+			continue
+		}
+		p := filepath.Join(s.cache.Dir, fi.Name())
+		os.RemoveAll(p)
+		log.Printf("deleted %s", p)
+	}
+	return nil
+}
+
+// Store saves data under the given name. If len(data) is 0, the file is
+// deleted.
+func (s *Session) Store(name string, data []byte) error {
+	return s.cache.Store(s.name(name), data)
+}
+
+// StoreJSON serialises v to JSON and saves it to the cache. If v is nil,
+// the cache is deleted.
+func (s *Session) StoreJSON(name string, v interface{}) error {
+	return s.cache.StoreJSON(s.name(name), v)
+}
+
+// Load reads data saved under given name.
+func (s *Session) Load(name string) ([]byte, error) {
+	return s.cache.Load(s.name(name))
+}
+
+// LoadJSON unmarshals a cache into v.
+func (s *Session) LoadJSON(name string, v interface{}) error {
+	return s.cache.LoadJSON(s.name(name), v)
+}
+
+// LoadOrStore loads data from cache if they exist and are newer than maxAge. If
+// data do not exist or are older than maxAge, reload is called, and the returned
+// data are cached & returned.
+//
+// If maxAge is 0, any cached data are always returned.
+func (s *Session) LoadOrStore(name string, maxAge time.Duration, reload func() ([]byte, error)) ([]byte, error) {
+	return s.cache.LoadOrStore(s.name(name), maxAge, reload)
+}
+
+// LoadOrStoreJSON loads JSON-serialised data from cache if they exist and are
+// newer than maxAge. If the data do not exist or are older than maxAge, reload
+// is called, and the returned interface{} is cached and returned.
+//
+// If maxAge is 0, any cached data are always returned.
+func (s *Session) LoadOrStoreJSON(name string, maxAge time.Duration, reload func() (interface{}, error), v interface{}) error {
+	return s.cache.LoadOrStoreJSON(s.name(name), maxAge, reload, v)
+}
+
+// Exists returns true if the named cache exists.
+func (s *Session) Exists(name string) bool {
+	return s.cache.Exists(s.name(name))
+}
+
+// name prefixes name with session prefix and session ID.
+func (s *Session) name(name string) string {
+	return fmt.Sprintf("%s.%s.%s", sessionPrefix, s.SessionID, name)
+}
