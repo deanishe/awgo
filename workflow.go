@@ -10,7 +10,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -21,8 +20,6 @@ import (
 	"git.deanishe.net/deanishe/awgo/util"
 
 	"os/exec"
-
-	"github.com/mkrautz/plist"
 )
 
 // AwGoVersion is the semantic version number of this library.
@@ -55,41 +52,6 @@ type Updater interface {
 	CheckDue() bool               // Return true if a check for a newer version is due
 	CheckForUpdate() error        // Retrieve available releases
 	Install() error               // Install the latest version
-}
-
-// InfoPlist contains meta information extracted from info.plist.
-// Use Workflow.Info() to retrieve the Info for the running
-// workflow (it is lazily loaded).
-//
-// TODO: Do something meaningful with info.plist Variables.
-type InfoPlist struct {
-	BundleID    string                 `plist:"bundleid"`
-	Author      string                 `plist:"createdby"`
-	Description string                 `plist:"description"`
-	Name        string                 `plist:"name"`
-	Readme      string                 `plist:"readme"`
-	Variables   map[string]interface{} `plist:"variables"`
-	Version     string                 `plist:"version"`
-	Website     string                 `plist:"webaddress"`
-}
-
-// Var returns the value for a variable specified in info.plist. If the
-// variable is empty or unset, an empty string is returned.
-//
-// NOTE: This is the *default* value set in the workflow's configuration
-// sheet (Workflow Environment Variables). Use os.Getenv() to get the
-// current value of a variable.
-func (i *InfoPlist) Var(name string) string {
-
-	obj := i.Variables[name]
-	if obj == nil {
-		return ""
-	}
-
-	if s, ok := obj.(string); ok {
-		return s
-	}
-	panic(fmt.Sprintf("Can't convert variable to string: %v", obj))
 }
 
 // Option is a configuration option for Workflow. Pass one or more Options to
@@ -223,34 +185,10 @@ type Workflow struct {
 	// interact with this directly.
 	Feedback *Feedback
 
-	// Alfred-specific environmental variables, without the 'alfred_'
-	// prefix. The following variables are present:
-	//
-	//     debug                        Set to "1" if Alfred's debugger is open.
-	//                                  Generally, you should call Debug()/Workflow.Debug() instead.
-	//     version                      Alfred version number, e.g. "2.7"
-	//     version_build                Alfred build, e.g. "277"
-	//     theme                        ID of current theme, e.g. "alfred.theme.custom.UUID-UUID-UUID"
-	//     theme_background             Theme background colour in rgba format, e.g. "rgba(255,255,255,1.00)"
-	//     theme_selection_background   Theme selection background colour in rgba format, e.g. "rgba(255,255,255,1.00)"
-	//     theme_subtext                User's subtext setting.
-	//                                      "0" = Always show
-	//                                      "1" = Show only for alternate actions
-	//                                      "2" = Never show
-	//     preferences                  Path to "Alfred.alfredpreferences" file
-	//     preferences_localhash        Machine-specific hash. Machine preferences are stored in
-	//                                  Alfred.alfredpreferences/preferences/local/<hash>
-	//     workflow_cache               Path to workflow's cache directory. Use Workflow.CacheDir()
-	//                                  instead to ensure directory exists.
-	//     workflow_data                Path to workflow's data directory. Use Workflow.DataDir()
-	//                                  instead to ensure directory exists.
-	//     workflow_name                Name of workflow, e.g. "Fast Translator"
-	//     workflow_uid                 Random UID assigned to workflow by Alfred
-	//     workflow_bundleid            Workflow's bundle ID from info.plist
-	//     workflow_version             Workflow's version number from info.plist
-	//
-	// TODO: Replace Env with something better (Context object?)
-	Env map[string]string
+	// Workflow execution environment. Contains Alfred and workflow parameters
+	// extracted from the environment variables exported by Alfred.
+	// See Context for documentation.
+	Ctx *Context
 
 	// HelpURL is a link to your issues page/forum thread where users can
 	// report bugs. It is shown in the debugger if the workflow crashes.
@@ -295,10 +233,6 @@ type Workflow struct {
 	// It is set to DefaultMagicActions by default.
 	MagicActions MagicActions
 
-	// Populated by readInfoPlist()
-	info       *InfoPlist
-	infoLoaded bool
-
 	// Set from environment or info.plist
 	bundleID    string
 	name        string
@@ -310,9 +244,8 @@ type Workflow struct {
 // New creates and initialises a new Workflow.
 func New(opts ...Option) *Workflow {
 	wf := &Workflow{
-		Env:          map[string]string{},
+		Ctx:          NewContext(),
 		Feedback:     &Feedback{},
-		info:         &InfoPlist{},
 		LogPrefix:    "\U0001F49C", // Purple heart
 		MaxLogSize:   1048576,      // 1 MiB
 		MaxResults:   0,            // Send all results to Alfred
@@ -326,7 +259,7 @@ func New(opts ...Option) *Workflow {
 		opt(wf)
 	}
 
-	wf.loadEnv()
+	// wf.loadEnv()
 	wf.initializeLogging()
 	util.EnsureExists(wf.DataDir())
 	util.EnsureExists(wf.CacheDir())
@@ -342,79 +275,6 @@ func (wf *Workflow) Option(opts ...Option) (previous Option) {
 		previous = opt(wf)
 	}
 	return
-}
-
-// readInfoPlist loads the data in `info.plist`
-func (wf *Workflow) readInfoPlist() error {
-	if wf.infoLoaded {
-		return nil
-	}
-
-	p := filepath.Join(wf.Dir(), "info.plist")
-	buf, err := ioutil.ReadFile(p)
-	if err != nil {
-		return fmt.Errorf("Couldn't open `info.plist` (%s) :  %v", p, err)
-	}
-
-	if wf.info == nil {
-		wf.info = &InfoPlist{}
-	}
-	err = plist.Unmarshal(buf, wf.info)
-	if err != nil {
-		return fmt.Errorf("Error parsing `info.plist` (%s) : %v", p, err)
-	}
-
-	wf.bundleID = wf.info.BundleID
-	wf.name = wf.info.Name
-	if wf.version == "" { // Other options override info.plist
-		wf.version = wf.info.Version
-	}
-	wf.infoLoaded = true
-	return nil
-}
-
-// loadEnv reads Alfred's variables from the environment.
-func (wf *Workflow) loadEnv() {
-	wf.Env = make(map[string]string)
-	// Variables currently exported by Alfred. These actual names
-	// are prefixed with `alfred_`.
-	keys := []string{
-		"debug",
-		"version",
-		"version_build",
-		"theme",
-		"theme_background",
-		"theme_selection_background",
-		"theme_subtext",
-		"preferences",
-		"preferences_localhash",
-		"workflow_cache",
-		"workflow_data",
-		"workflow_name",
-		"workflow_uid",
-		"workflow_bundleid",
-		"workflow_version",
-	}
-
-	for _, key := range keys {
-		val := os.Getenv("alfred_" + key)
-		wf.Env[key] = val
-
-		// Some special keys
-		if key == "workflow_cache" {
-			wf.cacheDir = val
-		} else if key == "workflow_data" {
-			wf.dataDir = val
-		} else if key == "workflow_bundleid" {
-			wf.bundleID = val
-		} else if key == "workflow_name" {
-			wf.name = val
-		} else if key == "debug" && val == "1" {
-			wf.debug = true
-		} else if key == "workflow_version" && wf.version == "" {
-			wf.version = val
-		}
-	}
 }
 
 // initializeLogging ensures future log messages are written to
@@ -449,7 +309,7 @@ func (wf *Workflow) initializeLogging() {
 	multi := io.MultiWriter(file, os.Stderr)
 	log.SetOutput(multi)
 	// log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
-	if wf.Env["debug"] == "1" {
+	if wf.Ctx.Debug {
 		log.SetFlags(log.Ltime | log.Lshortfile)
 	} else {
 		log.SetFlags(log.Ltime)
@@ -465,51 +325,23 @@ func (wf *Workflow) initializeLogging() {
 func Debug() bool                { return wf.debug }
 func (wf *Workflow) Debug() bool { return wf.debug }
 
-// Info returns the metadata read from the workflow's info.plist.
-func Info() *InfoPlist { return wf.Info() }
-func (wf *Workflow) Info() *InfoPlist {
-	if err := wf.readInfoPlist(); err != nil {
-		wf.FatalError(err)
-	}
-	return wf.info
-}
-
 // BundleID returns the workflow's bundle ID. This library will not
 // work without a bundle ID, which is set in info.plist.
 func BundleID() string { return wf.BundleID() }
 func (wf *Workflow) BundleID() string {
-	if wf.bundleID == "" { // Really old version of Alfred with no envvars?
-		if err := wf.readInfoPlist(); err != nil {
-			wf.FatalError(err)
-		}
-		if wf.bundleID == "" {
-			wf.Fatal("No bundle ID set in info.plist. You *must* set a bundle ID to use AwGo.")
-		}
+	if wf.Ctx.BundleID == "" {
+		wf.Fatal("No bundle ID set. You *must* set a bundle ID to use AwGo.")
 	}
-	return wf.bundleID
+	return wf.Ctx.BundleID
 }
 
 // Name returns the workflow's name as specified in info.plist.
-func Name() string { return wf.Name() }
-func (wf *Workflow) Name() string {
-	if wf.name == "" { // Really old version of Alfred with no envvars?
-		if err := wf.readInfoPlist(); err != nil {
-			wf.FatalError(err)
-		}
-	}
-	return wf.name
-}
+func Name() string                { return wf.Name() }
+func (wf *Workflow) Name() string { return wf.Ctx.Name }
 
 // Version returns the workflow's version from info.plist.
-func Version() string { return wf.Version() }
-func (wf *Workflow) Version() string {
-	if wf.version == "" {
-		if err := wf.readInfoPlist(); err != nil {
-			wf.FatalError(err)
-		}
-	}
-	return wf.version
-}
+func Version() string                { return wf.Version() }
+func (wf *Workflow) Version() string { return wf.Ctx.WorkflowVersion }
 
 // SetVersion sets the workflow's version string.
 func SetVersion(v string)                { wf.SetVersion(v) }
@@ -841,20 +673,10 @@ func (wf *Workflow) outputErrorMsg(msg string) {
 	}
 	log.Printf("[ERROR] %s", msg)
 	// Show help URL or website URL
-	if u := wf.helpURL(); u != "" {
-		log.Printf("Get help at %s", u)
+	if wf.HelpURL != "" {
+		log.Printf("Get help at %s", wf.HelpURL)
 	}
 	finishLog(true)
-}
-
-func (wf *Workflow) helpURL() string {
-	if wf.HelpURL != "" {
-		return wf.HelpURL
-	}
-	if wf.Info().Website != "" {
-		return wf.Info().Website
-	}
-	return ""
 }
 
 // awDataDir is the directory for AwGo's own data.

@@ -95,7 +95,7 @@ func SortReleases(releases []*Release) {
 type Updater struct {
 	CurrentVersion SemVer        // Version of the installed workflow
 	LastCheck      time.Time     // When the remote release list was last checked
-	prereleases    bool          // Include pre-releases when checking for updates
+	Prereleases    bool          // Include pre-releases when checking for updates
 	updateInterval time.Duration // How often to check for an update
 	Releaser       Releaser      // Provides available versions
 	cacheDir       string        // Directory to store cache files in
@@ -256,7 +256,7 @@ func (u *Updater) latest() *Release {
 	}
 
 	SortReleases(u.releases)
-	if u.prereleases {
+	if u.Prereleases {
 		return u.releases[len(u.releases)-1]
 	}
 

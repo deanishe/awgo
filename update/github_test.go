@@ -614,6 +614,8 @@ func makeGHReleaser() *GitHubReleaser {
 }
 
 func TestGHUpdater(t *testing.T) {
+	v := &versioned{version: "0.2.2"}
+	defer v.Clean()
 	gh := makeGHReleaser()
 
 	// There are 4 valid releases (one prerelease)
@@ -629,7 +631,7 @@ func TestGHUpdater(t *testing.T) {
 	if err := clearUpdateCache(); err != nil {
 		t.Fatal(err)
 	}
-	u, err := NewUpdater(gh)
+	u, err := New(v, gh)
 	if err != nil {
 		t.Fatalf("Error creating updater: %s", err)
 	}
@@ -677,8 +679,8 @@ func TestUpdates(t *testing.T) {
 		t.Fatal("Unconfigured workflow didn't error on update install")
 	}
 
-	// Now with updater
-	wf = New(GitHub("deanishe/alfred-ssh"))
+	// Once more with an updater
+	wf = aw.New(GitHub("deanishe/alfred-ssh"))
 	if wf.UpdateCheckDue() != true {
 		t.Fatal("Workflow doesn't want to update")
 	}

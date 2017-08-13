@@ -23,8 +23,9 @@ The current main features are:
 
 	- Easy access to Alfred context, such as data and cache directories.
 	- Straightforward generation of Alfred JSON feedback.
-	- Support for all applicable Alfred features up to v3.4.1
+	- Support for all applicable Alfred features up to v3.4.1.
 	- Fuzzy sorting/filtering.
+	- Simple API for caching/saving workflow data.
 	- Catches panics, logs stack trace and shows user an error message.
 	- Workflow updates API with built-in support for GitHub releases.
 	- (Rotated) Log file for easier debugging.
@@ -34,11 +35,11 @@ The current main features are:
 
 Upcoming features
 
-These features are planned:
+These features may be implemented:
 
-	TODO: Caching and storing data
-	TODO: Alfred/AppleScript helpers?
-	TODO: Implement standard-compliant pre-release comparison in SemVer?
+	- TODO: Alfred/AppleScript helpers?
+	- TODO: Implement standard-compliant pre-release comparison in SemVer?
+	- TODO: Session-scoped caching.
 
 
 Usage

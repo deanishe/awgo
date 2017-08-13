@@ -8,14 +8,34 @@
 
 package update
 
-import "testing"
-import "time"
-import "fmt"
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"testing"
+	"time"
+)
 
 func mustVersion(s string) SemVer {
 	v, _ := NewSemVer(s)
 	return v
 }
+
+// versioned is a test implementation of Versioned
+type versioned struct {
+	version string
+	dir     string
+}
+
+func (v *versioned) Version() string { return v.version }
+func (v *versioned) CacheDir() string {
+	if v.dir == "" {
+		v.dir = filepath.Join(os.TempDir(), fmt.Sprintf("aw-%d", os.Getpid()))
+		os.MkdirAll(v.dir, 0700)
+	}
+	return v.dir
+}
+func (v *versioned) Clean() { os.RemoveAll(v.dir) }
 
 type testReleaser struct {
 	releases []*Release
@@ -32,7 +52,9 @@ func (r testReleaser) Releases() ([]*Release, error) {
 }
 
 func clearUpdateCache() error {
-	u, err := New(testReleaser{})
+	v := &versioned{version: "0.2.2"}
+	defer v.Clean()
+	u, err := New(v, testReleaser{})
 	if err != nil {
 		return fmt.Errorf("Error creating updater: %s", err)
 	}
@@ -44,8 +66,10 @@ func TestUpdater(t *testing.T) {
 	if err := clearUpdateCache(); err != nil {
 		t.Fatal(err)
 	}
+	v := &versioned{version: "0.2.2"}
+	defer v.Clean()
 	rl := testReleaser{}
-	u, err := New(rl)
+	u, err := New(v, rl)
 	if err != nil {
 		t.Fatalf("Error creating updater: %s", err)
 	}
@@ -79,7 +103,9 @@ func TestUpdateInterval(t *testing.T) {
 	if err := clearUpdateCache(); err != nil {
 		t.Fatal(err)
 	}
-	u, err := New(testReleaser{})
+	v := &versioned{version: "0.2.2"}
+	defer v.Clean()
+	u, err := New(v, testReleaser{})
 	if err != nil {
 		t.Fatalf("Error creating updater: %s", err)
 	}
@@ -102,7 +128,7 @@ func TestUpdateInterval(t *testing.T) {
 		t.Fatalf("Update is due.")
 	}
 	// Changing UpdateInterval
-	u.UpdateInterval = time.Duration(1 * time.Nanosecond)
+	u.UpdateInterval(time.Duration(1 * time.Nanosecond))
 	if !u.CheckDue() {
 		t.Fatalf("Update is not due.")
 	}
