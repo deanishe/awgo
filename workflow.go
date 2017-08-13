@@ -48,7 +48,7 @@ func init() {
 }
 
 // Updater can check for and download & install newer versions of the workflow.
-// There is a concrete implementation in subpackage "update".
+// There is a concrete implementation and documentation in subpackage "update".
 type Updater interface {
 	UpdateInterval(time.Duration) // Interval between checks
 	UpdateAvailable() bool        // Return true if a newer version is available
@@ -184,46 +184,25 @@ func Update(updater Updater) Option {
 	}
 }
 
-// Options contains the configuration options for a Workflow struct.
-// Currently not a whole lot of options supported...
-// type Options struct {
-// 	// GitHub is the GitHub repo the workflow should pull updates from.
-// 	// It should have the form "username/reponame", e.g. "deanishe/alfred-ssh".
-// 	// If set, a GitHub updater will be created and passed to SetUpdater().
-// 	GitHub string
+// AddMagic registers magic actions with the Workflow.
+func AddMagic(actions ...MagicAction) Option {
+	return func(wf *Workflow) Option {
+		for _, action := range actions {
+			wf.MagicActions.Register(action)
+		}
+		return RemoveMagic(actions...)
+	}
+}
 
-// 	// HelpURL is a link to your issues page/forum thread where users can
-// 	// report bugs. It is shown in the debugger if the workflow crashes.
-// 	// If no HelpURL is specified, the Website specified in the main
-// 	// workflow setup dialog will be shown (if one is set).
-// 	HelpURL string
-
-// 	// LogPrefix is the character printed to the log at the start of each run.
-// 	// Its purpose is to ensure the first real log message starts on its own line,
-// 	// instead of sharing a line with Alfred's blurb in the debugger. This is only
-// 	// printed to STDERR (i.e. Alfred's debugger), not written to the log file.
-// 	// Default: Purple Heart (\U0001F49C)
-// 	LogPrefix string
-
-// 	// MagicPrefix overrides the default prefix for magic actions.
-// 	MagicPrefix string
-
-// 	// MaxLogSize is the size (in bytes) at which the workflow log is rotated.
-// 	// Default: 1 MiB
-// 	MaxLogSize int
-
-// 	// MaxResults is the maximum number of results to send to Alfred.
-// 	// 0 means send all results.
-// 	// Default: 0
-// 	MaxResults int
-
-// 	// Fuzzy sort bonuses and penalties. See fuzzy subpackage for details.
-// 	SortOptions []fuzzy.Option
-
-// 	// TextErrors tells Workflow to print errors as text, not JSON.
-// 	// Set to true if output goes to a Notification.
-// 	TextErrors bool
-// }
+// RemoveMagic unregisters magic actions with Workflow.
+func RemoveMagic(actions ...MagicAction) Option {
+	return func(wf *Workflow) Option {
+		for _, action := range actions {
+			delete(wf.MagicActions, action.Keyword())
+		}
+		return AddMagic(actions...)
+	}
+}
 
 // Workflow provides a simple, consolidated API for building Script
 // Filters and talking to Alfred.
@@ -305,13 +284,16 @@ type Workflow struct {
 	// debug is set from Alfred's `alfred_debug` environment variable.
 	debug bool
 
-	magicPrefix string // Overrides DefaultMagicPrefix for magic actions.
-
 	// version holds value set by user or read from environment variable or info.plist.
 	version string
 
 	// Updater fetches updates for the workflow.
 	Updater Updater
+
+	magicPrefix string // Overrides DefaultMagicPrefix for magic actions.
+	// MagicActions contains the magic actions registered for this workflow.
+	// It is set to DefaultMagicActions by default.
+	MagicActions MagicActions
 
 	// Populated by readInfoPlist()
 	info       *InfoPlist
@@ -328,14 +310,17 @@ type Workflow struct {
 // New creates and initialises a new Workflow.
 func New(opts ...Option) *Workflow {
 	wf := &Workflow{
-		Env:         map[string]string{},
-		Feedback:    &Feedback{},
-		info:        &InfoPlist{},
-		LogPrefix:   "\U0001F49C", // Purple heart
-		MaxLogSize:  1048576,      // 1 MiB
-		MaxResults:  0,            // Send all results to Alfred
-		SortOptions: []fuzzy.Option{},
+		Env:          map[string]string{},
+		Feedback:     &Feedback{},
+		info:         &InfoPlist{},
+		LogPrefix:    "\U0001F49C", // Purple heart
+		MaxLogSize:   1048576,      // 1 MiB
+		MaxResults:   0,            // Send all results to Alfred
+		MagicActions: MagicActions{},
+		SortOptions:  []fuzzy.Option{},
 	}
+
+	wf.MagicActions.Register(DefaultMagicActions...)
 
 	for _, opt := range opts {
 		opt(wf)
@@ -347,62 +332,6 @@ func New(opts ...Option) *Workflow {
 	util.EnsureExists(wf.CacheDir())
 	return wf
 }
-
-/*
-// NewWorkflow creates and initialises a new Workflow. Use NewWorkflow to avoid
-// uninitialised maps.
-func NewWorkflow(o *Options) *Workflow {
-	w := &Workflow{
-		Env:         map[string]string{},
-		Feedback:    &Feedback{},
-		info:        &InfoPlist{},
-		LogPrefix:   "\U0001F49C", // Purple heart
-		MaxLogSize:  1048576,      // 1 MiB
-		MaxResults:  0,            // Send all results to Alfred
-		SortOptions: NewSortOptions(),
-	}
-
-	// Configure workflow from options
-	if o != nil {
-		if o.HelpURL != "" {
-			w.HelpURL = o.HelpURL
-		}
-		// if o.Version != "" {
-		// 	w.version = o.Version
-		// }
-		if o.LogPrefix != "" {
-			w.LogPrefix = o.LogPrefix
-		}
-		if o.MagicPrefix != "" {
-			w.magicPrefix = o.MagicPrefix
-		}
-		if o.MaxLogSize > 0 {
-			w.MaxLogSize = o.MaxLogSize
-		}
-		if o.MaxResults > 0 {
-			w.MaxResults = o.MaxResults
-		}
-		if o.SortOptions != nil {
-			w.SortOptions = o.SortOptions
-		}
-		if o.GitHub != "" {
-			var err error
-			u, err := NewUpdater(&GitHub{Repo: o.GitHub})
-			if err != nil {
-				log.Printf("Error configuring updater: %s", err)
-			} else {
-				w.SetUpdater(u)
-			}
-		}
-	}
-
-	w.loadEnv()
-	w.initializeLogging()
-	EnsureExists(w.DataDir())
-	EnsureExists(w.CacheDir())
-	return w
-}
-*/
 
 // --------------------------------------------------------------------
 // Initialisation methods
@@ -605,10 +534,11 @@ func (wf *Workflow) Dir() string {
 // the workflow.
 // See MagicAction for full documentation.
 func (wf *Workflow) Args() []string {
+	prefix := DefaultMagicPrefix
 	if wf.magicPrefix != "" {
-		return parseArgs(os.Args[1:], wf.magicPrefix)
+		prefix = wf.magicPrefix
 	}
-	return Args()
+	return wf.MagicActions.Args(os.Args[1:], prefix)
 }
 
 // --------------------------------------------------------------------
@@ -856,7 +786,7 @@ func (wf *Workflow) SendFeedback() *Workflow {
 func SetUpdater(u Updater) { wf.SetUpdater(u) }
 func (wf *Workflow) SetUpdater(u Updater) {
 	wf.Updater = u
-	RegisterMagic(&updateMagic{wf.Updater})
+	wf.MagicActions.Register(&updateMagic{wf.Updater})
 }
 
 // UpdateCheckDue returns true if an update is available.

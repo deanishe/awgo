@@ -488,7 +488,7 @@ func (fb *Feedback) Less(i, j int) bool { return fb.SortKey(i) < fb.SortKey(j) }
 // Swap implements sort.Interface.
 func (fb *Feedback) Swap(i, j int) { fb.Items[i], fb.Items[j] = fb.Items[j], fb.Items[i] }
 
-// ArgVars lets you set workflow variables from a non-Script Filter action.
+// ArgVars lets you set workflow variables from Run Script actions.
 //
 // Write output of ArgVars.String() to STDOUT to pass variables to downstream
 // workflow elements.
@@ -538,11 +538,12 @@ func (a *ArgVars) String() (string, error) {
 	return string(data), nil
 }
 
-// MarshalJSON serialises ArgVars to JSON.
+// MarshalJSON serialises ArgVars to JSON. You probably don't need to call this:
+// use ArgVars.String() instead.
 func (a *ArgVars) MarshalJSON() ([]byte, error) {
 
 	// Return arg regardless of whether it's empty or not:
-	// we have return *something*
+	// we have to return *something*
 	if len(a.vars) == 0 {
 		// Want empty string, i.e. "", not null
 		var arg string

@@ -48,7 +48,9 @@ func ssEq(a, b []string) bool {
 // TestNonMagicArgs tests that normal arguments aren't ignored
 func TestNonMagicArgs(t *testing.T) {
 	for _, td := range testArgs {
-		args := parseArgs(td.in, DefaultMagicPrefix)
+		ma := MagicActions{}
+		ma.Register(DefaultMagicActions...)
+		args := ma.Args(td.in, DefaultMagicPrefix)
 		if !ssEq(args, td.out) {
 			t.Errorf("not equal. Expected=%v, Got=%v", td.out, args)
 		}
@@ -59,8 +61,9 @@ func TestNonMagicArgs(t *testing.T) {
 func TestMagicArgs(t *testing.T) {
 	if os.Getenv("MAGIC") != "" {
 		args := strings.Split(os.Getenv("ARGS"), ":")
-		args = parseArgs(args, DefaultMagicPrefix)
-		// log.Printf("args=%v", args)
+		ma := MagicActions{}
+		ma.Register(DefaultMagicActions...)
+		ma.Args(args, DefaultMagicPrefix)
 		return
 	}
 

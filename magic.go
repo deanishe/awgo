@@ -21,36 +21,68 @@ const DefaultMagicPrefix = "workflow:"
 
 var (
 	// DefaultMagicActions are magic actions registered by default.
-	DefaultMagicActions MagicActions
-	magicActions        MagicActions
+	DefaultMagicActions = []MagicAction{
+		openLogMagic{},
+		openCacheMagic{},
+		clearCacheMagic{},
+		openDataMagic{},
+		clearDataMagic{},
+		resetMagic{},
+	}
 )
-
-func init() {
-	magicActions = MagicActions{}
-	RegisterMagic(openLogMagic{})
-	RegisterMagic(openCacheMagic{})
-	RegisterMagic(clearCacheMagic{})
-	RegisterMagic(openDataMagic{})
-	RegisterMagic(clearDataMagic{})
-	RegisterMagic(resetMagic{})
-}
-
-// RegisterMagic registers a magic arg so it will be recognised by AwGo.
-func RegisterMagic(ma MagicAction) { magicActions.Register(ma) }
 
 // MagicActions contains the registered magic actions. See the MagicAction
 // interface for full documentation.
 type MagicActions map[string]MagicAction
 
 // Register adds a MagicArgument to the mapping. Previous entries are overwritten.
-func (ma MagicActions) Register(action MagicAction) { ma[action.Keyword()] = action }
+func (ma MagicActions) Register(actions ...MagicAction) {
+	for _, action := range actions {
+		ma[action.Keyword()] = action
+	}
+}
 
 // Args runs a magic action or returns command-line arguments.
-// It parses os.Args[1:] for magic actions. If it finds one, it takes
+// It parses args for magic actions. If it finds one, it takes
 // control of your workflow and runs the action.
-// If not magic actions are found, it returns os.Args[1:].
-func (ma MagicActions) Args(prefix string) []string {
-	return parseArgs(os.Args[1:], prefix)
+//
+// If not magic actions are found, it returns args.
+func (ma MagicActions) Args(args []string, prefix string) []string {
+	for _, arg := range args {
+		arg = strings.TrimSpace(arg)
+		if strings.HasPrefix(arg, prefix) {
+			query := arg[len(prefix):]
+			action := ma[query]
+			if action != nil {
+				log.Printf(action.RunText())
+				NewItem(action.RunText()).
+					Icon(IconInfo).
+					Valid(false)
+				SendFeedback()
+				if err := action.Run(); err != nil {
+					log.Printf("Error running magic arg `%s`: %s", action.Description(), err)
+					finishLog(true)
+				}
+				finishLog(false)
+				os.Exit(0)
+			} else {
+				for kw, action := range ma {
+					NewItem(action.Keyword()).
+						Subtitle(action.Description()).
+						Valid(false).
+						Icon(IconInfo).
+						UID(action.Description()).
+						Autocomplete(prefix + kw).
+						SortKey(fmt.Sprintf("%s %s", action.Keyword(), action.Description()))
+				}
+				Filter(query)
+				WarnEmpty("No matching action", "Try another query?")
+				SendFeedback()
+				os.Exit(0)
+			}
+		}
+	}
+	return args
 }
 
 // MagicAction is a command that can be called directly by AwGo if its
@@ -101,51 +133,6 @@ type MagicAction interface {
 	RunText() string
 	// Run executes the magic action.
 	Run() error
-}
-
-// Args returns program arguments, checking for any "magic" arguments first.
-// See MagicAction for full documentation.
-func Args() []string { return parseArgs(os.Args[1:], DefaultMagicPrefix) }
-
-// parseArgs checks args for "magic" arguments.
-func parseArgs(args []string, prefix string) []string {
-	for _, arg := range args {
-		arg = strings.TrimSpace(arg)
-		if strings.HasPrefix(arg, prefix) {
-			// log.Printf("Found magic prefix: %s", arg)
-			query := arg[len(prefix):]
-			// log.Printf("Keyword: %s", kw)
-			ma := magicActions[query]
-			if ma != nil {
-				log.Printf(ma.RunText())
-				NewItem(ma.RunText()).
-					Icon(IconInfo).
-					Valid(false)
-				SendFeedback()
-				if err := ma.Run(); err != nil {
-					log.Printf("Error running magic arg `%s`: %s", ma.Description(), err)
-					finishLog(true)
-				}
-				finishLog(false)
-				os.Exit(0)
-			} else {
-				for kw, ma := range magicActions {
-					NewItem(ma.Keyword()).
-						Subtitle(ma.Description()).
-						Valid(false).
-						Icon(IconInfo).
-						UID(ma.Description()).
-						Autocomplete(prefix + kw).
-						SortKey(fmt.Sprintf("%s %s", ma.Keyword(), ma.Description()))
-				}
-				Filter(query)
-				WarnEmpty("No matching action", "Try another query?")
-				SendFeedback()
-				os.Exit(0)
-			}
-		}
-	}
-	return args
 }
 
 // Opens workflow's log file.

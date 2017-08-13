@@ -1,6 +1,13 @@
 Features:
-	- Caching
+	- Caching @done(2017-08-13)
 		Read/write bytes to named cache/data file.
 		LoadOrSave() - Read from cache or reload and cache.
+	- Move MagicActions into Workflow @done(2017-08-13)
+	- Remove info.plist parsing (use envvars only)
+		Will probably require lots of changes to the tests
+	- Session-scoped cache
+
+Other:
+	- Check code for noob mistakes
 
 #  vim: ft=taskpaper ts=2 sw=2 tw=80 noet :

@@ -12,6 +12,14 @@ import (
 	"testing"
 )
 
+// Opens workflow's log file.
+type testMagicAction struct{}
+
+func (a testMagicAction) Keyword() string     { return "test" }
+func (a testMagicAction) Description() string { return "Just a test" }
+func (a testMagicAction) RunText() string     { return "Performing test…" }
+func (a testMagicAction) Run() error          { return nil }
+
 var testOptions = []struct {
 	opt  Option
 	test func(wf *Workflow) bool
@@ -24,6 +32,8 @@ var testOptions = []struct {
 	{MagicPrefix("aw:"), func(wf *Workflow) bool { return wf.magicPrefix == "aw:" }, "Set MagicPrefix"},
 	{MaxLogSize(2048), func(wf *Workflow) bool { return wf.MaxLogSize == 2048 }, "Set MaxLogSize"},
 	{TextErrors(true), func(wf *Workflow) bool { return wf.TextErrors == true }, "Set TextErrors"},
+	{AddMagic(testMagicAction{}), func(wf *Workflow) bool { return wf.MagicActions["test"] != nil }, "Add Magic"},
+	{RemoveMagic(openLogMagic{}), func(wf *Workflow) bool { return wf.MagicActions["log"] == nil }, "Remove Magic"},
 }
 
 func TestOptions(t *testing.T) {
