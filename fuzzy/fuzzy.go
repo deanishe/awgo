@@ -211,12 +211,12 @@ func (s *Sorter) Match(str string) *Result {
 	}
 
 	var (
-		match    = false
-		score    = 0.0
-		uStr     = []rune(str)
-		uQuery   = []rune(s.query)
-		strLen   = len(uStr)
-		queryLen = len(uQuery)
+		match    = false           // Whether or not str matches query
+		score    = 0.0             // How well str matches query
+		uStr     = []rune(str)     // str as slice of Unicode chars
+		uQuery   = []rune(s.query) // query as slice of Unicode chars
+		strLen   = len(uStr)       // Length of Unicode str
+		queryLen = len(uQuery)     // Length of Unicode query
 	)
 	var (
 		queryIdx, strIdx                   int
@@ -332,7 +332,7 @@ func (s *Sorter) Match(str string) *Result {
 		} else {
 			prevLower = false
 		}
-		if strChar == "_" || strChar == " " {
+		if strChar == "_" || strChar == " " || strChar == "." || strChar == "-" || strChar == "/" {
 			prevSeparator = true
 		} else {
 			prevSeparator = false
