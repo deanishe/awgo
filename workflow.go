@@ -23,7 +23,7 @@ import (
 )
 
 // AwGoVersion is the semantic version number of this library.
-const AwGoVersion = "0.7.0"
+const AwGoVersion = "0.7.1"
 
 var (
 	startTime time.Time // Time execution started
@@ -47,10 +47,10 @@ func init() {
 // Updater can check for and download & install newer versions of the workflow.
 // There is a concrete implementation and documentation in subpackage "update".
 type Updater interface {
-	UpdateInterval(time.Duration) // Interval between checks
+	UpdateInterval(time.Duration) // Set interval between checks
 	UpdateAvailable() bool        // Return true if a newer version is available
 	CheckDue() bool               // Return true if a check for a newer version is due
-	CheckForUpdate() error        // Retrieve available releases
+	CheckForUpdate() error        // Retrieve available releases, e.g. from a URL
 	Install() error               // Install the latest version
 }
 
@@ -58,6 +58,20 @@ type Updater interface {
 // New(). An Option returns its inverse (i.e. an Option that restores the
 // previous value).
 type Option func(wf *Workflow) Option
+
+// options wraps multiple Options, allowing the application of their inverse
+// via a single call to options.apply().
+type options []Option
+
+// apply configures Workflow with all options and returns a single Option
+// to reverse all changes.
+func (o options) apply(wf *Workflow) Option {
+	previous := make(options, len(o))
+	for i, opt := range o {
+		previous[i] = wf.Configure(opt)
+	}
+	return previous.apply
+}
 
 // HelpURL sets the link to your issues/page forum thread where users can
 // ask for help. It is shown in the debugger/log if an error occurs. If no
@@ -250,7 +264,10 @@ type Workflow struct {
 	sessionID   string
 }
 
-// New creates and initialises a new Workflow.
+// New creates and initialises a new Workflow, passing any Options to Workflow.Configure().
+//
+// For available options, see the documentation for the Option type and the
+// following functions.
 func New(opts ...Option) *Workflow {
 	wf := &Workflow{
 		Ctx:          NewContext(),
@@ -276,13 +293,15 @@ func New(opts ...Option) *Workflow {
 // --------------------------------------------------------------------
 // Initialisation methods
 
-// Configure applies an Option to Workflow.
+// Configure applies one or more Options to Workflow. The returned Option reverts
+// all Options passed to Configure.
 func Configure(opts ...Option) (previous Option) { return wf.Configure(opts...) }
 func (wf *Workflow) Configure(opts ...Option) (previous Option) {
+	prev := options{}
 	for _, opt := range opts {
-		previous = opt(wf)
+		prev = append(prev, opt(wf))
 	}
-	return
+	return prev.apply
 }
 
 // initializeLogging ensures future log messages are written to
@@ -668,7 +687,7 @@ func (wf *Workflow) CheckForUpdate() error {
 func UpdateAvailable() bool { return wf.UpdateAvailable() }
 func (wf *Workflow) UpdateAvailable() bool {
 	if wf.Updater == nil {
-		log.Println("No GitHub repo configured")
+		log.Println("No updater configured")
 		return false
 	}
 	return wf.Updater.UpdateAvailable()
@@ -678,7 +697,7 @@ func (wf *Workflow) UpdateAvailable() bool {
 func InstallUpdate() error { return wf.InstallUpdate() }
 func (wf *Workflow) InstallUpdate() error {
 	if wf.Updater == nil {
-		return errors.New("No GitHub repo configured")
+		return errors.New("No updater configured")
 	}
 	return wf.Updater.Install()
 }

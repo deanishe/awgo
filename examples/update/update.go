@@ -10,24 +10,27 @@
 This workflow is an example of how to use AwGo's update API.
 
 Its own version (set in info.plist) is 0.1 and it's pointing to the
-GitHub repo of "alfred-ssh" (a completely different workflow), which
+GitHub repo "deanishe/alfred-ssh" (a completely different workflow), which
 is several version ahead.
 
-The Script Filter code checks the last update check status, and if
+The Script Filter code loads the date of the last update check, and if
 a check is due, it calls this program with the "check" command via
 AwGo's background job API.
 
-When run with "check", the program calls CheckForUpdate() to cache
+When run with "check", the program calls Workflow.CheckForUpdate() to cache
 the available releases.
 
 After that has completed, subsequent runs of the Script Filter will
 show an "Update available!" item (if the query is empty).
 
-Actioning (hitting ↩ or ⌘+1) or completing it (hitting ⇥) auto-completes
-the item's text to "workflow:update", which is one of AwGo's "magic"
-arguments. At this point, AwGo will take control of execution, and
-download & install the newer version of the workflow (except it's a
-different workflow).
+Actioning (hitting ↩ or ⌘+1) or completing the item (hitting ⇥)
+auto-completes the query to "workflow:update", which is the keyword for
+one of AwGo's "magic" actions.
+
+At this point, AwGo will take control of execution, and
+download & install the newer version of the workflow (but as it's pointing
+to a different workflow's repo, Alfred will install a different workflow
+rather than actually updating this one).
 */
 package main
 

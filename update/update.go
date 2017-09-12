@@ -6,18 +6,6 @@
 // Created on 2016-11-03
 //
 
-// Package update implements an update API for workflows. It is a concrete
-// implementation of the Updater interface in the parent package.
-//
-// The main API is the Updater struct. Using a Versioned and a Releaser
-// (both interfaces from this package), it determines if/when an update
-// is available and provides an API to retrieve and install the update.
-//
-// The Workflow struct in the parent package implements Versioned, and
-// an Updater is typically created with New(wf, ...).
-//
-// A concrete implementation of a Releaser for GitHub is included
-// (GitHubReleaser).
 package update
 
 import (
@@ -42,9 +30,14 @@ import (
 const DefaultUpdateInterval = time.Duration(24 * time.Hour)
 
 // HTTPTimeout is the timeout for HTTP requests
+// TODO: implement separate timeouts for connect & download
 var HTTPTimeout = (60 * time.Second)
 
-// Versioned has a semantic version number and a cache directory.
+// Versioned has a semantic version number (for comparing to releases)
+// and a cache directory (for saving information about available versions
+// and time of last update check).
+//
+// aw.Workflow implements this interface.
 type Versioned interface {
 	Version() string  // Returns a semantic version string
 	CacheDir() string // Path to directory to store cache files
@@ -107,19 +100,19 @@ type Updater struct {
 	CurrentVersion SemVer        // Version of the installed workflow
 	LastCheck      time.Time     // When the remote release list was last checked
 	Prereleases    bool          // Include pre-releases when checking for updates
-	updateInterval time.Duration // How often to check for an update
 	Releaser       Releaser      // Provides available versions
+	updateInterval time.Duration // How often to check for an update
 	cacheDir       string        // Directory to store cache files in
 	pathLastCheck  string        // Cache path for check time
 	pathReleases   string        // Cache path for available releases
 	releases       []*Release    // Available releases
 }
 
-// New creates a new Updater for Releaser.
+// New creates a new Updater for Versioned and Releaser.
 //
 // CurrentVersion is set to the workflow's version by calling Version().
-// If you've created your own Workflow struct and called wf.SetVersion(),
-// you'll also need to set CurrentVersion manually.
+// If you've created your own Workflow struct and subsequently called
+// wf.SetVersion(), you'll also need to set CurrentVersion manually.
 //
 // LastCheck is loaded from the cache, and UpdateInterval is set to
 // DefaultUpdateInterval.

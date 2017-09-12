@@ -19,8 +19,8 @@ import (
 // This can be overriden with the MagicPrefix value in Options.
 const DefaultMagicPrefix = "workflow:"
 
+// Magic actions registered by default.
 var (
-	// DefaultMagicActions are magic actions registered by default.
 	DefaultMagicActions = []MagicAction{
 		openLogMagic{},    // Opens log file
 		openCacheMagic{},  // Opens cache directory

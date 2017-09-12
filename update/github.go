@@ -24,7 +24,7 @@ const (
 )
 
 // GitHub is a Workflow Option. It sets a Workflow Updater for the specified GitHub repo.
-// Repo name should be of the form "username/repo", e.g. "deanishe/alfred-workflow".
+// Repo name should be of the form "username/repo", e.g. "deanishe/alfred-ssh".
 func GitHub(repo string) aw.Option {
 	return func(wf *aw.Workflow) aw.Option {
 		u, _ := New(wf, &GitHubReleaser{Repo: repo})
@@ -37,11 +37,12 @@ func GitHub(repo string) aw.Option {
 // are marked as pre-releases based on the "This is a pre-release"
 // checkbox on the website, *not* the version number/tag.
 type GitHubReleaser struct {
-	Repo     string
-	releases []*Release
+	Repo     string     // Repo name in form username/repo
+	releases []*Release // GitHub releases for Repo
 }
 
-// Releases implements Releaser.
+// Releases implements Releaser. Returns a slice of available releases that
+// contain an .alfredworkflow file.
 func (gh *GitHubReleaser) Releases() ([]*Release, error) {
 	if gh.releases == nil {
 		gh.releases = []*Release{}

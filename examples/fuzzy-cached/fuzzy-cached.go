@@ -5,9 +5,10 @@
 //
 
 /*
-Command fuzzy-cached demonstrates custom fuzzy-sortable structs and handling
-larger datasets in AwGo, caching the data in a format that's
-more quickly loaded.
+Command fuzzy-cached is a complete Alfred 3 workflow.
+
+It demonstrates custom fuzzy-sortable structs and handling larger datasets
+in AwGo, caching the data in a format that's more quickly loaded.
 
 It filters a list of the books from the Gutenberg project. The list
 (a TSV file) is downloaded on first run, parsed and cached to disk
@@ -22,8 +23,6 @@ acceptable performance, imo.
 
 A dataset of this size would be better off in an sqlite database, which
 can easily handle this amount of data.
-
-This demo is a complete Alfred 3 workflow.
 */
 package main
 
@@ -85,8 +84,7 @@ type Book struct {
 	ID     int
 	Author string
 	Title  string
-	// Page where you can download the book in multiple formats.
-	URL string
+	URL    string // Page where you can download the book in multiple formats.
 }
 
 // Books is a slice of Book structs that implements fuzzy.Interface.
@@ -101,7 +99,7 @@ func (b Books) Less(i, j int) bool { return b[i].Title < b[j].Title }
 // Swap implements sort.Interface
 func (b Books) Swap(i, j int) { b[i], b[j] = b[j], b[i] }
 
-// SortKey implements Sortable interface
+// SortKey implements fuzzy.Interface.
 func (b Books) SortKey(i int) string {
 	return fmt.Sprintf("%s %s", b[i].Author, b[i].Title)
 }

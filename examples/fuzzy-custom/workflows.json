@@ -1,0 +1,3974 @@
+[
+  {
+    "description": "Alfred Workflows for Developers", 
+    "lang": "", 
+    "name": "alfred-workflows", 
+    "owner": "willfarrell", 
+    "stars": 1467, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/willfarrell/alfred-workflows"
+  }, 
+  {
+    "description": "GitHub Workflow for Alfred 3", 
+    "lang": "PHP", 
+    "name": "alfred-github-workflow", 
+    "owner": "gharlan", 
+    "stars": 1078, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "github", 
+      "php"
+    ], 
+    "url": "https://github.com/gharlan/alfred-github-workflow"
+  }, 
+  {
+    "description": "Full-featured library for writing Alfred workflows", 
+    "lang": "Python", 
+    "name": "alfred-workflow", 
+    "owner": "deanishe", 
+    "stars": 827, 
+    "topics": [
+      "alfred", 
+      "alfred-3", 
+      "alfred-workflow", 
+      "alfred3", 
+      "caching", 
+      "fuzzy-search", 
+      "http", 
+      "keychain", 
+      "python", 
+      "workflow", 
+      "workflows"
+    ], 
+    "url": "https://github.com/deanishe/alfred-workflow"
+  }, 
+  {
+    "description": "Create Alfred workflows with ease", 
+    "lang": "JavaScript", 
+    "name": "alfy", 
+    "owner": "sindresorhus", 
+    "stars": 671, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "alfy", 
+      "framework", 
+      "javascript", 
+      "macos", 
+      "nodejs", 
+      "workflow"
+    ], 
+    "url": "https://github.com/sindresorhus/alfy"
+  }, 
+  {
+    "description": "A curated list of awesome alfred workflows", 
+    "lang": "", 
+    "name": "awesome-alfred-workflows", 
+    "owner": "derimagia", 
+    "stars": 520, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "awesome", 
+      "awesome-list", 
+      "text-manipulation"
+    ], 
+    "url": "https://github.com/derimagia/awesome-alfred-workflows"
+  }, 
+  {
+    "description": ":tophat: Font Awesome Workflow for Alfred 2 & 3", 
+    "lang": "Go", 
+    "name": "alfred-font-awesome-workflow", 
+    "owner": "ruedap", 
+    "stars": 482, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "css", 
+      "design", 
+      "font-awesome", 
+      "golang", 
+      "icon-font", 
+      "illustrator", 
+      "photoshop", 
+      "sass", 
+      "sketch", 
+      "ui"
+    ], 
+    "url": "https://github.com/ruedap/alfred-font-awesome-workflow"
+  }, 
+  {
+    "description": "Workflows for Alfred 2", 
+    "lang": "AppleScript", 
+    "name": "alfred-workflows", 
+    "owner": "franzheidl", 
+    "stars": 479, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/franzheidl/alfred-workflows"
+  }, 
+  {
+    "description": "\ud83c\udfb5 Alfred 3 workflow to control your Spotify library at your fingertips", 
+    "lang": "PHP", 
+    "name": "alfred-spotify-mini-player", 
+    "owner": "vdesabou", 
+    "stars": 351, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "mopidy", 
+      "spotify", 
+      "spotify-api", 
+      "spotify-connect"
+    ], 
+    "url": "https://github.com/vdesabou/alfred-spotify-mini-player"
+  }, 
+  {
+    "description": "Unbelievably fast task entry in Wunderlist with due dates, reminders, and recurrence", 
+    "lang": "Python", 
+    "name": "alfred-wunderlist-workflow", 
+    "owner": "idpaterson", 
+    "stars": 268, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "wunderlist"
+    ], 
+    "url": "https://github.com/idpaterson/alfred-wunderlist-workflow"
+  }, 
+  {
+    "description": ":wolf: An Alfred Workflow for searching ganks(\u5e72\u8d27) in gank.io", 
+    "lang": "Python", 
+    "name": "Gank-Alfred-Workflow", 
+    "owner": "hujiaweibujidao", 
+    "stars": 182, 
+    "topics": [
+      "alfred-workflow", 
+      "gank"
+    ], 
+    "url": "https://github.com/hujiaweibujidao/Gank-Alfred-Workflow"
+  }, 
+  {
+    "description": "Alfred 3 workflow to search for npm packages with npms.io", 
+    "lang": "JavaScript", 
+    "name": "alfred-npms", 
+    "owner": "sindresorhus", 
+    "stars": 181, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "alfy", 
+      "javascript", 
+      "macos", 
+      "nodejs", 
+      "npm", 
+      "npm-package", 
+      "npms", 
+      "package-search", 
+      "search", 
+      "search-engine"
+    ], 
+    "url": "https://github.com/sindresorhus/alfred-npms"
+  }, 
+  {
+    "description": "\u4f7f\u7528\u6709\u9053\u7ffb\u8bd1\u4f60\u60f3\u77e5\u9053\u7684\u5355\u8bcd\u548c\u8bed\u53e5", 
+    "lang": "Python", 
+    "name": "whyliam.workflows.youdao", 
+    "owner": "liszd", 
+    "stars": 176, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "python", 
+      "translation", 
+      "workflows", 
+      "youdao"
+    ], 
+    "url": "https://github.com/liszd/whyliam.workflows.youdao"
+  }, 
+  {
+    "description": "An Alfred workflow for controlling Philips Hue lights.", 
+    "lang": "Python", 
+    "name": "hue-alfred-workflow", 
+    "owner": "benknight", 
+    "stars": 164, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "philips-hue"
+    ], 
+    "url": "https://github.com/benknight/hue-alfred-workflow"
+  }, 
+  {
+    "description": "Alfred workflow for devdocs.io", 
+    "lang": "PHP", 
+    "name": "alfred-devdocs", 
+    "owner": "yannickglt", 
+    "stars": 161, 
+    "topics": [
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "api-documentation", 
+      "dash", 
+      "devdocs", 
+      "zeal"
+    ], 
+    "url": "https://github.com/yannickglt/alfred-devdocs"
+  }, 
+  {
+    "description": ":tada: The missing Alfred 3 Workflow for searching google.", 
+    "lang": "Python", 
+    "name": "Google-Alfred3-Workflow", 
+    "owner": "ethan-funny", 
+    "stars": 152, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "google", 
+      "python"
+    ], 
+    "url": "https://github.com/ethan-funny/Google-Alfred3-Workflow"
+  }, 
+  {
+    "description": "Chrome/Canary/Chromium bookmarks search workflow for Alfred", 
+    "lang": "Go", 
+    "name": "chrome-bookmarks-alfred-workflow", 
+    "owner": "mdreizin", 
+    "stars": 143, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "bookmarks", 
+      "chrome", 
+      "chrome-bookmarks", 
+      "google-chrome"
+    ], 
+    "url": "https://github.com/mdreizin/chrome-bookmarks-alfred-workflow"
+  }, 
+  {
+    "description": "Convert between different units in Alfred", 
+    "lang": "Python", 
+    "name": "alfred-convert", 
+    "owner": "deanishe", 
+    "stars": 134, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3", 
+      "conversion", 
+      "cryptocurrencies", 
+      "currencies", 
+      "exchange-rates", 
+      "offline", 
+      "pint", 
+      "python", 
+      "yahoo-finance"
+    ], 
+    "url": "https://github.com/deanishe/alfred-convert"
+  }, 
+  {
+    "description": "Alfred 3 workflow to find relevant emoji from text", 
+    "lang": "JavaScript", 
+    "name": "alfred-emoj", 
+    "owner": "sindresorhus", 
+    "stars": 116, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "alfy", 
+      "emoji", 
+      "emoji-picker", 
+      "emoji-searcher", 
+      "javascript", 
+      "macos", 
+      "nodejs", 
+      "npm-package"
+    ], 
+    "url": "https://github.com/sindresorhus/alfred-emoj"
+  }, 
+  {
+    "description": "Alfred Workflow for Pinboard (written in Go (golang))", 
+    "lang": "Go", 
+    "name": "alfred-pinboard", 
+    "owner": "spamwax", 
+    "stars": 111, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "bookmark", 
+      "go", 
+      "pinboard"
+    ], 
+    "url": "https://github.com/spamwax/alfred-pinboard"
+  }, 
+  {
+    "description": "Open project with one of JetBrains' product.", 
+    "lang": "PHP", 
+    "name": "jetbrains-alfred-workflow", 
+    "owner": "bchatard", 
+    "stars": 103, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "jetbrains", 
+      "phpstorm", 
+      "webstorm"
+    ], 
+    "url": "https://github.com/bchatard/jetbrains-alfred-workflow"
+  }, 
+  {
+    "description": "Fix Alfred 3 Python workflows affected by the Sierra/Alfred-Workflow background process bug", 
+    "lang": "Python", 
+    "name": "alfred-fixum", 
+    "owner": "deanishe", 
+    "stars": 79, 
+    "topics": [
+      "alfred-workflow", 
+      "bugfix", 
+      "sierra"
+    ], 
+    "url": "https://github.com/deanishe/alfred-fixum"
+  }, 
+  {
+    "description": "Alfred workflow to auto-suggest search results from multiple search engines and languages.", 
+    "lang": "Python", 
+    "name": "alfred-searchio", 
+    "owner": "deanishe", 
+    "stars": 78, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "amazon", 
+      "autosuggest", 
+      "google", 
+      "multilingual", 
+      "python", 
+      "search", 
+      "wikipedia", 
+      "wiktionary"
+    ], 
+    "url": "https://github.com/deanishe/alfred-searchio"
+  }, 
+  {
+    "description": "Alfred 3 (or Alfred 2) workflow for interacting with JIRA.", 
+    "lang": "JavaScript", 
+    "name": "alfred-jira", 
+    "owner": "steyep", 
+    "stars": 69, 
+    "topics": [
+      "alfred-workflow", 
+      "alfred2-workflow", 
+      "alfred3-workflow", 
+      "jira"
+    ], 
+    "url": "https://github.com/steyep/alfred-jira"
+  }, 
+  {
+    "description": ":key: TOTP - Google Authenticator Workflow for Alfred2 (Two-Factor authentication)", 
+    "lang": "Python", 
+    "name": "alfred-workflow-gauth", 
+    "owner": "moul", 
+    "stars": 65, 
+    "topics": [
+      "alfred-workflow", 
+      "authentication", 
+      "gauth"
+    ], 
+    "url": "https://github.com/moul/alfred-workflow-gauth"
+  }, 
+  {
+    "description": "Search StackOverflow.com from Alfred", 
+    "lang": "Python", 
+    "name": "alfred-stackoverflow", 
+    "owner": "deanishe", 
+    "stars": 64, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "stack-overflow", 
+      "workflow"
+    ], 
+    "url": "https://github.com/deanishe/alfred-stackoverflow"
+  }, 
+  {
+    "description": "Browse, search and open Git repositories in Alfred", 
+    "lang": "Python", 
+    "name": "alfred-repos", 
+    "owner": "deanishe", 
+    "stars": 62, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3", 
+      "browse", 
+      "git", 
+      "repos"
+    ], 
+    "url": "https://github.com/deanishe/alfred-repos"
+  }, 
+  {
+    "description": "Alfred 3 workflow to toggle the system dark mode", 
+    "lang": "", 
+    "name": "alfred-dark-mode", 
+    "owner": "sindresorhus", 
+    "stars": 56, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "alfy", 
+      "applescript", 
+      "dark-mode", 
+      "macos", 
+      "npm-package"
+    ], 
+    "url": "https://github.com/sindresorhus/alfred-dark-mode"
+  }, 
+  {
+    "description": "ShadowsocksX controller for Alfred", 
+    "lang": "Python", 
+    "name": "Alfred_ShadowsocksController", 
+    "owner": "yourtion", 
+    "stars": 56, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "controller", 
+      "shadowsocks", 
+      "workflow"
+    ], 
+    "url": "https://github.com/yourtion/Alfred_ShadowsocksController"
+  }, 
+  {
+    "description": "Generate passwords with Alfred", 
+    "lang": "Python", 
+    "name": "alfred-pwgen", 
+    "owner": "deanishe", 
+    "stars": 47, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "extensible", 
+      "markov-chain", 
+      "password-generator", 
+      "plugins"
+    ], 
+    "url": "https://github.com/deanishe/alfred-pwgen"
+  }, 
+  {
+    "description": "Qiita on Alfred", 
+    "lang": "Go", 
+    "name": "alfred-qiita-workflow", 
+    "owner": "uetchy", 
+    "stars": 42, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "qiita"
+    ], 
+    "url": "https://github.com/uetchy/alfred-qiita-workflow"
+  }, 
+  {
+    "description": "A QRcode generator with python-qrcode for Alfred Workflows.", 
+    "lang": "Python", 
+    "name": "Alfred.QRCode", 
+    "owner": "hilen", 
+    "stars": 41, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "hotkey", 
+      "python-qrcode", 
+      "qrcode", 
+      "qrcode-generator"
+    ], 
+    "url": "https://github.com/hilen/Alfred.QRCode"
+  }, 
+  {
+    "description": "Open SSH/SFTP/mosh connections from Alfred 3", 
+    "lang": "Go", 
+    "name": "alfred-ssh", 
+    "owner": "deanishe", 
+    "stars": 40, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "mosh", 
+      "sftp", 
+      "ssh"
+    ], 
+    "url": "https://github.com/deanishe/alfred-ssh"
+  }, 
+  {
+    "description": "NSC is a little Alfred extension to convert numbers into other number systems.", 
+    "lang": "Python", 
+    "name": "NSC", 
+    "owner": "obstschale", 
+    "stars": 32, 
+    "topics": [
+      "alfred-workflow", 
+      "convert-numbers", 
+      "nsc"
+    ], 
+    "url": "https://github.com/obstschale/NSC"
+  }, 
+  {
+    "description": "Browse Reddit from Alfred", 
+    "lang": "Python", 
+    "name": "alfred-reddit", 
+    "owner": "deanishe", 
+    "stars": 32, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "python", 
+      "reddit", 
+      "workflow"
+    ], 
+    "url": "https://github.com/deanishe/alfred-reddit"
+  }, 
+  {
+    "description": "Filter and open your Sublime Text (2 and 3) project files from Alfred.", 
+    "lang": "Python", 
+    "name": "alfred-sublime-text", 
+    "owner": "deanishe", 
+    "stars": 32, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "project", 
+      "sublime-text", 
+      "sublime-text-3", 
+      "workflow"
+    ], 
+    "url": "https://github.com/deanishe/alfred-sublime-text"
+  }, 
+  {
+    "description": "Generate fake test data in Alfred", 
+    "lang": "Python", 
+    "name": "alfred-fakeum", 
+    "owner": "deanishe", 
+    "stars": 31, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "fake", 
+      "python", 
+      "workflow"
+    ], 
+    "url": "https://github.com/deanishe/alfred-fakeum"
+  }, 
+  {
+    "description": "Manage Viscosity VPN connections from Alfred", 
+    "lang": "Python", 
+    "name": "alfred-viscosity", 
+    "owner": "deanishe", 
+    "stars": 31, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "openvpn-client", 
+      "viscosity", 
+      "vpn-manager"
+    ], 
+    "url": "https://github.com/deanishe/alfred-viscosity"
+  }, 
+  {
+    "description": ":high_brightness: Syntax highlight code in the clipboard", 
+    "lang": "JavaScript", 
+    "name": "alfred-hl", 
+    "owner": "importre", 
+    "stars": 29, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "highlight", 
+      "syntax-highlighting"
+    ], 
+    "url": "https://github.com/importre/alfred-hl"
+  }, 
+  {
+    "description": "Send emails to recipients and groups from Alfred", 
+    "lang": "Python", 
+    "name": "alfred-mailto", 
+    "owner": "deanishe", 
+    "stars": 28, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3", 
+      "email", 
+      "mailto", 
+      "workflow"
+    ], 
+    "url": "https://github.com/deanishe/alfred-mailto"
+  }, 
+  {
+    "description": "Control CouchPotato from Alfred app", 
+    "lang": "Python", 
+    "name": "CouchPotato-Alfred", 
+    "owner": "Fogh", 
+    "stars": 27, 
+    "topics": [
+      "alfred-workflow", 
+      "couchpotato", 
+      "python"
+    ], 
+    "url": "https://github.com/Fogh/CouchPotato-Alfred"
+  }, 
+  {
+    "description": "\ud83c\udfa9 Alfred workflow for Learn Anything", 
+    "lang": "", 
+    "name": "alfred-learn-anything", 
+    "owner": "nikitavoloboev", 
+    "stars": 26, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "knowledge", 
+      "mindmaps", 
+      "search"
+    ], 
+    "url": "https://github.com/nikitavoloboev/alfred-learn-anything"
+  }, 
+  {
+    "description": "An offline CLI tool to search your GitHub Stars.", 
+    "lang": "Python", 
+    "name": "oh-my-stars", 
+    "owner": "wolfg1969", 
+    "stars": 25, 
+    "topics": [
+      "alfred-workflow", 
+      "cli", 
+      "github", 
+      "github-stars", 
+      "python"
+    ], 
+    "url": "https://github.com/wolfg1969/oh-my-stars"
+  }, 
+  {
+    "description": "Alfred Google Translate Workflow. Alfred \u591a\u8a9e\u8a00\u7ffb\u8b6f Workflow\uff0c\u542b\u6709\u62fc\u5b57\u6821\u6b63\u3001\u8fd1\u4f3c\u8a5e\u5efa\u8b70\u529f\u80fd\u3002", 
+    "lang": "JavaScript", 
+    "name": "alfred-google-translate-workflow", 
+    "owner": "zetavg", 
+    "stars": 25, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "translater"
+    ], 
+    "url": "https://github.com/zetavg/alfred-google-translate-workflow"
+  }, 
+  {
+    "description": "Alfred 3 workflow to lock your Mac", 
+    "lang": "", 
+    "name": "alfred-lock", 
+    "owner": "sindresorhus", 
+    "stars": 24, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfy", 
+      "c-language", 
+      "lock", 
+      "macos", 
+      "npm-package"
+    ], 
+    "url": "https://github.com/sindresorhus/alfred-lock"
+  }, 
+  {
+    "description": "Search Packal.org's collection of Alfred workflows from Alfred", 
+    "lang": "Python", 
+    "name": "alfred-packal-search", 
+    "owner": "deanishe", 
+    "stars": 22, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "packal", 
+      "search", 
+      "workflow"
+    ], 
+    "url": "https://github.com/deanishe/alfred-packal-search"
+  }, 
+  {
+    "description": "Alfred 3 workflow for TaskPaper", 
+    "lang": "AppleScript", 
+    "name": "alfred-taskpaper-workflow", 
+    "owner": "robwalton", 
+    "stars": 22, 
+    "topics": [
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "taskpaper", 
+      "taskpaper-document"
+    ], 
+    "url": "https://github.com/robwalton/alfred-taskpaper-workflow"
+  }, 
+  {
+    "description": "Fuzzy search across folder subdirectories", 
+    "lang": "Python", 
+    "name": "alfred-fuzzyfolders", 
+    "owner": "deanishe", 
+    "stars": 21, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "fuzzy-search", 
+      "python", 
+      "workflow"
+    ], 
+    "url": "https://github.com/deanishe/alfred-fuzzyfolders"
+  }, 
+  {
+    "description": "Alfred workflow to search and run/open AppleScripts for the active application", 
+    "lang": "Python", 
+    "name": "alfred-appscripts", 
+    "owner": "deanishe", 
+    "stars": 21, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "applescript", 
+      "jxa", 
+      "python", 
+      "runner", 
+      "scripts", 
+      "search"
+    ], 
+    "url": "https://github.com/deanishe/alfred-appscripts"
+  }, 
+  {
+    "description": "\u5fae\u535a\u56fe\u5e8a Alfred Workflow", 
+    "lang": "Python", 
+    "name": "WeiboPictureWorkflow", 
+    "owner": "cielpy", 
+    "stars": 21, 
+    "topics": [
+      "alfred-workflow", 
+      "weibo", 
+      "workflow"
+    ], 
+    "url": "https://github.com/cielpy/WeiboPictureWorkflow"
+  }, 
+  {
+    "description": "Control Sick Beard from Alfred app", 
+    "lang": "Python", 
+    "name": "Sickbeard-Alfred", 
+    "owner": "Fogh", 
+    "stars": 21, 
+    "topics": [
+      "alfred-workflow", 
+      "python", 
+      "sickbeard"
+    ], 
+    "url": "https://github.com/Fogh/Sickbeard-Alfred"
+  }, 
+  {
+    "description": " \ud83d\udc81 \ud83c\udfe9  Alfred 3 workflow that lets you  start, stop and open Hotel apps", 
+    "lang": "JavaScript", 
+    "name": "alfred-hotel", 
+    "owner": "exah", 
+    "stars": 20, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "alfy", 
+      "macos", 
+      "nodejs", 
+      "npm-package"
+    ], 
+    "url": "https://github.com/exah/alfred-hotel"
+  }, 
+  {
+    "description": "Alfred 3 workflow to open Xcode projects, workspaces, and playgrounds", 
+    "lang": "", 
+    "name": "alfred-xcode", 
+    "owner": "sindresorhus", 
+    "stars": 20, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "alfy", 
+      "macos", 
+      "npm-package"
+    ], 
+    "url": "https://github.com/sindresorhus/alfred-xcode"
+  }, 
+  {
+    "description": "An few simple terminal commands so you can take screen shots from Alfred App and edit them in Privew.", 
+    "lang": "", 
+    "name": "alfred-screen-capture", 
+    "owner": "ginfuru", 
+    "stars": 20, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/ginfuru/alfred-screen-capture"
+  }, 
+  {
+    "description": "Alfred 3 workflow to create and search notes in Bear.", 
+    "lang": "Python", 
+    "name": "alfred-bear", 
+    "owner": "chrisbro", 
+    "stars": 20, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred-workflows", 
+      "alfred3-workflow", 
+      "bear"
+    ], 
+    "url": "https://github.com/chrisbro/alfred-bear"
+  }, 
+  {
+    "description": "SSH workflow for Alfred 3 with powerful hostname expansion/completion", 
+    "lang": "Python", 
+    "name": "alfred-ssh", 
+    "owner": "isometry", 
+    "stars": 19, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "iterm2", 
+      "ssh", 
+      "terminal", 
+      "workflow"
+    ], 
+    "url": "https://github.com/isometry/alfred-ssh"
+  }, 
+  {
+    "description": "Alfred search suggest workflow for various popular websites.", 
+    "lang": "PHP", 
+    "name": "alfred-web-search-suggest", 
+    "owner": "AkikoZ", 
+    "stars": 19, 
+    "topics": [
+      "alfred-workflow", 
+      "baidu", 
+      "bilibili", 
+      "google", 
+      "moegirlpedia", 
+      "pixiv", 
+      "search-api", 
+      "sina-weibo", 
+      "taobao", 
+      "wikipedia", 
+      "wolfram-alpha", 
+      "zhihu"
+    ], 
+    "url": "https://github.com/AkikoZ/alfred-web-search-suggest"
+  }, 
+  {
+    "description": "\u4e0b\u8f7d\u5b57\u5e55 Alfred Workflow", 
+    "lang": "", 
+    "name": "subtitle-downloader-workflow-for-alfred", 
+    "owner": "LazarusX", 
+    "stars": 18, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/LazarusX/subtitle-downloader-workflow-for-alfred"
+  }, 
+  {
+    "description": "Alfred Workflow\u6559\u7a0b\u4e0e\u5b9e\u4f8b; CDto: \u6253\u5f00Terminal\u5e76\u8f6c\u5230\u4efb\u610f\u6587\u4ef6\u5939\u6216\u6587\u4ef6\u6240\u5728\u76ee\u5f55; Effective IP:\u67e5\u8be2\u672c\u673a\u548c\u5916\u7f51IP\u5730\u5740\uff0c\u89e3\u6790\u4efb\u610fURL\u548c\u57df\u540d\u7684IP\u5730\u5740\uff0c\u4ee5\u53ca\u8fdb\u884c\u5f52\u5c5e\u5730\u548c\u8fd0\u8425\u5546\u67e5\u8be2; ", 
+    "lang": "Python", 
+    "name": "Alfred-Workflow", 
+    "owner": "stidio", 
+    "stars": 18, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "filter", 
+      "osascript", 
+      "python"
+    ], 
+    "url": "https://github.com/stidio/Alfred-Workflow"
+  }, 
+  {
+    "description": "An Alfred workflow for searching Giphy", 
+    "lang": "Rust", 
+    "name": "giphy.alfredworkflow", 
+    "owner": "kejadlen", 
+    "stars": 18, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "gif", 
+      "giphy"
+    ], 
+    "url": "https://github.com/kejadlen/giphy.alfredworkflow"
+  }, 
+  {
+    "description": "An Alfred workflow for quickly and easily playing music in iTunes", 
+    "lang": "AppleScript", 
+    "name": "play-song", 
+    "owner": "caleb531", 
+    "stars": 18, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "applescript", 
+      "itunes"
+    ], 
+    "url": "https://github.com/caleb531/play-song"
+  }, 
+  {
+    "description": "Automagically turn Excel spreadsheets into Alfred 3 Workflows", 
+    "lang": "Python", 
+    "name": "i-sheet-you-not", 
+    "owner": "deanishe", 
+    "stars": 18, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "excel", 
+      "generator", 
+      "search", 
+      "spreadsheets"
+    ], 
+    "url": "https://github.com/deanishe/i-sheet-you-not"
+  }, 
+  {
+    "description": "\u767e\u5ea6\u5730\u56fe\u7684alfred workflow", 
+    "lang": "Python", 
+    "name": "alfred-baidu-map", 
+    "owner": "wofeiwo", 
+    "stars": 17, 
+    "topics": [
+      "alfred-workflow", 
+      "baidumap", 
+      "python"
+    ], 
+    "url": "https://github.com/wofeiwo/alfred-baidu-map"
+  }, 
+  {
+    "description": "Alfred 3 workflow for Ulysses", 
+    "lang": "Python", 
+    "name": "alfred-ulysses-workflow", 
+    "owner": "robwalton", 
+    "stars": 16, 
+    "topics": [
+      "alfred", 
+      "alfred-3", 
+      "alfred-workflow", 
+      "ulysses"
+    ], 
+    "url": "https://github.com/robwalton/alfred-ulysses-workflow"
+  }, 
+  {
+    "description": ":package: \ub3c4\ub85c\uba85/\uc9c0\ubc88 \ud55c\uc601 \uc8fc\uc18c \uac80\uc0c9\uc744 Alfred\uc5d0\uc11c!", 
+    "lang": "JavaScript", 
+    "name": "alfred-kozip-workflow", 
+    "owner": "kyungw00k", 
+    "stars": 16, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/kyungw00k/alfred-kozip-workflow"
+  }, 
+  {
+    "description": "Alfred workflow to browse and open Atom projects", 
+    "lang": "JavaScript", 
+    "name": "alfred-atom", 
+    "owner": "Cloudstek", 
+    "stars": 15, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "atom", 
+      "atom-editor", 
+      "nodejs"
+    ], 
+    "url": "https://github.com/Cloudstek/alfred-atom"
+  }, 
+  {
+    "description": "Quick access to your Smart Folders (Saved Searches) from Alfred", 
+    "lang": "Python", 
+    "name": "alfred-smartfolders", 
+    "owner": "deanishe", 
+    "stars": 15, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "python", 
+      "smart-folders", 
+      "workflow"
+    ], 
+    "url": "https://github.com/deanishe/alfred-smartfolders"
+  }, 
+  {
+    "description": "Send messages through Alfred", 
+    "lang": "JavaScript", 
+    "name": "alfred-messages", 
+    "owner": "briangonzalez", 
+    "stars": 15, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "imessage"
+    ], 
+    "url": "https://github.com/briangonzalez/alfred-messages"
+  }, 
+  {
+    "description": "This is an Alfred Workflow for Github Trending", 
+    "lang": "", 
+    "name": "Alfred-Workflow-for-Github-Trending", 
+    "owner": "sdq", 
+    "stars": 14, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/sdq/Alfred-Workflow-for-Github-Trending"
+  }, 
+  {
+    "description": "\ud83c\udfa9 Alfred workflow to search through any website on the web (easily extendable list) ", 
+    "lang": "Go", 
+    "name": "alfred-web-searches", 
+    "owner": "nikitavoloboev", 
+    "stars": 14, 
+    "topics": [
+      "alfred-workflow", 
+      "search", 
+      "websites"
+    ], 
+    "url": "https://github.com/nikitavoloboev/alfred-web-searches"
+  }, 
+  {
+    "description": "Google Image searches based on local files via Alfred", 
+    "lang": "Python", 
+    "name": "alfred-similar-image-search", 
+    "owner": "deanishe", 
+    "stars": 14, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "google", 
+      "workflow"
+    ], 
+    "url": "https://github.com/deanishe/alfred-similar-image-search"
+  }, 
+  {
+    "description": "Access your Default Folder X favourites and recent items in Alfred", 
+    "lang": "Python", 
+    "name": "alfred-default-folder-x", 
+    "owner": "deanishe", 
+    "stars": 14, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "default-folder-x", 
+      "favourites", 
+      "recent", 
+      "recent-files", 
+      "recent-folders", 
+      "search"
+    ], 
+    "url": "https://github.com/deanishe/alfred-default-folder-x"
+  }, 
+  {
+    "description": "\ud83c\udf97 Alfred workflow to search through my notes and bookmarks on the web", 
+    "lang": "JavaScript", 
+    "name": "alfred-my-mind", 
+    "owner": "nikitavoloboev", 
+    "stars": 14, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "knowledge"
+    ], 
+    "url": "https://github.com/nikitavoloboev/alfred-my-mind"
+  }, 
+  {
+    "description": "Control SABnzbd from Alfred app", 
+    "lang": "Python", 
+    "name": "SABnzbd-Alfred", 
+    "owner": "Fogh", 
+    "stars": 13, 
+    "topics": [
+      "alfred-workflow", 
+      "python", 
+      "sabnzbd"
+    ], 
+    "url": "https://github.com/Fogh/SABnzbd-Alfred"
+  }, 
+  {
+    "description": "An Alfred workflow for searching the YouVersion Bible quickly and easily", 
+    "lang": "Python", 
+    "name": "youversion-suggest", 
+    "owner": "caleb531", 
+    "stars": 13, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "bible", 
+      "python"
+    ], 
+    "url": "https://github.com/caleb531/youversion-suggest"
+  }, 
+  {
+    "description": "\u652f\u6301 OpenCC \u7c21\u7e41\u9ad4\u4e2d\u6587\u8a5e\u5f59\u7d1a\u5225\u8f49\u63db\u3001\u7570\u9ad4\u5b57\u8f49\u63db\u4ee5\u53ca\u5730\u5340\u7fd2\u6163\u7528\u8a5e\u8f49\u63db\u7684 Alfred 2 workflow", 
+    "lang": "Python", 
+    "name": "alfred-chinese-converter", 
+    "owner": "amowu", 
+    "stars": 13, 
+    "topics": [
+      "alfred", 
+      "alfred-chinese-converter", 
+      "alfred-workflow", 
+      "chinese", 
+      "chinese-simplified", 
+      "chinese-translation", 
+      "opencc"
+    ], 
+    "url": "https://github.com/amowu/alfred-chinese-converter"
+  }, 
+  {
+    "description": "Very simple workflow to quickly open up AWS Console Services in your browser", 
+    "lang": "JavaScript", 
+    "name": "alfred-aws-console-services-workflow", 
+    "owner": "rkoval", 
+    "stars": 12, 
+    "topics": [
+      "alfred-workflow", 
+      "aws", 
+      "productivity"
+    ], 
+    "url": "https://github.com/rkoval/alfred-aws-console-services-workflow"
+  }, 
+  {
+    "description": "Some Alfredworkflow \u5b58\u6863 = =", 
+    "lang": "", 
+    "name": "Alfred-workflow-collection", 
+    "owner": "SIDmao", 
+    "stars": 12, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "bilibili", 
+      "comic", 
+      "dm5", 
+      "lyrics", 
+      "music", 
+      "netease-music"
+    ], 
+    "url": "https://github.com/SIDmao/Alfred-workflow-collection"
+  }, 
+  {
+    "description": "Alfred App Workflow for postcss.parts", 
+    "lang": "PHP", 
+    "name": "alfred-postcss-workflow", 
+    "owner": "chrisopedia", 
+    "stars": 12, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alleyoop", 
+      "postcss", 
+      "workflow"
+    ], 
+    "url": "https://github.com/chrisopedia/alfred-postcss-workflow"
+  }, 
+  {
+    "description": "Alfred 3 workflow to search for Vue.js API references on vuejs.org", 
+    "lang": "JavaScript", 
+    "name": "alfred-vue", 
+    "owner": "radibit", 
+    "stars": 12, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "vuejs"
+    ], 
+    "url": "https://github.com/radibit/alfred-vue"
+  }, 
+  {
+    "description": "Alfred 3 workflow to find Material Design Icons", 
+    "lang": "JavaScript", 
+    "name": "alfred-mdi", 
+    "owner": "importre", 
+    "stars": 11, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "icon", 
+      "material", 
+      "material-design"
+    ], 
+    "url": "https://github.com/importre/alfred-mdi"
+  }, 
+  {
+    "description": "Search the duden.de German dictionary from Alfred. With auto-suggest.", 
+    "lang": "Python", 
+    "name": "alfred-duden", 
+    "owner": "deanishe", 
+    "stars": 11, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "dictionary", 
+      "duden", 
+      "workflow"
+    ], 
+    "url": "https://github.com/deanishe/alfred-duden"
+  }, 
+  {
+    "description": "Alfred workflow for searching Jisho.org, a Japanese-English online dictionary.", 
+    "lang": "Python", 
+    "name": "jisho-alfred-workflow", 
+    "owner": "janclarin", 
+    "stars": 11, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "japanese", 
+      "jisho", 
+      "jisho-dictionary"
+    ], 
+    "url": "https://github.com/janclarin/jisho-alfred-workflow"
+  }, 
+  {
+    "description": "Alfred 3 worflow for iconfinder instant seaerch", 
+    "lang": "JavaScript", 
+    "name": "alfred-iconfinder-search", 
+    "owner": "Rawnly", 
+    "stars": 11, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "alfy", 
+      "node", 
+      "osx", 
+      "productivity", 
+      "tool", 
+      "workflow"
+    ], 
+    "url": "https://github.com/Rawnly/alfred-iconfinder-search"
+  }, 
+  {
+    "description": "\ud83d\ude8d Find public transport departures in the VVO/DVB network from Alfred", 
+    "lang": "Go", 
+    "name": "alfred_dvb", 
+    "owner": "kiliankoe", 
+    "stars": 11, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "dvb", 
+      "public-transportation", 
+      "vvo"
+    ], 
+    "url": "https://github.com/kiliankoe/alfred_dvb"
+  }, 
+  {
+    "description": ":full_moon_with_face: Alfred 3 workflow to toggle night shift", 
+    "lang": "JavaScript", 
+    "name": "alfred-night-shift", 
+    "owner": "importre", 
+    "stars": 11, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "night", 
+      "night-mode", 
+      "shift"
+    ], 
+    "url": "https://github.com/importre/alfred-night-shift"
+  }, 
+  {
+    "description": "Alfred workflow to generate relative dates in different locales", 
+    "lang": "Python", 
+    "name": "alfred-relative-dates", 
+    "owner": "deanishe", 
+    "stars": 10, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "dates", 
+      "locales", 
+      "workflow"
+    ], 
+    "url": "https://github.com/deanishe/alfred-relative-dates"
+  }, 
+  {
+    "description": "Alfred workflow to use Mac OS X sharing services", 
+    "lang": "Shell", 
+    "name": "alfred-mac-osx-sharing", 
+    "owner": "vdesabou", 
+    "stars": 10, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/vdesabou/alfred-mac-osx-sharing"
+  }, 
+  {
+    "description": "My Xcode config - Alfred Workflow, File templates, Xcode code snippets, themes, IDETextKeyBindingSet", 
+    "lang": "Shell", 
+    "name": "xcode-config", 
+    "owner": "BB9z", 
+    "stars": 10, 
+    "topics": [
+      "alfred-workflow", 
+      "configuration", 
+      "templates", 
+      "xcode"
+    ], 
+    "url": "https://github.com/BB9z/xcode-config"
+  }, 
+  {
+    "description": "Make your Alfred App more powerful. Workflow for Homebrew, RubyGems and macOS", 
+    "lang": "", 
+    "name": "alfred-workflows", 
+    "owner": "danielbayerlein", 
+    "stars": 9, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/danielbayerlein/alfred-workflows"
+  }, 
+  {
+    "description": "\ud83d\udcdd \u4e00\u6b3e\u652f\u6301\u6709\u9053\u548c\u767e\u5ea6\u7ffb\u8bd1\u7684 Alfred Workflow", 
+    "lang": "JavaScript", 
+    "name": "alfred-Parrot", 
+    "owner": "Haojen", 
+    "stars": 9, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "baidu", 
+      "fanyi", 
+      "parrot", 
+      "translate", 
+      "youdao"
+    ], 
+    "url": "https://github.com/Haojen/alfred-Parrot"
+  }, 
+  {
+    "description": "Alfred workflow for quickly browsing and opening Sketch files", 
+    "lang": "CSS", 
+    "name": "sketchflow", 
+    "owner": "madbitco", 
+    "stars": 9, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "productivity", 
+      "sketch"
+    ], 
+    "url": "https://github.com/madbitco/sketchflow"
+  }, 
+  {
+    "description": "DuoTai (duotai.love) Alfred Workflow.", 
+    "lang": "Python", 
+    "name": "AlfredWorkflow-DuoTai-Helper", 
+    "owner": "Jeff2Ma", 
+    "stars": 8, 
+    "topics": [
+      "alfred-workflow", 
+      "keychain", 
+      "pac", 
+      "workflow"
+    ], 
+    "url": "https://github.com/Jeff2Ma/AlfredWorkflow-DuoTai-Helper"
+  }, 
+  {
+    "description": "Alfred workflow to search arxiv.org items", 
+    "lang": "Python", 
+    "name": "alfred-arxiv-workflow", 
+    "owner": "wookayin", 
+    "stars": 8, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "arxiv"
+    ], 
+    "url": "https://github.com/wookayin/alfred-arxiv-workflow"
+  }, 
+  {
+    "description": "\ud83c\udfa9 Alfred interface to various Web Submissions (stack exchange, reddit and more)", 
+    "lang": "", 
+    "name": "alfred-ask-create-share", 
+    "owner": "nikitavoloboev", 
+    "stars": 8, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "macos", 
+      "productivity", 
+      "submissions", 
+      "web"
+    ], 
+    "url": "https://github.com/nikitavoloboev/alfred-ask-create-share"
+  }, 
+  {
+    "description": "\ud83d\udcbb Get your shell's variables into Alfred", 
+    "lang": "Python", 
+    "name": "Alfred-ShellVariables", 
+    "owner": "hug33k", 
+    "stars": 8, 
+    "topics": [
+      "alferd", 
+      "alfred-3", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "macos", 
+      "shell"
+    ], 
+    "url": "https://github.com/hug33k/Alfred-ShellVariables"
+  }, 
+  {
+    "description": "An Alfred 3 workflow which allows for the fast creation of new documents and folders.", 
+    "lang": "", 
+    "name": "alfred3-newFiles", 
+    "owner": "cpimhoff", 
+    "stars": 8, 
+    "topics": [
+      "alfred-workflow", 
+      "alfred3-workflow"
+    ], 
+    "url": "https://github.com/cpimhoff/alfred3-newFiles"
+  }, 
+  {
+    "description": "List, filter and activate network locations from within Alfred", 
+    "lang": "Python", 
+    "name": "alfred-network-location", 
+    "owner": "deanishe", 
+    "stars": 8, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "network", 
+      "python", 
+      "wifi", 
+      "workflow"
+    ], 
+    "url": "https://github.com/deanishe/alfred-network-location"
+  }, 
+  {
+    "description": "Preview Unicode characters and emoji in Alfred", 
+    "lang": "Python", 
+    "name": "alfred-unicode", 
+    "owner": "deanishe", 
+    "stars": 8, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "codepoints", 
+      "search", 
+      "unicode", 
+      "workflow"
+    ], 
+    "url": "https://github.com/deanishe/alfred-unicode"
+  }, 
+  {
+    "description": "Alfred 2/YNAB workflow", 
+    "lang": "Python", 
+    "name": "alfred-ynab", 
+    "owner": "jamesoff", 
+    "stars": 8, 
+    "topics": [
+      "abandoned", 
+      "alfred", 
+      "alfred-workflow", 
+      "python", 
+      "ynab"
+    ], 
+    "url": "https://github.com/jamesoff/alfred-ynab"
+  }, 
+  {
+    "description": "Alfred workflow to resolve HTTP redirects and return the canonical URL", 
+    "lang": "Python", 
+    "name": "alfred-resolve-url", 
+    "owner": "deanishe", 
+    "stars": 7, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "python", 
+      "resolve", 
+      "url", 
+      "workflow"
+    ], 
+    "url": "https://github.com/deanishe/alfred-resolve-url"
+  }, 
+  {
+    "description": "Demonstration of using sqlite as a search index in Alfred", 
+    "lang": "Python", 
+    "name": "alfred-index-demo", 
+    "owner": "deanishe", 
+    "stars": 6, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "demo", 
+      "fts", 
+      "gutenberg", 
+      "python", 
+      "sqlite", 
+      "sqlite3", 
+      "workflow"
+    ], 
+    "url": "https://github.com/deanishe/alfred-index-demo"
+  }, 
+  {
+    "description": "German-English/English-German dictionary based on linguee.de", 
+    "lang": "Go", 
+    "name": "linguee-alfred-workflow", 
+    "owner": "alexander-heimbuch", 
+    "stars": 6, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "linguee"
+    ], 
+    "url": "https://github.com/alexander-heimbuch/linguee-alfred-workflow"
+  }, 
+  {
+    "description": "A collection of all known Alfred3 worflows", 
+    "lang": "", 
+    "name": "Alfred-collection", 
+    "owner": "msoedov", 
+    "stars": 5, 
+    "topics": [
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "collective-knowledge"
+    ], 
+    "url": "https://github.com/msoedov/Alfred-collection"
+  }, 
+  {
+    "description": "Alfred workflow to quickly find and launch your SourceTree bookmarks", 
+    "lang": "Python", 
+    "name": "Alfred_SourceTree", 
+    "owner": "yourtion", 
+    "stars": 5, 
+    "topics": [
+      "alfred", 
+      "alfred-git", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "sourcetree", 
+      "sourcetree-fast", 
+      "workflow"
+    ], 
+    "url": "https://github.com/yourtion/Alfred_SourceTree"
+  }, 
+  {
+    "description": "Shush! \u2014 Alfred workflow for muting your microphone", 
+    "lang": "", 
+    "name": "alfred-shush", 
+    "owner": "dpskvn", 
+    "stars": 5, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/dpskvn/alfred-shush"
+  }, 
+  {
+    "description": ":speech_balloon: Alfred 3 workflow to change Slack statuses at once", 
+    "lang": "JavaScript", 
+    "name": "alfred-slack-status", 
+    "owner": "importre", 
+    "stars": 5, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfy", 
+      "profile", 
+      "slack", 
+      "status", 
+      "teams"
+    ], 
+    "url": "https://github.com/importre/alfred-slack-status"
+  }, 
+  {
+    "description": "Powerful Calculator for Alfred", 
+    "lang": "Shell", 
+    "name": "alfred-clc", 
+    "owner": "aviaryan", 
+    "stars": 5, 
+    "topics": [
+      "alfred", 
+      "alfred-3", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "calculator"
+    ], 
+    "url": "https://github.com/aviaryan/alfred-clc"
+  }, 
+  {
+    "description": "man(1) workflow for Alfred", 
+    "lang": "Python", 
+    "name": "alfred-man", 
+    "owner": "isometry", 
+    "stars": 5, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "man", 
+      "workflow"
+    ], 
+    "url": "https://github.com/isometry/alfred-man"
+  }, 
+  {
+    "description": ":stew: Easy access to today's meals in Dresden's canteens via Alfred", 
+    "lang": "Go", 
+    "name": "alfred_mensa", 
+    "owner": "kiliankoe", 
+    "stars": 5, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "dresden", 
+      "mensa"
+    ], 
+    "url": "https://github.com/kiliankoe/alfred_mensa"
+  }, 
+  {
+    "description": "Translate in Alfred using Glosbe.com", 
+    "lang": "Python", 
+    "name": "alfred-glosbe", 
+    "owner": "deanishe", 
+    "stars": 5, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "english", 
+      "french", 
+      "german", 
+      "glosbe", 
+      "translation", 
+      "workflow"
+    ], 
+    "url": "https://github.com/deanishe/alfred-glosbe"
+  }, 
+  {
+    "description": "Search Powerthesaurus synonyms and antonyms from Alfred ", 
+    "lang": "Python", 
+    "name": "alfred-powerthesaurus", 
+    "owner": "clarencecastillo", 
+    "stars": 5, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "dictionary", 
+      "powerthesaurus", 
+      "thesaurus"
+    ], 
+    "url": "https://github.com/clarencecastillo/alfred-powerthesaurus"
+  }, 
+  {
+    "description": "A collection of custom Alfred themes and workflows.", 
+    "lang": "Ruby", 
+    "name": "alfred", 
+    "owner": "bkuhlmann", 
+    "stars": 5, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/bkuhlmann/alfred"
+  }, 
+  {
+    "description": "QQ for Mac + Alfred Workflow", 
+    "lang": "", 
+    "name": "QQ-Alfred-Workflow", 
+    "owner": "hyacz", 
+    "stars": 5, 
+    "topics": [
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "qq"
+    ], 
+    "url": "https://github.com/hyacz/QQ-Alfred-Workflow"
+  }, 
+  {
+    "description": "An alfred workflow for accessing codebox snippets.", 
+    "lang": "Python", 
+    "name": "codebox-alfred", 
+    "owner": "danielecook", 
+    "stars": 4, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/danielecook/codebox-alfred"
+  }, 
+  {
+    "description": "Alfred workflows", 
+    "lang": "", 
+    "name": "alfred-workflows", 
+    "owner": "pedro-teixeira", 
+    "stars": 4, 
+    "topics": [
+      "alfred-workflow", 
+      "cep", 
+      "cpf"
+    ], 
+    "url": "https://github.com/pedro-teixeira/alfred-workflows"
+  }, 
+  {
+    "description": "Software Installation, Configuration and Preferences for Springload", 
+    "lang": "Vim script", 
+    "name": "dotfiles", 
+    "owner": "springload", 
+    "stars": 4, 
+    "topics": [
+      "alfred-workflow", 
+      "dotfiles", 
+      "preferences", 
+      "sublime-text"
+    ], 
+    "url": "https://github.com/springload/dotfiles"
+  }, 
+  {
+    "description": "Material Color palette for Alfred 2", 
+    "lang": "Ruby", 
+    "name": "alfred-material-colors-workflow", 
+    "owner": "KaitoWatanabe", 
+    "stars": 4, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "material", 
+      "material-colors"
+    ], 
+    "url": "https://github.com/KaitoWatanabe/alfred-material-colors-workflow"
+  }, 
+  {
+    "description": "\ud83c\udfa8  Alfred workflow to generate color names", 
+    "lang": "JavaScript", 
+    "name": "alfred-coolors", 
+    "owner": "radibit", 
+    "stars": 4, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "color-names"
+    ], 
+    "url": "https://github.com/radibit/alfred-coolors"
+  }, 
+  {
+    "description": "A simple, easy to use ssh connection tool for Alfred 3", 
+    "lang": "Python", 
+    "name": "otter", 
+    "owner": "AsherPeruscini", 
+    "stars": 4, 
+    "topics": [
+      "alfred", 
+      "alfred-3", 
+      "alfred-workflow", 
+      "alfred-workflows", 
+      "alfred3-workflow", 
+      "alfredworkflow", 
+      "network", 
+      "otter", 
+      "ssh"
+    ], 
+    "url": "https://github.com/AsherPeruscini/otter"
+  }, 
+  {
+    "description": "Lookup Danish companies by their name or CVR number - Alfred workflow", 
+    "lang": "Python", 
+    "name": "CVR-Alfred", 
+    "owner": "Fogh", 
+    "stars": 4, 
+    "topics": [
+      "alfred-workflow", 
+      "cvr-number", 
+      "python"
+    ], 
+    "url": "https://github.com/Fogh/CVR-Alfred"
+  }, 
+  {
+    "description": "Alfred Workflow to quickly switch between or close iTerm windows, tabs and panes based on title and tty", 
+    "lang": "AppleScript", 
+    "name": "alfred-tty", 
+    "owner": "isometry", 
+    "stars": 4, 
+    "topics": [
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "iterm2", 
+      "jxa", 
+      "macos", 
+      "ssh"
+    ], 
+    "url": "https://github.com/isometry/alfred-tty"
+  }, 
+  {
+    "description": "Alfred 3 workflow for GitHub things", 
+    "lang": "JavaScript", 
+    "name": "alfred-github-tools", 
+    "owner": "stoe", 
+    "stars": 4, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfy", 
+      "github", 
+      "graphql", 
+      "helper", 
+      "macos", 
+      "nodejs", 
+      "utility"
+    ], 
+    "url": "https://github.com/stoe/alfred-github-tools"
+  }, 
+  {
+    "description": "An Alfred workflow for searching with Hoogle and Hayoo", 
+    "lang": "", 
+    "name": "alfred-haskell-inspector", 
+    "owner": "akiomik", 
+    "stars": 4, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "haskell-inspector", 
+      "hayoo", 
+      "hoogle"
+    ], 
+    "url": "https://github.com/akiomik/alfred-haskell-inspector"
+  }, 
+  {
+    "description": "Alfred workflow for opening the current folder in VS Code", 
+    "lang": "", 
+    "name": "alfred-vscode", 
+    "owner": "dpskvn", 
+    "stars": 4, 
+    "topics": [
+      "alfred-workflow", 
+      "vscode"
+    ], 
+    "url": "https://github.com/dpskvn/alfred-vscode"
+  }, 
+  {
+    "description": "Fuzzy search helper for Alfred 3 workflows", 
+    "lang": "Python", 
+    "name": "alfred-fuzzy", 
+    "owner": "deanishe", 
+    "stars": 4, 
+    "topics": [
+      "alfred", 
+      "alfred-3", 
+      "alfred-workflow", 
+      "alfred3", 
+      "fuzzy", 
+      "fuzzy-search"
+    ], 
+    "url": "https://github.com/deanishe/alfred-fuzzy"
+  }, 
+  {
+    "description": "A command line interface that enhances and extends Alfred with Ruby support.", 
+    "lang": "Ruby", 
+    "name": "pennyworth", 
+    "owner": "bkuhlmann", 
+    "stars": 3, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/bkuhlmann/pennyworth"
+  }, 
+  {
+    "description": ":fast_forward: Alfred workflow to open Paris Diderot CS teachers\u2019 personal homepages", 
+    "lang": "Python", 
+    "name": "alfred-pp", 
+    "owner": "bfontaine", 
+    "stars": 3, 
+    "topics": [
+      "alfred-workflow", 
+      "paris-diderot", 
+      "python"
+    ], 
+    "url": "https://github.com/bfontaine/alfred-pp"
+  }, 
+  {
+    "description": "Alfred workflow for jetbrains intellij.", 
+    "lang": "JavaScript", 
+    "name": "alfred-intellij", 
+    "owner": "codeBud7", 
+    "stars": 3, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "alfy", 
+      "intellij", 
+      "nodejs", 
+      "productivity", 
+      "workflow"
+    ], 
+    "url": "https://github.com/codeBud7/alfred-intellij"
+  }, 
+  {
+    "description": "Alfred workflow bindings for NodeJS", 
+    "lang": "JavaScript", 
+    "name": "alfred-hugo", 
+    "owner": "Cloudstek", 
+    "stars": 3, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred-workflow-nodejs", 
+      "alfy", 
+      "flow", 
+      "flowtype", 
+      "nodejs"
+    ], 
+    "url": "https://github.com/Cloudstek/alfred-hugo"
+  }, 
+  {
+    "description": "Alfred Workflow of PlaceCage", 
+    "lang": "", 
+    "name": "alfred-cage-workflow", 
+    "owner": "moschan", 
+    "stars": 3, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/moschan/alfred-cage-workflow"
+  }, 
+  {
+    "description": "An Alfred 3 workflow that provides quick access to information about all airports in the world.", 
+    "lang": "Python", 
+    "name": "alfred-airports-workflow", 
+    "owner": "darkwinternight", 
+    "stars": 3, 
+    "topics": [
+      "airports", 
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "helper"
+    ], 
+    "url": "https://github.com/darkwinternight/alfred-airports-workflow"
+  }, 
+  {
+    "description": "Alfred workflow for ecs cluster service search.", 
+    "lang": "JavaScript", 
+    "name": "coower", 
+    "owner": "codeBud7", 
+    "stars": 3, 
+    "topics": [
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "amazon-aws", 
+      "productivity"
+    ], 
+    "url": "https://github.com/codeBud7/coower"
+  }, 
+  {
+    "description": "Search all Minecraft recipes using Alfred 2.0 with this Workflow", 
+    "lang": "PHP", 
+    "name": "alfred-minecraft-cookbook", 
+    "owner": "TheRealGitCub", 
+    "stars": 3, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "minecraft", 
+      "workflow"
+    ], 
+    "url": "https://github.com/TheRealGitCub/alfred-minecraft-cookbook"
+  }, 
+  {
+    "description": "Search for MindMeister maps right from Alfred", 
+    "lang": "JavaScript", 
+    "name": "alfred-mindmeister", 
+    "owner": "MeisterLabs", 
+    "stars": 3, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfy", 
+      "javascript", 
+      "macos", 
+      "meisterlabs", 
+      "mindmeister", 
+      "mit-license", 
+      "nodejs", 
+      "npm", 
+      "npm-package"
+    ], 
+    "url": "https://github.com/MeisterLabs/alfred-mindmeister"
+  }, 
+  {
+    "description": ":package: Search crates.io right from within Alfred", 
+    "lang": "Rust", 
+    "name": "alfred_crates", 
+    "owner": "kiliankoe", 
+    "stars": 3, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "crates-io"
+    ], 
+    "url": "https://github.com/kiliankoe/alfred_crates"
+  }, 
+  {
+    "description": "Add URLs to Instapaper via Alfred", 
+    "lang": "", 
+    "name": "alfred-instapaper", 
+    "owner": "derBingle", 
+    "stars": 3, 
+    "topics": [
+      "alfred", 
+      "alfred-3", 
+      "alfred-workflow", 
+      "alfred-workflows", 
+      "alfred3-workflow", 
+      "instapaper"
+    ], 
+    "url": "https://github.com/derBingle/alfred-instapaper"
+  }, 
+  {
+    "description": ":capital_abcd: Alfred 3 workflow to asciify plain text using figlet.js", 
+    "lang": "JavaScript", 
+    "name": "alfred-figlet", 
+    "owner": "importre", 
+    "stars": 3, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "ascii", 
+      "ascii-art", 
+      "figlet"
+    ], 
+    "url": "https://github.com/importre/alfred-figlet"
+  }, 
+  {
+    "description": "Placeholder Images for every case from lorempixel.com and unsplash.com", 
+    "lang": "", 
+    "name": "alfredworkflow.placeholderimages", 
+    "owner": "manumorante", 
+    "stars": 3, 
+    "topics": [
+      "alfred-workflow", 
+      "images", 
+      "placeholder"
+    ], 
+    "url": "https://github.com/manumorante/alfredworkflow.placeholderimages"
+  }, 
+  {
+    "description": ":sunny: Adjust your display\u2019s brightness", 
+    "lang": "AppleScript", 
+    "name": "alfred-brightness", 
+    "owner": "importre", 
+    "stars": 3, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "brightness", 
+      "monitor", 
+      "screen"
+    ], 
+    "url": "https://github.com/importre/alfred-brightness"
+  }, 
+  {
+    "description": "Alfred workflow to upload the last screenshot taken to Imgur + (delete and minify image)", 
+    "lang": "Shell", 
+    "name": "alfred-last2imgur", 
+    "owner": "aviaryan", 
+    "stars": 3, 
+    "topics": [
+      "alfred", 
+      "alfred-3", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "imgur", 
+      "imgur-uploader"
+    ], 
+    "url": "https://github.com/aviaryan/alfred-last2imgur"
+  }, 
+  {
+    "description": "Go library for Alfred 3 workflows", 
+    "lang": "Go", 
+    "name": "awgo", 
+    "owner": "deanishe", 
+    "stars": 3, 
+    "topics": [
+      "alfred", 
+      "alfred-3", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "fuzzy", 
+      "fuzzy-search", 
+      "go", 
+      "golang", 
+      "workflow"
+    ], 
+    "url": "https://github.com/deanishe/awgo"
+  }, 
+  {
+    "description": "Say it with GIFs (and Alfred)", 
+    "lang": "Python", 
+    "name": "alfred-gifs", 
+    "owner": "deanishe", 
+    "stars": 3, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "gif", 
+      "workflow"
+    ], 
+    "url": "https://github.com/deanishe/alfred-gifs"
+  }, 
+  {
+    "description": "Manage your Keynote presentation with Alfred Remote iOS App", 
+    "lang": "", 
+    "name": "Keynote-remote", 
+    "owner": "gabamnml", 
+    "stars": 3, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "ios-remote", 
+      "keynote", 
+      "remote-control"
+    ], 
+    "url": "https://github.com/gabamnml/Keynote-remote"
+  }, 
+  {
+    "description": "\u996d\u56e2\u65e5\u8bed\u8bcd\u5178 \u662f Alfred 3 \u7684\u4e00\u4e2a Workflow\uff0c\u7528\u4e8e\u5feb\u901f\u67e5\u8be2\u65e5\u8bed\u5355\u8bcd\uff08 \u65e5 -> \u4e2d \uff09\uff0c\u67e5\u8be2\u7ed3\u679c\u9664\u57fa\u672c\u4fe1\u606f\u5916\uff0c\u8fd8\u5305\u542b\u8bfb\u97f3\u4e0e\u4f8b\u53e5\u7b49\u3002", 
+    "lang": "Python", 
+    "name": "onigiri_jp_dict", 
+    "owner": "MIKUScallion", 
+    "stars": 3, 
+    "topics": [
+      "alfred-workflow", 
+      "alfred3", 
+      "python2-7", 
+      "web-crawler"
+    ], 
+    "url": "https://github.com/MIKUScallion/onigiri_jp_dict"
+  }, 
+  {
+    "description": "Alfred workflow to paste \"LGTM\" along with a random fun animal to brighten up everybody's day <3", 
+    "lang": "JavaScript", 
+    "name": "LGTM", 
+    "owner": "Xiphe", 
+    "stars": 2, 
+    "topics": [
+      "alfred-workflow", 
+      "lgtm", 
+      "review-tools"
+    ], 
+    "url": "https://github.com/Xiphe/LGTM"
+  }, 
+  {
+    "description": "Alfred workflow to quickly find & edit configuration files.", 
+    "lang": "Python", 
+    "name": "alfred-conf-editor-workflow", 
+    "owner": "filosfino", 
+    "stars": 2, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/filosfino/alfred-conf-editor-workflow"
+  }, 
+  {
+    "description": "Alfred workflow for atlassian bamboo.", 
+    "lang": "JavaScript", 
+    "name": "alfred-bamboo", 
+    "owner": "codeBud7", 
+    "stars": 2, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "atlassian-bamboo", 
+      "bamboo", 
+      "productivity", 
+      "workflow"
+    ], 
+    "url": "https://github.com/codeBud7/alfred-bamboo"
+  }, 
+  {
+    "description": "An Alfred workflow for accessing Postico favorites", 
+    "lang": "JavaScript", 
+    "name": "alfred-postico-favorites-workflow", 
+    "owner": "payers1", 
+    "stars": 2, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "postico"
+    ], 
+    "url": "https://github.com/payers1/alfred-postico-favorites-workflow"
+  }, 
+  {
+    "description": "Swift script and Alfred workflow to change the default browser on macOS.", 
+    "lang": "Swift", 
+    "name": "defaultbrowser", 
+    "owner": "dnlggr", 
+    "stars": 2, 
+    "topics": [
+      "alfred-workflow", 
+      "default-browser", 
+      "macos", 
+      "swift"
+    ], 
+    "url": "https://github.com/dnlggr/defaultbrowser"
+  }, 
+  {
+    "description": "An Alfred workflow to help you do percentage calculations", 
+    "lang": "Python", 
+    "name": "alfred-percent-change", 
+    "owner": "bradmontgomery", 
+    "stars": 2, 
+    "topics": [
+      "alfred-workflow", 
+      "percent", 
+      "percent-change", 
+      "percentage-calculations", 
+      "python"
+    ], 
+    "url": "https://github.com/bradmontgomery/alfred-percent-change"
+  }, 
+  {
+    "description": "Add star ratings to your files on OS X with Alfred", 
+    "lang": "Python", 
+    "name": "alfred-star-ratings", 
+    "owner": "deanishe", 
+    "stars": 2, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "rating", 
+      "stars", 
+      "workflow"
+    ], 
+    "url": "https://github.com/deanishe/alfred-star-ratings"
+  }, 
+  {
+    "description": "Search and get links for GIFs on Giphy with Alfred", 
+    "lang": "Python", 
+    "name": "alphy", 
+    "owner": "maximepeschard", 
+    "stars": 2, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "giphy"
+    ], 
+    "url": "https://github.com/maximepeschard/alphy"
+  }, 
+  {
+    "description": "Alfred workflow for git.io", 
+    "lang": "JavaScript", 
+    "name": "alfred-gitio", 
+    "owner": "stoe", 
+    "stars": 2, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfy", 
+      "github", 
+      "helper", 
+      "macos", 
+      "nodejs", 
+      "url-shortener", 
+      "utility"
+    ], 
+    "url": "https://github.com/stoe/alfred-gitio"
+  }, 
+  {
+    "description": "Manage Gmail Filters via Alfred", 
+    "lang": "JavaScript", 
+    "name": "alfred-workflow-gmail-filters", 
+    "owner": "inlet", 
+    "stars": 2, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "filters", 
+      "gmail", 
+      "workflow"
+    ], 
+    "url": "https://github.com/inlet/alfred-workflow-gmail-filters"
+  }, 
+  {
+    "description": "Alfred Workflow for Zoom.us", 
+    "lang": "Makefile", 
+    "name": "alfred-zoomus", 
+    "owner": "chaifeng", 
+    "stars": 2, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3", 
+      "alfred3-workflow"
+    ], 
+    "url": "https://github.com/chaifeng/alfred-zoomus"
+  }, 
+  {
+    "description": "Plan your trips directly from Alfred", 
+    "lang": "Python", 
+    "name": "Ruter-workflow-for-Alfred", 
+    "owner": "kimsyversen", 
+    "stars": 2, 
+    "topics": [
+      "alfred", 
+      "alfred-3", 
+      "alfred-workflow", 
+      "alfred-workflows", 
+      "alfred-worklow", 
+      "alfred2-workflow", 
+      "alfred3-workflow", 
+      "alfredworkflow", 
+      "macos", 
+      "macos-sierra", 
+      "productivity-supplements", 
+      "python", 
+      "tools"
+    ], 
+    "url": "https://github.com/kimsyversen/Ruter-workflow-for-Alfred"
+  }, 
+  {
+    "description": "Alfred workflow to lookup RDF namespaces using http://prefix.cc/", 
+    "lang": "", 
+    "name": "alfred-prefix.cc", 
+    "owner": "depressiveRobot", 
+    "stars": 2, 
+    "topics": [
+      "alfred", 
+      "alfred-3", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "rdf", 
+      "sparql", 
+      "turtle-rdf"
+    ], 
+    "url": "https://github.com/depressiveRobot/alfred-prefix.cc"
+  }, 
+  {
+    "description": "Opens new tab in default browser with current song lyrics on Genius", 
+    "lang": "PHP", 
+    "name": "genius-alfred-workflow", 
+    "owner": "likewinter", 
+    "stars": 2, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "genius"
+    ], 
+    "url": "https://github.com/likewinter/genius-alfred-workflow"
+  }, 
+  {
+    "description": " Nutanix workflow and Python code for Alfred", 
+    "lang": "Python", 
+    "name": "alfred_ntnxapi", 
+    "owner": "aleibovici", 
+    "stars": 2, 
+    "topics": [
+      "alfred-workflow", 
+      "nutanix"
+    ], 
+    "url": "https://github.com/aleibovici/alfred_ntnxapi"
+  }, 
+  {
+    "description": "Workflow to quickly open redmine project page from Alfred", 
+    "lang": "PHP", 
+    "name": "redmine-alfredworkflow", 
+    "owner": "GMaissa", 
+    "stars": 2, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "redmine"
+    ], 
+    "url": "https://github.com/GMaissa/redmine-alfredworkflow"
+  }, 
+  {
+    "description": "Search&Open Intellij Projects within Alfred", 
+    "lang": "JavaScript", 
+    "name": "alfred-intellij-projects", 
+    "owner": "effectively", 
+    "stars": 2, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/effectively/alfred-intellij-projects"
+  }, 
+  {
+    "description": "Quickly search through ascii faces and kaomoji (\uff89\u25d5\u30ee\u25d5)\uff89*:\uff65\uff9f\u2727", 
+    "lang": "JavaScript", 
+    "name": "asciilib-workflow", 
+    "owner": "iansinnott", 
+    "stars": 2, 
+    "topics": [
+      "alfred-workflow", 
+      "ascii-art", 
+      "kaomoji"
+    ], 
+    "url": "https://github.com/iansinnott/asciilib-workflow"
+  }, 
+  {
+    "description": "Alfred Workflow to Integrate with Bookends, a bibliographic/research manager for macOS", 
+    "lang": "AppleScript", 
+    "name": "bookends-tools", 
+    "owner": "iandol", 
+    "stars": 2, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "bibliography", 
+      "bookends", 
+      "scrivener"
+    ], 
+    "url": "https://github.com/iandol/bookends-tools"
+  }, 
+  {
+    "description": "Alfred workflow for opening folder results in terminal.", 
+    "lang": "", 
+    "name": "open-in-terminal", 
+    "owner": "janclarin", 
+    "stars": 2, 
+    "topics": [
+      "alfred-workflow", 
+      "iterm2", 
+      "terminal"
+    ], 
+    "url": "https://github.com/janclarin/open-in-terminal"
+  }, 
+  {
+    "description": "Alfred 3 Workflow with Node.js/NPM/NVM tools for developers", 
+    "lang": "", 
+    "name": "alfred-nodejs-tools", 
+    "owner": "xrubioj", 
+    "stars": 2, 
+    "topics": [
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "nodejs", 
+      "tools"
+    ], 
+    "url": "https://github.com/xrubioj/alfred-nodejs-tools"
+  }, 
+  {
+    "description": ":desktop_computer: Toggle mirroring of external displays easily", 
+    "lang": "JavaScript", 
+    "name": "alfred-mirror-displays", 
+    "owner": "importre", 
+    "stars": 2, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfy", 
+      "display", 
+      "dual", 
+      "monitor", 
+      "multiple", 
+      "screen", 
+      "toggle"
+    ], 
+    "url": "https://github.com/importre/alfred-mirror-displays"
+  }, 
+  {
+    "description": "\ud83c\udfa9 Search folders from Alfred and open them in Finder / iTerm / Editor", 
+    "lang": "", 
+    "name": "alfred-folder-search", 
+    "owner": "nikitavoloboev", 
+    "stars": 2, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/nikitavoloboev/alfred-folder-search"
+  }, 
+  {
+    "description": "Demo workflow showing how to use an Excel file as a data source for an Alfred Script Filter", 
+    "lang": "Python", 
+    "name": "alfred-excel-demo", 
+    "owner": "deanishe", 
+    "stars": 2, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "demo", 
+      "excel", 
+      "workflow"
+    ], 
+    "url": "https://github.com/deanishe/alfred-excel-demo"
+  }, 
+  {
+    "description": "Alfred workflow for searching romanian words definitions in dexonline.ro dictionary.", 
+    "lang": "JavaScript", 
+    "name": "alfred-dexonline", 
+    "owner": "andrei-popa", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "alfy", 
+      "javascript"
+    ], 
+    "url": "https://github.com/andrei-popa/alfred-dexonline"
+  }, 
+  {
+    "description": "Open AWS console links directly from Alfred", 
+    "lang": "", 
+    "name": "alfred-aws-console-workflow", 
+    "owner": "ascandroli", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow"
+    ], 
+    "url": "https://github.com/ascandroli/alfred-aws-console-workflow"
+  }, 
+  {
+    "description": "An Alfred workflow for going to specific locations in the Firebase Console... quickly!", 
+    "lang": "", 
+    "name": "alfred-firebase-links", 
+    "owner": "derBingle", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-3", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "firebase", 
+      "firebase-console", 
+      "firebase-docs"
+    ], 
+    "url": "https://github.com/derBingle/alfred-firebase-links"
+  }, 
+  {
+    "description": "Simple Alfred workflow to search through https://openclipart.org", 
+    "lang": "JavaScript", 
+    "name": "alfred-openclipart", 
+    "owner": "hpoul", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "cliparts"
+    ], 
+    "url": "https://github.com/hpoul/alfred-openclipart"
+  }, 
+  {
+    "description": "An Alfred workflow written in bash for control of a LED-strip connected to Hyperion with POST requests.", 
+    "lang": "Shell", 
+    "name": "hyperion-alfred-workflow", 
+    "owner": "Nosskirneh", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "hyperion"
+    ], 
+    "url": "https://github.com/Nosskirneh/hyperion-alfred-workflow"
+  }, 
+  {
+    "description": ":guitar: An Alfred workflow used for searching Ultimate Guitar", 
+    "lang": "", 
+    "name": "alfred-workflow-ultimate-guitar", 
+    "owner": "simeg", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "ultimate-guitar", 
+      "workflow"
+    ], 
+    "url": "https://github.com/simeg/alfred-workflow-ultimate-guitar"
+  }, 
+  {
+    "description": "Convert time string to timestamp, or the other way round.", 
+    "lang": "PHP", 
+    "name": "alfred-workflow-timestring", 
+    "owner": "hit1024", 
+    "stars": 1, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/hit1024/alfred-workflow-timestring"
+  }, 
+  {
+    "description": "Alfred Workflow to search Yarn API", 
+    "lang": "JavaScript", 
+    "name": "alfred-workflow-yarn-api-search", 
+    "owner": "tung-dang", 
+    "stars": 1, 
+    "topics": [
+      "alfred-workflow", 
+      "alfred-workflow-nodejs"
+    ], 
+    "url": "https://github.com/tung-dang/alfred-workflow-yarn-api-search"
+  }, 
+  {
+    "description": "Alfred workflow to move all overdue tasks to today in Todoist", 
+    "lang": "Python", 
+    "name": "todoist-overdue-alfred", 
+    "owner": "agladky", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "overdue-tasks", 
+      "todoist"
+    ], 
+    "url": "https://github.com/agladky/todoist-overdue-alfred"
+  }, 
+  {
+    "description": "Search macOS errors in Alfred 3", 
+    "lang": "Python", 
+    "name": "alfred-errnum", 
+    "owner": "deanishe", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "errors", 
+      "workflow"
+    ], 
+    "url": "https://github.com/deanishe/alfred-errnum"
+  }, 
+  {
+    "description": ":1234: Alfred Workflow", 
+    "lang": "PHP", 
+    "name": "ruleofthree.alfredworkflow", 
+    "owner": "manumorante", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "math"
+    ], 
+    "url": "https://github.com/manumorante/ruleofthree.alfredworkflow"
+  }, 
+  {
+    "description": "Alfred workflows that created by myself. Feel free to use them :)", 
+    "lang": "Python", 
+    "name": "AlfredWorkflows", 
+    "owner": "BlackDragonF", 
+    "stars": 1, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/BlackDragonF/AlfredWorkflows"
+  }, 
+  {
+    "description": "Alfred workflow to search synonyms", 
+    "lang": "JavaScript", 
+    "name": "alfred-big-huge-thesaurus", 
+    "owner": "lazydevorg", 
+    "stars": 1, 
+    "topics": [
+      "alfred-workflow", 
+      "thesaurus"
+    ], 
+    "url": "https://github.com/lazydevorg/alfred-big-huge-thesaurus"
+  }, 
+  {
+    "description": "Update your IP with Getflix via Alfred workflow", 
+    "lang": "", 
+    "name": "alfred-getflix", 
+    "owner": "dpskvn", 
+    "stars": 1, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/dpskvn/alfred-getflix"
+  }, 
+  {
+    "description": "An alfred workflow to run simple python code, or use it as calculater.", 
+    "lang": "", 
+    "name": "alfred-python-workflow", 
+    "owner": "ltz1990", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow"
+    ], 
+    "url": "https://github.com/ltz1990/alfred-python-workflow"
+  }, 
+  {
+    "description": "a plugin of Alfred Workflow:use a hotkey to open a websiet", 
+    "lang": "", 
+    "name": "HotkeyOpenWebsite", 
+    "owner": "lxxlxx888", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "plug"
+    ], 
+    "url": "https://github.com/lxxlxx888/HotkeyOpenWebsite"
+  }, 
+  {
+    "description": "alfred3 workflow for pick up multi random lgtm pics", 
+    "lang": "Ruby", 
+    "name": "alfred-lgtm-workflow", 
+    "owner": "leonhartX", 
+    "stars": 1, 
+    "topics": [
+      "alfred-workflow", 
+      "lgtm", 
+      "lgtm-gif", 
+      "workflow"
+    ], 
+    "url": "https://github.com/leonhartX/alfred-lgtm-workflow"
+  }, 
+  {
+    "description": "An Alfred 3 workflow to easily search and open iTerm profiles", 
+    "lang": "Python", 
+    "name": "alfred-iterm-profiles-workflow", 
+    "owner": "jessedobbelaere", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "iterm2"
+    ], 
+    "url": "https://github.com/jessedobbelaere/alfred-iterm-profiles-workflow"
+  }, 
+  {
+    "description": "Open Atom projects with alfred", 
+    "lang": "Ruby", 
+    "name": "alfred-atom-projects", 
+    "owner": "JustinAiken", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "atom"
+    ], 
+    "url": "https://github.com/JustinAiken/alfred-atom-projects"
+  }, 
+  {
+    "description": "Brutto-Netto workflow for Alfred", 
+    "lang": "Ruby", 
+    "name": "alfred-brutto-netto", 
+    "owner": "pkuczynski", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "calculator"
+    ], 
+    "url": "https://github.com/pkuczynski/alfred-brutto-netto"
+  }, 
+  {
+    "description": "\u5f69\u4e91\u5929\u6c14\u7684alfred workflow", 
+    "lang": "Python", 
+    "name": "cytq", 
+    "owner": "wangkezun", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "python"
+    ], 
+    "url": "https://github.com/wangkezun/cytq"
+  }, 
+  {
+    "description": "Show my notifications", 
+    "lang": "JavaScript", 
+    "name": "alfred-jira-notifications", 
+    "owner": "importre", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "jira", 
+      "notifications"
+    ], 
+    "url": "https://github.com/importre/alfred-jira-notifications"
+  }, 
+  {
+    "description": "Alfred workflow to pass selected text or clipboard through arbitrary shell one-liners", 
+    "lang": "Python", 
+    "name": "alfred-pipe", 
+    "owner": "isometry", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "clipboard", 
+      "oneliners", 
+      "pipe", 
+      "workflow"
+    ], 
+    "url": "https://github.com/isometry/alfred-pipe"
+  }, 
+  {
+    "description": "Open the current Finder folder in Chocolat", 
+    "lang": "", 
+    "name": "alfred-chocolat", 
+    "owner": "dpskvn", 
+    "stars": 1, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/dpskvn/alfred-chocolat"
+  }, 
+  {
+    "description": "douban shuo workflow for alfred 3", 
+    "lang": "Python", 
+    "name": "douban.shuo", 
+    "owner": "Junnplus", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "douban", 
+      "shuo"
+    ], 
+    "url": "https://github.com/Junnplus/douban.shuo"
+  }, 
+  {
+    "description": "Movie Ratings Workflow for Alfred 2", 
+    "lang": "Python", 
+    "name": "movies-ratings-alfred", 
+    "owner": "mattsson", 
+    "stars": 1, 
+    "topics": [
+      "alfred-workflow", 
+      "omdb-api"
+    ], 
+    "url": "https://github.com/mattsson/movies-ratings-alfred"
+  }, 
+  {
+    "description": ":anguished:Yet another alfred chrome bookmarks tool", 
+    "lang": "JavaScript", 
+    "name": "alfred-chrome-bookmarks", 
+    "owner": "effectively", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "chrome"
+    ], 
+    "url": "https://github.com/effectively/alfred-chrome-bookmarks"
+  }, 
+  {
+    "description": "\ud83c\udfa9  screenshot an image, OCR it and put corresponding text into clipboard", 
+    "lang": "", 
+    "name": "alfred-screenshot-ocr", 
+    "owner": "nikitavoloboev", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "idea"
+    ], 
+    "url": "https://github.com/nikitavoloboev/alfred-screenshot-ocr"
+  }, 
+  {
+    "description": "\ud83c\udfa9 Simple Alfred workflow to check wifi connection / restart wifi / toggle it on/off ", 
+    "lang": "", 
+    "name": "alfred-wifi", 
+    "owner": "nikitavoloboev", 
+    "stars": 1, 
+    "topics": [
+      "alfred-workflow", 
+      "wifi"
+    ], 
+    "url": "https://github.com/nikitavoloboev/alfred-wifi"
+  }, 
+  {
+    "description": "Use Git Pull/Push through Alfred", 
+    "lang": "", 
+    "name": "alfred-workflow-git", 
+    "owner": "luogreen", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "shell"
+    ], 
+    "url": "https://github.com/luogreen/alfred-workflow-git"
+  }, 
+  {
+    "description": "Enable Picture in Picture, Fullscreen, and Airplay on any HTML5 video in Safari with Alfred", 
+    "lang": "", 
+    "name": "alfred-video-controls", 
+    "owner": "joshua-turner", 
+    "stars": 1, 
+    "topics": [
+      "airplay", 
+      "alfred", 
+      "alfred-workflow", 
+      "picture-in-picture", 
+      "safari", 
+      "sierra"
+    ], 
+    "url": "https://github.com/joshua-turner/alfred-video-controls"
+  }, 
+  {
+    "description": "Control mpd music player from Alfred 3", 
+    "lang": "Python", 
+    "name": "alfred-mpd", 
+    "owner": "deanishe", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3", 
+      "mpd", 
+      "mpd-client", 
+      "music", 
+      "python"
+    ], 
+    "url": "https://github.com/deanishe/alfred-mpd"
+  }, 
+  {
+    "description": "Control Docker Containers with Alfred", 
+    "lang": "PHP", 
+    "name": "alfred-workflow-docker", 
+    "owner": "luogreen", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "docker", 
+      "php"
+    ], 
+    "url": "https://github.com/luogreen/alfred-workflow-docker"
+  }, 
+  {
+    "description": ":credit_card: Access your N26 account from Alfred", 
+    "lang": "JavaScript", 
+    "name": "alfred_n26", 
+    "owner": "kiliankoe", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "n26"
+    ], 
+    "url": "https://github.com/kiliankoe/alfred_n26"
+  }, 
+  {
+    "description": "jQuery\u4e2d\u6587API\u624b\u518c\u7684Alfred Workflow", 
+    "lang": "Python", 
+    "name": "alfred-jquery-api-cn", 
+    "owner": "kennylee26", 
+    "stars": 1, 
+    "topics": [
+      "alfred-workflow", 
+      "jquery-api"
+    ], 
+    "url": "https://github.com/kennylee26/alfred-jquery-api-cn"
+  }, 
+  {
+    "description": "Alfred 3 workflow for generating lorem ipsum dummy text.", 
+    "lang": "PHP", 
+    "name": "alfred-lipsum-workflow", 
+    "owner": "alexchantastic", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "dummy-text", 
+      "lorem-ipsum", 
+      "workflow"
+    ], 
+    "url": "https://github.com/alexchantastic/alfred-lipsum-workflow"
+  }, 
+  {
+    "description": "Rapidly search Transmit favourites in Alfred", 
+    "lang": "Go", 
+    "name": "alfred-transmit", 
+    "owner": "deanishe", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "bookmarks", 
+      "opener", 
+      "search", 
+      "transmit"
+    ], 
+    "url": "https://github.com/deanishe/alfred-transmit"
+  }, 
+  {
+    "description": "An alfred workflow helping U opening Internet Sharing on macOS automatically", 
+    "lang": "", 
+    "name": "hotspotHandsfree", 
+    "owner": "Enoughoops", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "applescript"
+    ], 
+    "url": "https://github.com/Enoughoops/hotspotHandsfree"
+  }, 
+  {
+    "description": "\ud83c\udfa9 alfred workflow to communicate with goodreads", 
+    "lang": "Go", 
+    "name": "alfred-goodreads", 
+    "owner": "nikitavoloboev", 
+    "stars": 1, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "idea"
+    ], 
+    "url": "https://github.com/nikitavoloboev/alfred-goodreads"
+  }, 
+  {
+    "description": "\u5229\u7528\u8c46\u74e3\u641c\u7d22\u70ed\u6620\u7535\u5f71\u548c\u5373\u5c06\u4e0a\u6620\u7535\u5f71\u7684alfred workflows\uff0c\u5e76\u80fd\u67e5\u770b\u8bc4\u5206", 
+    "lang": "Python", 
+    "name": "workflows-douban-in-theaters", 
+    "owner": "zh0ng", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "mac", 
+      "movie-scripts", 
+      "workflows", 
+      "workflows-douban"
+    ], 
+    "url": "https://github.com/zh0ng/workflows-douban-in-theaters"
+  }, 
+  {
+    "description": "Alfred 3 Workflow\u2014\u2014\u52a0\u8f7d\u73af\u5883\u53d8\u91cf\u5e76\u8fd0\u884cmac\u5e94\u7528\uff0c\u89e3\u51b3mac\u4e0a\u76f4\u63a5\u8fd0\u884capp\uff0c\u51fa\u73b0\u627e\u4e0d\u5230\u73af\u5883\u53d8\u91cf\uff0c\u627e\u4e0d\u5230\u6587\u4ef6\u6216\u547d\u4ee4\u7684\u95ee\u9898\u3002", 
+    "lang": "", 
+    "name": "alfred-env-workflow", 
+    "owner": "licheedev", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow", 
+      "macos"
+    ], 
+    "url": "https://github.com/licheedev/alfred-env-workflow"
+  }, 
+  {
+    "description": "An Alfred workflow to quickly change the clipboard text to a different case.", 
+    "lang": "", 
+    "name": "alfred-change-case", 
+    "owner": "derBingle", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-3", 
+      "alfred-workflow", 
+      "automation", 
+      "kebab-case", 
+      "macos", 
+      "productivity", 
+      "title-case"
+    ], 
+    "url": "https://github.com/derBingle/alfred-change-case"
+  }, 
+  {
+    "description": "An alfred workflow for search papers from multiple sources.", 
+    "lang": "Python", 
+    "name": "alfred-scholar-search", 
+    "owner": "gujiaxi", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/gujiaxi/alfred-scholar-search"
+  }, 
+  {
+    "description": "\ud83c\udfa9 Create Alfred workflows in Crystal with ease", 
+    "lang": "Crystal", 
+    "name": "alfred.cr", 
+    "owner": "kiliankoe", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/kiliankoe/alfred.cr"
+  }, 
+  {
+    "description": ":womans_hat: Alfred Workflow to define English word in Korean using Glosbe API.", 
+    "lang": "JavaScript", 
+    "name": "alfred-glosbe-english-korean", 
+    "owner": "hyunchel", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow", 
+      "dictionary", 
+      "english-korean", 
+      "glosbe"
+    ], 
+    "url": "https://github.com/hyunchel/alfred-glosbe-english-korean"
+  }, 
+  {
+    "description": "Alfred Workflow to open reference of AWS CLI.", 
+    "lang": "Go", 
+    "name": "alfred-awscli-reference-workflow", 
+    "owner": "handlename", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow", 
+      "aws-cli", 
+      "golang"
+    ], 
+    "url": "https://github.com/handlename/alfred-awscli-reference-workflow"
+  }, 
+  {
+    "description": "Alfred workflow to enable PiP mode for videos in Safari.", 
+    "lang": "", 
+    "name": "pip-my-safari", 
+    "owner": "kaishin", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "safari", 
+      "sierra", 
+      "video"
+    ], 
+    "url": "https://github.com/kaishin/pip-my-safari"
+  }, 
+  {
+    "description": "[Private]-[Experiment] A simple Alfred workflow to store bookmarks in a very simple text file.", 
+    "lang": "JavaScript", 
+    "name": "alfred-workflow-go-links", 
+    "owner": "tung-dang", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "nodejs"
+    ], 
+    "url": "https://github.com/tung-dang/alfred-workflow-go-links"
+  }, 
+  {
+    "description": "Youdao dict workflow for Alfred", 
+    "lang": "Python", 
+    "name": "Youdao-Alfred-workflow", 
+    "owner": "fangwentong", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/fangwentong/Youdao-Alfred-workflow"
+  }, 
+  {
+    "description": "A Alfred workflow, which quick search and open your xcode projects in Mac", 
+    "lang": "", 
+    "name": "SearchXcodeProjects", 
+    "owner": "Jezong", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "xcode"
+    ], 
+    "url": "https://github.com/Jezong/SearchXcodeProjects"
+  }, 
+  {
+    "description": "alfred workflow by python:iciba translate(\u91d1\u5c71\u7ffb\u8bd1)&time(\u65f6\u95f4).", 
+    "lang": "Python", 
+    "name": "star_workflow", 
+    "owner": "star1989", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow", 
+      "python", 
+      "tanslation", 
+      "workflow"
+    ], 
+    "url": "https://github.com/star1989/star_workflow"
+  }, 
+  {
+    "description": "An Alfred workflow used for searching Tyda.se", 
+    "lang": "", 
+    "name": "alfred-workflow-tyda.se", 
+    "owner": "simeg", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "swedish", 
+      "tyda"
+    ], 
+    "url": "https://github.com/simeg/alfred-workflow-tyda.se"
+  }, 
+  {
+    "description": "Alfred workflow for getting AQI info", 
+    "lang": "Python", 
+    "name": "aqi-alfred-workflow", 
+    "owner": "xyb994", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/xyb994/aqi-alfred-workflow"
+  }, 
+  {
+    "description": "A simple Alfred workflow to control Tyme", 
+    "lang": "Python", 
+    "name": "alfred-tyme", 
+    "owner": "j0weiss", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "tyme"
+    ], 
+    "url": "https://github.com/j0weiss/alfred-tyme"
+  }, 
+  {
+    "description": ":womans_hat: Alfred Workflow to display Melon Music Chart.", 
+    "lang": "JavaScript", 
+    "name": "alfred-melon-chart", 
+    "owner": "hyunchel", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow", 
+      "melon-music-chart"
+    ], 
+    "url": "https://github.com/hyunchel/alfred-melon-chart"
+  }, 
+  {
+    "description": "\ud83c\udfa9 Alfred workflow to search through Pixave app", 
+    "lang": "", 
+    "name": "alfred-pixave", 
+    "owner": "nikitavoloboev", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow", 
+      "idea"
+    ], 
+    "url": "https://github.com/nikitavoloboev/alfred-pixave"
+  }, 
+  {
+    "description": "Alfred workflow for finding a Cacher snippet.", 
+    "lang": "JavaScript", 
+    "name": "alfred-cacher", 
+    "owner": "CacherApp", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow", 
+      "gists", 
+      "nodejs", 
+      "snippets", 
+      "snippets-library", 
+      "snippets-manager"
+    ], 
+    "url": "https://github.com/CacherApp/alfred-cacher"
+  }, 
+  {
+    "description": "Experimental #Alfred plugin to select a random item from ToDo lists / GitHub Issues", 
+    "lang": "Python", 
+    "name": "alfred-roulette", 
+    "owner": "kfdm", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow", 
+      "python"
+    ], 
+    "url": "https://github.com/kfdm/alfred-roulette"
+  }, 
+  {
+    "description": "Converts a hex color code to a Swift UIColor statement", 
+    "lang": "", 
+    "name": "Alfred-Hex-to-UIColor", 
+    "owner": "toaster99", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "swift", 
+      "uicolor"
+    ], 
+    "url": "https://github.com/toaster99/Alfred-Hex-to-UIColor"
+  }, 
+  {
+    "description": ":womans_hat: Alfred Workflow to query Daum dictionary", 
+    "lang": "Python", 
+    "name": "alfred-daum-dictionary", 
+    "owner": "hyunchel", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow", 
+      "daum", 
+      "dictionary"
+    ], 
+    "url": "https://github.com/hyunchel/alfred-daum-dictionary"
+  }, 
+  {
+    "description": "Alfred 3 workflow to display internal/external IP addresses", 
+    "lang": "JavaScript", 
+    "name": "alfred-ipaddress", 
+    "owner": "stve", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "ipaddresses"
+    ], 
+    "url": "https://github.com/stve/alfred-ipaddress"
+  }, 
+  {
+    "description": "Finds your IP, copies it, and posts it as a notification in Alfred. Uses icanhazip.com.", 
+    "lang": "", 
+    "name": "ipfinder", 
+    "owner": "ili-codes", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "ip-address"
+    ], 
+    "url": "https://github.com/ili-codes/ipfinder"
+  }, 
+  {
+    "description": "fooBar(or FooBar) <-> foo_bar,  FOOBAR <-> foobar", 
+    "lang": "", 
+    "name": "Alfred-CaseSwitch", 
+    "owner": "tianhao", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/tianhao/Alfred-CaseSwitch"
+  }, 
+  {
+    "description": "\ud83c\udfa9 Alfred Workflow: Allows pasting text into macOS secure inputs", 
+    "lang": "", 
+    "name": "SecureInputPaste", 
+    "owner": "dkarter", 
+    "stars": 0, 
+    "topics": [
+      "1password", 
+      "alfred", 
+      "alfred-workflow", 
+      "macos", 
+      "password-manager"
+    ], 
+    "url": "https://github.com/dkarter/SecureInputPaste"
+  }, 
+  {
+    "description": "Shortcut to opening worklog", 
+    "lang": "Shell", 
+    "name": "alfred-worklog", 
+    "owner": "kfdm", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/kfdm/alfred-worklog"
+  }, 
+  {
+    "description": null, 
+    "lang": "", 
+    "name": "alfred-thehitlist", 
+    "owner": "kfdm", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/kfdm/alfred-thehitlist"
+  }, 
+  {
+    "description": "An Alfred json workflow which validates, formats, compacts your json from the clipboard.", 
+    "lang": "Ruby", 
+    "name": "alfred-json-tool", 
+    "owner": "sharathsteel", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/sharathsteel/alfred-json-tool"
+  }, 
+  {
+    "description": "A workflow to count the number of letters from the clipboard", 
+    "lang": "Ruby", 
+    "name": "alfred-letter-count", 
+    "owner": "sharathsteel", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/sharathsteel/alfred-letter-count"
+  }, 
+  {
+    "description": "Alfred plugin for refreshing the current Chrome tab", 
+    "lang": "", 
+    "name": "refresh-chrome-alfred-workflow", 
+    "owner": "JoshTGreenwood", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/JoshTGreenwood/refresh-chrome-alfred-workflow"
+  }, 
+  {
+    "description": "JSON2ts Workflow for Alfred 3", 
+    "lang": "Ruby", 
+    "name": "alfred-json2ts-workflow", 
+    "owner": "uzimith", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "ruby", 
+      "typescript"
+    ], 
+    "url": "https://github.com/uzimith/alfred-json2ts-workflow"
+  }, 
+  {
+    "description": "Translate any phrase into a desired language", 
+    "lang": "JavaScript", 
+    "name": "alfred-translate", 
+    "owner": "brighthero", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "alfy"
+    ], 
+    "url": "https://github.com/brighthero/alfred-translate"
+  }, 
+  {
+    "description": null, 
+    "lang": "JavaScript", 
+    "name": "alfred-workflow-readhub", 
+    "owner": "buluzhai", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/buluzhai/alfred-workflow-readhub"
+  }, 
+  {
+    "description": "Alfred workflow for kwm", 
+    "lang": "Python", 
+    "name": "kwm-alfred", 
+    "owner": "matthewdias", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "kwm"
+    ], 
+    "url": "https://github.com/matthewdias/kwm-alfred"
+  }, 
+  {
+    "description": "Kuniwak's stamp selector for alfred", 
+    "lang": "Ruby", 
+    "name": "kuniwak-stamp-alfred", 
+    "owner": "kikuchy", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/kikuchy/kuniwak-stamp-alfred"
+  }, 
+  {
+    "description": null, 
+    "lang": "Python", 
+    "name": "cld", 
+    "owner": "ggenikus", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "clojure", 
+      "clojuredocs"
+    ], 
+    "url": "https://github.com/ggenikus/cld"
+  }, 
+  {
+    "description": "\ud83d\udcc1 Some useful file actions I use for Alfred", 
+    "lang": "", 
+    "name": "alfred-useful-file-actions", 
+    "owner": "nikitavoloboev", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/nikitavoloboev/alfred-useful-file-actions"
+  }, 
+  {
+    "description": "Alfred 3 workflow to discover and compare ember-cli addons", 
+    "lang": "", 
+    "name": "alfred-ember-observer", 
+    "owner": "flexbox", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred-workflows", 
+      "ember-addon", 
+      "emberjs"
+    ], 
+    "url": "https://github.com/flexbox/alfred-ember-observer"
+  }, 
+  {
+    "description": "\"\u8ba9\u6211\u5e2e\u4f60\u767e\u5ea6\u4e00\u4e0b\" \u7684 Alfred Workflow", 
+    "lang": "", 
+    "name": "Alfred-BaiduX", 
+    "owner": "whtsky", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "baidu", 
+      "workflow"
+    ], 
+    "url": "https://github.com/whtsky/Alfred-BaiduX"
+  }, 
+  {
+    "description": "Alfred Workflow: Swaps between Mac Users", 
+    "lang": "", 
+    "name": "alfred-swap-user-workflow", 
+    "owner": "rodrigobdz", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "bash", 
+      "mac"
+    ], 
+    "url": "https://github.com/rodrigobdz/alfred-swap-user-workflow"
+  }, 
+  {
+    "description": "\ud83c\udfa9 Quickly search through custom list of files to edit from Alfred ", 
+    "lang": "Go", 
+    "name": "alfred-edit-files", 
+    "owner": "nikitavoloboev", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/nikitavoloboev/alfred-edit-files"
+  }, 
+  {
+    "description": "\ud83c\udfa9  Very simple workflow to go to subreddit specified by user", 
+    "lang": "", 
+    "name": "alfred-go-to-subreddit", 
+    "owner": "nikitavoloboev", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow", 
+      "reddit"
+    ], 
+    "url": "https://github.com/nikitavoloboev/alfred-go-to-subreddit"
+  }, 
+  {
+    "description": "Goto lists in Reminders.app", 
+    "lang": "Python", 
+    "name": "alfred-reminders-demo", 
+    "owner": "deanishe", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "demo", 
+      "reminders", 
+      "workflow"
+    ], 
+    "url": "https://github.com/deanishe/alfred-reminders-demo"
+  }, 
+  {
+    "description": null, 
+    "lang": "", 
+    "name": "alfred-language-switcher", 
+    "owner": "kfdm", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/kfdm/alfred-language-switcher"
+  }, 
+  {
+    "description": "\u4f7f\u7528\u7684alfredworkflow\u5305", 
+    "lang": "", 
+    "name": "alfredworkflow", 
+    "owner": "zhourunlai", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/zhourunlai/alfredworkflow"
+  }, 
+  {
+    "description": null, 
+    "lang": "", 
+    "name": "Alfred-Workflows", 
+    "owner": "sachin21", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/sachin21/Alfred-Workflows"
+  }, 
+  {
+    "description": "Search Kitsu from Alfred", 
+    "lang": "JavaScript", 
+    "name": "kitsu-alfred", 
+    "owner": "matthewdias", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "anime", 
+      "kitsu", 
+      "manga", 
+      "search"
+    ], 
+    "url": "https://github.com/matthewdias/kitsu-alfred"
+  }, 
+  {
+    "description": "Alfred wokflows \u65f6\u95f4\u6233\u8f6c\u6362\u63d2\u4ef6", 
+    "lang": "PHP", 
+    "name": "Alfred-codezm-workflows-timestamp-convert", 
+    "owner": "codezm", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "timestamp-convert"
+    ], 
+    "url": "https://github.com/codezm/Alfred-codezm-workflows-timestamp-convert"
+  }, 
+  {
+    "description": "\u5feb\u901f\u94fe\u63a5\u670d\u52a1\u5668 ssh root@HoseName", 
+    "lang": "PHP", 
+    "name": "Alfred-codezm-workflows-ssh", 
+    "owner": "codezm", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "ssh"
+    ], 
+    "url": "https://github.com/codezm/Alfred-codezm-workflows-ssh"
+  }, 
+  {
+    "description": "\u4f18\u8d8a\u52a0\u901fAlfred Workflow", 
+    "lang": "Python", 
+    "name": "workflows.kyoyue", 
+    "owner": "wizyoung", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow", 
+      "python", 
+      "shadowsocks"
+    ], 
+    "url": "https://github.com/wizyoung/workflows.kyoyue"
+  }, 
+  {
+    "description": "Filter ForkLift favourites in Alfred", 
+    "lang": "Go", 
+    "name": "alfred-forklift", 
+    "owner": "deanishe", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfred3", 
+      "favorites", 
+      "forklift", 
+      "ftp", 
+      "golang", 
+      "s3", 
+      "sftp"
+    ], 
+    "url": "https://github.com/deanishe/alfred-forklift"
+  }, 
+  {
+    "description": "\ud83c\udfa9 reload Karabiner XML", 
+    "lang": "", 
+    "name": "alfred-karabiner", 
+    "owner": "nikitavoloboev", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "karabiner", 
+      "macos"
+    ], 
+    "url": "https://github.com/nikitavoloboev/alfred-karabiner"
+  }, 
+  {
+    "description": "\ud83c\udfa9 Simple Alfred workflow I use to quickly search websites", 
+    "lang": "", 
+    "name": "alfred-static-searches", 
+    "owner": "nikitavoloboev", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow", 
+      "websites"
+    ], 
+    "url": "https://github.com/nikitavoloboev/alfred-static-searches"
+  }, 
+  {
+    "description": "\ud83c\udfa9 download imgur album from your browser to the desktop", 
+    "lang": "Python", 
+    "name": "alfred-imgur-album-download", 
+    "owner": "nikitavoloboev", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "desktop", 
+      "imgur", 
+      "imgur-album", 
+      "m2m", 
+      "macos", 
+      "workflow"
+    ], 
+    "url": "https://github.com/nikitavoloboev/alfred-imgur-album-download"
+  }, 
+  {
+    "description": "\u269b A workflow for opening the front Finder window in Atom", 
+    "lang": "", 
+    "name": "finder-to-atom-alfred-workflow", 
+    "owner": "thibmaek", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow", 
+      "atom", 
+      "finder"
+    ], 
+    "url": "https://github.com/thibmaek/finder-to-atom-alfred-workflow"
+  }, 
+  {
+    "description": "Search the Elixir documentation right from Alfred", 
+    "lang": "JavaScript", 
+    "name": "alfred-elixir", 
+    "owner": "sonicdoe", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "alfy", 
+      "elixir", 
+      "hexdocs", 
+      "macos", 
+      "mit-license", 
+      "nodejs", 
+      "npm", 
+      "npm-package"
+    ], 
+    "url": "https://github.com/sonicdoe/alfred-elixir"
+  }, 
+  {
+    "description": "\ud83c\udfa9 Simple workflow to search various websites from selected text", 
+    "lang": "", 
+    "name": "alfred-search-web-with-selection", 
+    "owner": "nikitavoloboev", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow", 
+      "web"
+    ], 
+    "url": "https://github.com/nikitavoloboev/alfred-search-web-with-selection"
+  }, 
+  {
+    "description": "\ud83c\udfa9  Search websites with autosuggestions from Alfred", 
+    "lang": "", 
+    "name": "alfred-go-search", 
+    "owner": "nikitavoloboev", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow", 
+      "websites"
+    ], 
+    "url": "https://github.com/nikitavoloboev/alfred-go-search"
+  }, 
+  {
+    "description": "\ud83c\udfa9  Search through people you follow on Twitter", 
+    "lang": "", 
+    "name": "alfred-twitter-follows", 
+    "owner": "nikitavoloboev", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "idea"
+    ], 
+    "url": "https://github.com/nikitavoloboev/alfred-twitter-follows"
+  }, 
+  {
+    "description": "\ud83d\udd50 alfred workflow to showcase time", 
+    "lang": "Go", 
+    "name": "alfred-time", 
+    "owner": "nikitavoloboev", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "idea"
+    ], 
+    "url": "https://github.com/nikitavoloboev/alfred-time"
+  }, 
+  {
+    "description": null, 
+    "lang": "Python", 
+    "name": "alfred-clear", 
+    "owner": "kfdm", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow", 
+      "python"
+    ], 
+    "url": "https://github.com/kfdm/alfred-clear"
+  }, 
+  {
+    "description": "Quick search plugin for https://www.renshuu.org/", 
+    "lang": "Python", 
+    "name": "alfred-renshuu", 
+    "owner": "kfdm", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow", 
+      "python"
+    ], 
+    "url": "https://github.com/kfdm/alfred-renshuu"
+  }, 
+  {
+    "description": "Alfred - Yet Another Epoch Workflow", 
+    "lang": "Ruby", 
+    "name": "alfred-yaew", 
+    "owner": "sharathsteel", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/sharathsteel/alfred-yaew"
+  }, 
+  {
+    "description": "Alfred workflows", 
+    "lang": "", 
+    "name": "Workflows", 
+    "owner": "w-zx", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/w-zx/Workflows"
+  }, 
+  {
+    "description": "Alfred 3 workflow to get battery info", 
+    "lang": "JavaScript", 
+    "name": "alfred-battery", 
+    "owner": "alonalon", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow", 
+      "alfred3-workflow", 
+      "alfy", 
+      "macos", 
+      "nodejs", 
+      "workflow"
+    ], 
+    "url": "https://github.com/alonalon/alfred-battery"
+  }, 
+  {
+    "description": "JS Evaluation Workflow for Alfred 3", 
+    "lang": "Shell", 
+    "name": "alfred-js-evaluate-workflow", 
+    "owner": "VitaliyR", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow"
+    ], 
+    "url": "https://github.com/VitaliyR/alfred-js-evaluate-workflow"
+  }, 
+  {
+    "description": "GitKraken Alfred Workflow", 
+    "lang": "", 
+    "name": "alfred-getkraken", 
+    "owner": "vmitchell85", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow", 
+      "git", 
+      "gitkraken"
+    ], 
+    "url": "https://github.com/vmitchell85/alfred-getkraken"
+  }, 
+  {
+    "description": "Spotify command line interface for Alfred App", 
+    "lang": "", 
+    "name": "alfred-spotifycli", 
+    "owner": "caiobep", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "cli", 
+      "spotify"
+    ], 
+    "url": "https://github.com/caiobep/alfred-spotifycli"
+  }, 
+  {
+    "description": null, 
+    "lang": "JavaScript", 
+    "name": "alfred-scn-jira", 
+    "owner": "screeny05", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow", 
+      "jira"
+    ], 
+    "url": "https://github.com/screeny05/alfred-scn-jira"
+  }, 
+  {
+    "description": "\ud83c\udfa9 Clean various folders with Alfred", 
+    "lang": "", 
+    "name": "alfred-clean-folders", 
+    "owner": "nikitavoloboev", 
+    "stars": 0, 
+    "topics": [
+      "alfred", 
+      "alfred-workflow", 
+      "files", 
+      "macos"
+    ], 
+    "url": "https://github.com/nikitavoloboev/alfred-clean-folders"
+  }, 
+  {
+    "description": "\ud83c\udfa9 Switch Dash profiles from Alfred", 
+    "lang": "", 
+    "name": "alfred-dash-profile-switch", 
+    "owner": "nikitavoloboev", 
+    "stars": 0, 
+    "topics": [
+      "alfred-workflow", 
+      "dash"
+    ], 
+    "url": "https://github.com/nikitavoloboev/alfred-dash-profile-switch"
+  }
+]

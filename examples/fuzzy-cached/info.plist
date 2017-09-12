@@ -25,7 +25,7 @@
 	<key>description</key>
 	<string>Filter Gutenberg Ebooks</string>
 	<key>disabled</key>
-	<false/>
+	<true/>
 	<key>name</key>
 	<string>AwGo Demo: Fuzzy Search (Very Large) Cached Dataset</string>
 	<key>objects</key>
@@ -54,6 +54,8 @@
 			<dict>
 				<key>alfredfiltersresults</key>
 				<false/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
 				<key>argumenttrimmode</key>
 				<integer>0</integer>
 				<key>argumenttype</key>

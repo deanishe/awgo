@@ -648,7 +648,7 @@ func TestGHUpdater(t *testing.T) {
 	// v6.0 is the latest stable version
 	u.CurrentVersion = mustVersion("6")
 	if u.UpdateAvailable() {
-		t.Fatal("Found update")
+		t.Fatal("Unexpectedly found update")
 	}
 	// Prerelease v7.1.0-beta is newer
 	u.Prereleases = true
@@ -687,4 +687,14 @@ func TestUpdates(t *testing.T) {
 	if err := wf.ClearCache(); err != nil {
 		t.Fatal(err)
 	}
+}
+
+// Configure Workflow to update from a GitHub repo.
+func ExampleGitHub() {
+	// Set source repo using GitHub Option
+	wf := aw.New(GitHub("deanishe/alfred-ssh"))
+	// Is a check for a newer version due?
+	fmt.Println(wf.UpdateCheckDue())
+	// Output:
+	// true
 }

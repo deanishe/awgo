@@ -38,7 +38,6 @@ Upcoming features
 These features may be implemented:
 
 	- TODO: Alfred/AppleScript helpers?
-	- TODO: Implement standard-compliant pre-release comparison in SemVer?
 
 
 Usage
@@ -74,16 +73,22 @@ The Item struct isn't intended to be used as the workflow's data model,
 just as a way to encapsulate search results for Alfred. In particular,
 its variables are only settable, not gettable.
 
+Most package-level functions call the methods of the same name on the default
+Workflow struct. If you want to use custom options, you can create a new
+Workflow with New(), or get the default Workflow with DefaultWorkflow()
+and configure it with Workflow.Configure().
+
 
 Fuzzy filtering
 
 Subpackage fuzzy provides a fuzzy search algorithm modelled on Sublime
-Text's search. Implement fuzzy.Interface to make an object fuzzy-sortable.
+Text's search. Implement fuzzy.Interface to make a struct fuzzy-sortable.
 
 The Feedback struct implements this interface.
 
-Workflow and Feedback structs provide an additional Filter() method,
-which fuzzy-sorts Items and removes any that do not match the query.
+Feedback and Workflow structs provide an additional Filter() method,
+which fuzzy-sorts the contained Items and removes any that do not match
+the query.
 
 See examples/fuzzy-simple for a basic demonstration.
 
@@ -106,6 +111,7 @@ calls to sending methods are logged and ignored. Sending methods are:
 	Fatalf()
 	FatalError()
 	Warn()
+	WarnEmpty()  // if there are no items
 
 The Workflow struct (more precisely, its Feedback struct) retains the
 Item, so you don't need to. Just populate it and then call
@@ -124,6 +130,8 @@ Warn() also immediately sends a single result to Alfred with a warning
 message (and icon), but does not terminate the workflow. However,
 because the JSON has already been sent to Alfred, you can't send any
 more results after calling Warn().
+
+WarnEmpty() calls Warn() if there are no (other) Items to send to Alfred.
 
 If you want to include a warning with other results, use NewWarningItem().
 

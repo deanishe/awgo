@@ -106,7 +106,7 @@ func ExampleInfoPlist_Var() {
 */
 
 // New initialises a Workflow with the default settings. Name,
-// bundle ID, version etc. are read from the environment and info.plist.
+// bundle ID, version etc. are read from the environment variables set by Alfred.
 func ExampleNew() {
 	wf := New()
 	// BundleID is read from environment or info.plist
@@ -118,9 +118,43 @@ func ExampleNew() {
 	// 0.2.2
 }
 
+// Pass one or more Options to New() to configure the created Workflow.
+func ExampleNew_withOptions() {
+	wf := New(HelpURL("http://www.example.com"), MaxResults(200))
+	fmt.Println(wf.HelpURL)
+	fmt.Println(wf.MaxResults)
+	// Output:
+	// http://www.example.com
+	// 200
+}
+
+// Temporarily change Workflow's behaviour then revert it.
+func ExampleOption() {
+	wf := New()
+	// Default settings (false and 0)
+	fmt.Println(wf.TextErrors)
+	fmt.Println(wf.MaxResults)
+	// Turn text errors on, set max results and save Option to revert
+	// to previous configuration
+	previous := wf.Configure(TextErrors(true), MaxResults(200))
+	fmt.Println(wf.TextErrors)
+	fmt.Println(wf.MaxResults)
+	// Revert to previous configuration
+	wf.Configure(previous)
+	fmt.Println(wf.TextErrors)
+	fmt.Println(wf.MaxResults)
+	// Output:
+	// false
+	// 0
+	// true
+	// 200
+	// false
+	// 0
+}
+
 // The normal way to create a new Item, but not the normal way to use it.
 //
-// Normally, when you're done adding Items, you call SendFeedback() to
+// Typically, when you're done adding Items, you call SendFeedback() to
 // send the results to Alfred.
 func ExampleNewItem() {
 	// Create a new item via the default Workflow object, which will
