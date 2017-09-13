@@ -154,6 +154,9 @@ func SortOptions(opts ...fuzzy.Option) Option {
 // Update sets the updater for the Workflow.
 func Update(updater Updater) Option {
 	return func(wf *Workflow) Option {
+		if updater != nil && wf.Version() == "" {
+			panic("can't set Updater as workflow has no version number")
+		}
 		prev := wf.Updater
 		wf.SetUpdater(updater)
 		return Update(prev)
