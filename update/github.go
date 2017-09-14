@@ -10,7 +10,6 @@ package update
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/url"
@@ -111,17 +110,28 @@ func ghReleaseToRelease(ghr *ghRelease) (*Release, error) {
 	rel.Version = v
 	// Check files (assets)
 	assets := []*ghAsset{}
+	assets3 := []*ghAsset{} // .alfred3workflow files
 	for _, gha := range ghr.Assets {
-		if strings.HasSuffix(gha.Name, ".alfredworkflow") || strings.HasSuffix(gha.Name, ".alfred3workflow") {
+		if strings.HasSuffix(gha.Name, ".alfredworkflow") {
 			assets = append(assets, gha)
+		} else if strings.HasSuffix(gha.Name, ".alfred3workflow") {
+			assets3 = append(assets3, gha)
 		}
 	}
+
+	// Prefer .alfred3workflow files if present
+	if len(assets3) > 0 {
+		assets = assets3
+	}
+
+	// Reject bad releases
 	if len(assets) > 1 {
-		return nil, fmt.Errorf("multiple (%d) workflow files in release", len(assets))
+		return nil, fmt.Errorf("multiple (%d) workflow files in release %s", len(assets), ghr.Tag)
 	}
 	if len(assets) == 0 {
-		return nil, errors.New("no workflow files in release")
+		return nil, fmt.Errorf("no workflow files in release %s", ghr.Tag)
 	}
+
 	rel.Filename = assets[0].Name
 	u, err := url.Parse(assets[0].URL)
 	if err != nil {

@@ -24,8 +24,8 @@ var (
   {
     "url": "https://api.github.com/repos/deanishe/alfred-workflow-dummy/releases/617375",
     "assets_url": "https://api.github.com/repos/deanishe/alfred-workflow-dummy/releases/617375/assets",
-    "upload_url": "https://uploads.github.com/repos/deanishe/alfred-workflow-dummy/releases/617375/assets{?name}",
-    "html_url": "https://github.com/deanishe/alfred-workflow-dummy/releases/tag/v7.1-beta",
+    "upload_url": "https://uploads.github.com/repos/deanishe/alfred-workflow-dummy/releases/617375/assets{?name,label}",
+    "html_url": "https://github.com/deanishe/alfred-workflow-dummy/releases/tag/v7.1.0-beta",
     "id": 617375,
     "tag_name": "v7.1.0-beta",
     "target_commitish": "master",
@@ -34,7 +34,7 @@ var (
     "author": {
       "login": "deanishe",
       "id": 747913,
-      "avatar_url": "https://avatars.githubusercontent.com/u/747913?v=3",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/747913?v=4",
       "gravatar_id": "",
       "url": "https://api.github.com/users/deanishe",
       "html_url": "https://github.com/deanishe",
@@ -51,7 +51,7 @@ var (
       "site_admin": false
     },
     "prerelease": true,
-    "created_at": "2014-10-10T10:58:30Z",
+    "created_at": "2014-10-10T10:58:14Z",
     "published_at": "2014-10-10T10:59:34Z",
     "assets": [
       {
@@ -62,7 +62,7 @@ var (
         "uploader": {
           "login": "deanishe",
           "id": 747913,
-          "avatar_url": "https://avatars.githubusercontent.com/u/747913?v=3",
+          "avatar_url": "https://avatars1.githubusercontent.com/u/747913?v=4",
           "gravatar_id": "",
           "url": "https://api.github.com/users/deanishe",
           "html_url": "https://github.com/deanishe",
@@ -81,20 +81,20 @@ var (
         "content_type": "application/octet-stream",
         "state": "uploaded",
         "size": 35726,
-        "download_count": 1,
+        "download_count": 4,
         "created_at": "2014-10-10T10:59:10Z",
         "updated_at": "2014-10-10T10:59:12Z",
-        "browser_download_url": "https://github.com/deanishe/alfred-workflow-dummy/releases/download/v7.1-beta/Dummy-7.1-beta.alfredworkflow"
+        "browser_download_url": "https://github.com/deanishe/alfred-workflow-dummy/releases/download/v7.1.0-beta/Dummy-7.1-beta.alfredworkflow"
       }
     ],
-    "tarball_url": "https://api.github.com/repos/deanishe/alfred-workflow-dummy/tarball/v7.1-beta",
-    "zipball_url": "https://api.github.com/repos/deanishe/alfred-workflow-dummy/zipball/v7.1-beta",
+    "tarball_url": "https://api.github.com/repos/deanishe/alfred-workflow-dummy/tarball/v7.1.0-beta",
+    "zipball_url": "https://api.github.com/repos/deanishe/alfred-workflow-dummy/zipball/v7.1.0-beta",
     "body": ""
   },
   {
     "url": "https://api.github.com/repos/deanishe/alfred-workflow-dummy/releases/556526",
     "assets_url": "https://api.github.com/repos/deanishe/alfred-workflow-dummy/releases/556526/assets",
-    "upload_url": "https://uploads.github.com/repos/deanishe/alfred-workflow-dummy/releases/556526/assets{?name}",
+    "upload_url": "https://uploads.github.com/repos/deanishe/alfred-workflow-dummy/releases/556526/assets{?name,label}",
     "html_url": "https://github.com/deanishe/alfred-workflow-dummy/releases/tag/v7.0",
     "id": 556526,
     "tag_name": "v7.0",
@@ -104,7 +104,7 @@ var (
     "author": {
       "login": "deanishe",
       "id": 747913,
-      "avatar_url": "https://avatars.githubusercontent.com/u/747913?v=3",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/747913?v=4",
       "gravatar_id": "",
       "url": "https://api.github.com/users/deanishe",
       "html_url": "https://github.com/deanishe",
@@ -133,7 +133,7 @@ var (
   {
     "url": "https://api.github.com/repos/deanishe/alfred-workflow-dummy/releases/556525",
     "assets_url": "https://api.github.com/repos/deanishe/alfred-workflow-dummy/releases/556525/assets",
-    "upload_url": "https://uploads.github.com/repos/deanishe/alfred-workflow-dummy/releases/556525/assets{?name}",
+    "upload_url": "https://uploads.github.com/repos/deanishe/alfred-workflow-dummy/releases/556525/assets{?name,label}",
     "html_url": "https://github.com/deanishe/alfred-workflow-dummy/releases/tag/v6.0",
     "id": 556525,
     "tag_name": "v6.0",
@@ -143,7 +143,7 @@ var (
     "author": {
       "login": "deanishe",
       "id": 747913,
-      "avatar_url": "https://avatars.githubusercontent.com/u/747913?v=3",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/747913?v=4",
       "gravatar_id": "",
       "url": "https://api.github.com/users/deanishe",
       "html_url": "https://github.com/deanishe",
@@ -164,14 +164,14 @@ var (
     "published_at": "2014-09-14T19:27:09Z",
     "assets": [
       {
-        "url": "https://api.github.com/repos/deanishe/alfred-workflow-dummy/releases/assets/247310",
-        "id": 247310,
-        "name": "Dummy-6.0.alfredworkflow",
+        "url": "https://api.github.com/repos/deanishe/alfred-workflow-dummy/releases/assets/4823231",
+        "id": 4823231,
+        "name": "Dummy-6.0.alfred3workflow",
         "label": null,
         "uploader": {
           "login": "deanishe",
           "id": 747913,
-          "avatar_url": "https://avatars.githubusercontent.com/u/747913?v=3",
+          "avatar_url": "https://avatars1.githubusercontent.com/u/747913?v=4",
           "gravatar_id": "",
           "url": "https://api.github.com/users/deanishe",
           "html_url": "https://github.com/deanishe",
@@ -190,7 +190,39 @@ var (
         "content_type": "application/octet-stream",
         "state": "uploaded",
         "size": 36063,
-        "download_count": 319,
+        "download_count": 0,
+        "created_at": "2017-09-14T12:22:03Z",
+        "updated_at": "2017-09-14T12:22:08Z",
+        "browser_download_url": "https://github.com/deanishe/alfred-workflow-dummy/releases/download/v6.0/Dummy-6.0.alfred3workflow"
+      },
+      {
+        "url": "https://api.github.com/repos/deanishe/alfred-workflow-dummy/releases/assets/247310",
+        "id": 247310,
+        "name": "Dummy-6.0.alfredworkflow",
+        "label": null,
+        "uploader": {
+          "login": "deanishe",
+          "id": 747913,
+          "avatar_url": "https://avatars1.githubusercontent.com/u/747913?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/deanishe",
+          "html_url": "https://github.com/deanishe",
+          "followers_url": "https://api.github.com/users/deanishe/followers",
+          "following_url": "https://api.github.com/users/deanishe/following{/other_user}",
+          "gists_url": "https://api.github.com/users/deanishe/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/deanishe/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/deanishe/subscriptions",
+          "organizations_url": "https://api.github.com/users/deanishe/orgs",
+          "repos_url": "https://api.github.com/users/deanishe/repos",
+          "events_url": "https://api.github.com/users/deanishe/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/deanishe/received_events",
+          "type": "User",
+          "site_admin": false
+        },
+        "content_type": "application/octet-stream",
+        "state": "uploaded",
+        "size": 36063,
+        "download_count": 584,
         "created_at": "2014-09-23T18:59:00Z",
         "updated_at": "2014-09-23T18:59:01Z",
         "browser_download_url": "https://github.com/deanishe/alfred-workflow-dummy/releases/download/v6.0/Dummy-6.0.alfredworkflow"
@@ -203,7 +235,7 @@ var (
         "uploader": {
           "login": "deanishe",
           "id": 747913,
-          "avatar_url": "https://avatars.githubusercontent.com/u/747913?v=3",
+          "avatar_url": "https://avatars1.githubusercontent.com/u/747913?v=4",
           "gravatar_id": "",
           "url": "https://api.github.com/users/deanishe",
           "html_url": "https://github.com/deanishe",
@@ -235,7 +267,7 @@ var (
   {
     "url": "https://api.github.com/repos/deanishe/alfred-workflow-dummy/releases/556524",
     "assets_url": "https://api.github.com/repos/deanishe/alfred-workflow-dummy/releases/556524/assets",
-    "upload_url": "https://uploads.github.com/repos/deanishe/alfred-workflow-dummy/releases/556524/assets{?name}",
+    "upload_url": "https://uploads.github.com/repos/deanishe/alfred-workflow-dummy/releases/556524/assets{?name,label}",
     "html_url": "https://github.com/deanishe/alfred-workflow-dummy/releases/tag/v5.0",
     "id": 556524,
     "tag_name": "v5.0",
@@ -245,7 +277,7 @@ var (
     "author": {
       "login": "deanishe",
       "id": 747913,
-      "avatar_url": "https://avatars.githubusercontent.com/u/747913?v=3",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/747913?v=4",
       "gravatar_id": "",
       "url": "https://api.github.com/users/deanishe",
       "html_url": "https://github.com/deanishe",
@@ -274,7 +306,7 @@ var (
   {
     "url": "https://api.github.com/repos/deanishe/alfred-workflow-dummy/releases/556356",
     "assets_url": "https://api.github.com/repos/deanishe/alfred-workflow-dummy/releases/556356/assets",
-    "upload_url": "https://uploads.github.com/repos/deanishe/alfred-workflow-dummy/releases/556356/assets{?name}",
+    "upload_url": "https://uploads.github.com/repos/deanishe/alfred-workflow-dummy/releases/556356/assets{?name,label}",
     "html_url": "https://github.com/deanishe/alfred-workflow-dummy/releases/tag/v4.0",
     "id": 556356,
     "tag_name": "v4.0",
@@ -284,7 +316,7 @@ var (
     "author": {
       "login": "deanishe",
       "id": 747913,
-      "avatar_url": "https://avatars.githubusercontent.com/u/747913?v=3",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/747913?v=4",
       "gravatar_id": "",
       "url": "https://api.github.com/users/deanishe",
       "html_url": "https://github.com/deanishe",
@@ -312,7 +344,7 @@ var (
         "uploader": {
           "login": "deanishe",
           "id": 747913,
-          "avatar_url": "https://avatars.githubusercontent.com/u/747913?v=3",
+          "avatar_url": "https://avatars1.githubusercontent.com/u/747913?v=4",
           "gravatar_id": "",
           "url": "https://api.github.com/users/deanishe",
           "html_url": "https://github.com/deanishe",
@@ -331,7 +363,7 @@ var (
         "content_type": "application/octet-stream",
         "state": "uploaded",
         "size": 36063,
-        "download_count": 360,
+        "download_count": 693,
         "created_at": "2014-09-23T18:58:25Z",
         "updated_at": "2014-09-23T18:58:27Z",
         "browser_download_url": "https://github.com/deanishe/alfred-workflow-dummy/releases/download/v4.0/Dummy-4.0.alfredworkflow"
@@ -344,7 +376,7 @@ var (
         "uploader": {
           "login": "deanishe",
           "id": 747913,
-          "avatar_url": "https://avatars.githubusercontent.com/u/747913?v=3",
+          "avatar_url": "https://avatars1.githubusercontent.com/u/747913?v=4",
           "gravatar_id": "",
           "url": "https://api.github.com/users/deanishe",
           "html_url": "https://github.com/deanishe",
@@ -376,7 +408,7 @@ var (
   {
     "url": "https://api.github.com/repos/deanishe/alfred-workflow-dummy/releases/556354",
     "assets_url": "https://api.github.com/repos/deanishe/alfred-workflow-dummy/releases/556354/assets",
-    "upload_url": "https://uploads.github.com/repos/deanishe/alfred-workflow-dummy/releases/556354/assets{?name}",
+    "upload_url": "https://uploads.github.com/repos/deanishe/alfred-workflow-dummy/releases/556354/assets{?name,label}",
     "html_url": "https://github.com/deanishe/alfred-workflow-dummy/releases/tag/v3.0",
     "id": 556354,
     "tag_name": "v3.0",
@@ -386,7 +418,7 @@ var (
     "author": {
       "login": "deanishe",
       "id": 747913,
-      "avatar_url": "https://avatars.githubusercontent.com/u/747913?v=3",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/747913?v=4",
       "gravatar_id": "",
       "url": "https://api.github.com/users/deanishe",
       "html_url": "https://github.com/deanishe",
@@ -414,7 +446,7 @@ var (
         "uploader": {
           "login": "deanishe",
           "id": 747913,
-          "avatar_url": "https://avatars.githubusercontent.com/u/747913?v=3",
+          "avatar_url": "https://avatars1.githubusercontent.com/u/747913?v=4",
           "gravatar_id": "",
           "url": "https://api.github.com/users/deanishe",
           "html_url": "https://github.com/deanishe",
@@ -446,7 +478,7 @@ var (
   {
     "url": "https://api.github.com/repos/deanishe/alfred-workflow-dummy/releases/556352",
     "assets_url": "https://api.github.com/repos/deanishe/alfred-workflow-dummy/releases/556352/assets",
-    "upload_url": "https://uploads.github.com/repos/deanishe/alfred-workflow-dummy/releases/556352/assets{?name}",
+    "upload_url": "https://uploads.github.com/repos/deanishe/alfred-workflow-dummy/releases/556352/assets{?name,label}",
     "html_url": "https://github.com/deanishe/alfred-workflow-dummy/releases/tag/v2.0",
     "id": 556352,
     "tag_name": "v2.0",
@@ -456,7 +488,7 @@ var (
     "author": {
       "login": "deanishe",
       "id": 747913,
-      "avatar_url": "https://avatars.githubusercontent.com/u/747913?v=3",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/747913?v=4",
       "gravatar_id": "",
       "url": "https://api.github.com/users/deanishe",
       "html_url": "https://github.com/deanishe",
@@ -484,7 +516,7 @@ var (
         "uploader": {
           "login": "deanishe",
           "id": 747913,
-          "avatar_url": "https://avatars.githubusercontent.com/u/747913?v=3",
+          "avatar_url": "https://avatars1.githubusercontent.com/u/747913?v=4",
           "gravatar_id": "",
           "url": "https://api.github.com/users/deanishe",
           "html_url": "https://github.com/deanishe",
@@ -516,7 +548,7 @@ var (
   {
     "url": "https://api.github.com/repos/deanishe/alfred-workflow-dummy/releases/556350",
     "assets_url": "https://api.github.com/repos/deanishe/alfred-workflow-dummy/releases/556350/assets",
-    "upload_url": "https://uploads.github.com/repos/deanishe/alfred-workflow-dummy/releases/556350/assets{?name}",
+    "upload_url": "https://uploads.github.com/repos/deanishe/alfred-workflow-dummy/releases/556350/assets{?name,label}",
     "html_url": "https://github.com/deanishe/alfred-workflow-dummy/releases/tag/v1.0",
     "id": 556350,
     "tag_name": "v1.0",
@@ -526,7 +558,7 @@ var (
     "author": {
       "login": "deanishe",
       "id": 747913,
-      "avatar_url": "https://avatars.githubusercontent.com/u/747913?v=3",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/747913?v=4",
       "gravatar_id": "",
       "url": "https://api.github.com/users/deanishe",
       "html_url": "https://github.com/deanishe",
@@ -554,7 +586,7 @@ var (
         "uploader": {
           "login": "deanishe",
           "id": 747913,
-          "avatar_url": "https://avatars.githubusercontent.com/u/747913?v=3",
+          "avatar_url": "https://avatars1.githubusercontent.com/u/747913?v=4",
           "gravatar_id": "",
           "url": "https://api.github.com/users/deanishe",
           "html_url": "https://github.com/deanishe",
