@@ -40,9 +40,11 @@ import (
 	"strconv"
 	"time"
 
+	// This is the dev server. Use "github.com/deanishe/awgo" in your workflows
 	"git.deanishe.net/deanishe/awgo"
 	"git.deanishe.net/deanishe/awgo/fuzzy"
 	"git.deanishe.net/deanishe/awgo/util"
+
 	"github.com/docopt/docopt-go"
 )
 

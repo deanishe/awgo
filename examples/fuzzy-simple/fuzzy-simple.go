@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	// This is the dev server. Use "github.com/deanishe/awgo" in your workflows
 	"git.deanishe.net/deanishe/awgo"
 )
 

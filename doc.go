@@ -4,22 +4,19 @@ https://www.alfredapp.com/
 
 Alfred 2 is not supported.
 
-NOTE: This library is currently rather alpha. I'm new to Go, so
-doubtless a lot will change as I figure out what I'm doing. The plan
-is to implement something in idiomatic Go that is functionally similar
-to my Alfred-Workflow library for Python:
-http://www.deanishe.net/alfred-workflow/index.html
+NOTE: This library is currently in development. The API will likely change
+as I learn to write idiomatic Go.
 
 This library is released under the MIT licence, which you can read
 online at https://opensource.org/licenses/MIT
 
 To read this documentation on godoc.org, see
-http://godoc.org/git.deanishe.net/deanishe/awgo
+http://godoc.org/github.com/deanishe/awgo
 
 
 Features
 
-The current main features are:
+The main features are:
 
 	- Easy access to Alfred context, such as data and cache directories.
 	- Straightforward generation of Alfred JSON feedback.
@@ -29,15 +26,8 @@ The current main features are:
 	- Catches panics, logs stack trace and shows user an error message.
 	- Workflow updates API with built-in support for GitHub releases.
 	- (Rotated) Log file for easier debugging.
-	- "Magic" arguments/actions for simplified development and user support.
+	- "Magic" queries/actions for simplified development and user support.
 	- OS X system icons.
-
-
-Upcoming features
-
-These features may be implemented:
-
-	- TODO: Alfred/AppleScript helpers?
 
 
 Usage
@@ -51,7 +41,7 @@ program.go:
 	package main
 
 	// Package is called aw
-	import "git.deanishe.net/deanishe/awgo"
+	import "github.com/deanishe/awgo"
 
 	func run() {
 	    // Your workflow starts here
@@ -77,6 +67,9 @@ Most package-level functions call the methods of the same name on the default
 Workflow struct. If you want to use custom options, you can create a new
 Workflow with New(), or get the default Workflow with DefaultWorkflow()
 and configure it with Workflow.Configure().
+
+Check out the examples/ subdirectory for some simple, but complete, which
+you can copy to get started.
 
 
 Fuzzy filtering
@@ -111,7 +104,7 @@ calls to sending methods are logged and ignored. Sending methods are:
 	Fatalf()
 	FatalError()
 	Warn()
-	WarnEmpty()  // if there are no items
+	WarnEmpty()  // only sends if there are no items
 
 The Workflow struct (more precisely, its Feedback struct) retains the
 Item, so you don't need to. Just populate it and then call
