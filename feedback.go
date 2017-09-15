@@ -52,6 +52,7 @@ var (
 type Item struct {
 	title        string
 	subtitle     *string
+	match        *string
 	uid          *string
 	autocomplete *string
 	arg          *string
@@ -60,7 +61,6 @@ type Item struct {
 	copytext     *string
 	largetype    *string
 	qlurl        *url.URL
-	sortkey      *string
 	vars         map[string]string
 	mods         map[string]*Modifier
 	icon         *Icon
@@ -75,6 +75,14 @@ func (it *Item) Title(s string) *Item {
 // Subtitle sets the subtitle of the item in Alfred's results
 func (it *Item) Subtitle(s string) *Item {
 	it.subtitle = &s
+	return it
+}
+
+// Match sets Item's match field. If present, this field is preferred over
+// the item's title for fuzzy sorting via Feedback, and by Alfred's
+// "Alfred filters results" feature.
+func (it *Item) Match(s string) *Item {
+	it.match = &s
 	return it
 }
 
@@ -142,12 +150,6 @@ func (it *Item) Var(k, v string) *Item {
 	return it
 }
 
-// SortKey sets the fuzzy sort terms for Item.
-func (it *Item) SortKey(s string) *Item {
-	it.sortkey = &s
-	return it
-}
-
 // NewModifier returns an initialised Modifier bound to this Item.
 // It also populates the Modifier with any workflow variables set in the Item.
 //
@@ -212,6 +214,7 @@ func (it *Item) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
 		Title     string               `json:"title"`
 		Subtitle  *string              `json:"subtitle,omitempty"`
+		Match     *string              `json:"match,omitempty"`
 		Auto      *string              `json:"autocomplete,omitempty"`
 		Arg       *string              `json:"arg,omitempty"`
 		UID       *string              `json:"uid,omitempty"`
@@ -225,6 +228,7 @@ func (it *Item) MarshalJSON() ([]byte, error) {
 	}{
 		Title:     it.title,
 		Subtitle:  it.subtitle,
+		Match:     it.match,
 		Auto:      it.autocomplete,
 		Arg:       it.arg,
 		UID:       it.uid,
@@ -378,14 +382,6 @@ func (fb *Feedback) IsEmpty() bool { return len(fb.Items) == 0 }
 // time of creation.
 func (fb *Feedback) NewItem(title string) *Item {
 	it := &Item{title: title, vars: map[string]string{}}
-
-	// Variables
-	// if len(fb.vars) > 0 {
-	// 	for k, v := range fb.vars {
-	// 		it.Var(k, v)
-	// 	}
-	// }
-
 	fb.Items = append(fb.Items, it)
 	return it
 }
@@ -442,8 +438,8 @@ func (fb *Feedback) Send() error {
 	return nil
 }
 
-// Sort sorts Items against query. Uses a Sorter with the default
-// settings.
+// Sort sorts Items against query. Uses a fuzzy.Sorter with the specified
+// options.
 func (fb *Feedback) Sort(query string, opts ...fuzzy.Option) []*fuzzy.Result {
 	s := fuzzy.New(fb, opts...)
 	return s.Sort(query)
@@ -468,13 +464,12 @@ func (fb *Feedback) Filter(query string, opts ...fuzzy.Option) []*fuzzy.Result {
 
 // SortKey implements fuzzy.Interface.
 //
-// Returns the fuzzy sort key for Item i. If Item has no sort key,
-// returns item title instead.
+// Returns the match field for Item i. If Item's match is unset, returns Item's title instead.
 func (fb *Feedback) SortKey(i int) string {
 	it := fb.Items[i]
-	// Sort on title if sortkey isn't set
-	if it.sortkey != nil {
-		return *it.sortkey
+	// Sort on title if match isn't set
+	if it.match != nil {
+		return *it.match
 	}
 	return it.title
 }
@@ -488,10 +483,10 @@ func (fb *Feedback) Less(i, j int) bool { return fb.SortKey(i) < fb.SortKey(j) }
 // Swap implements sort.Interface.
 func (fb *Feedback) Swap(i, j int) { fb.Items[i], fb.Items[j] = fb.Items[j], fb.Items[i] }
 
-// ArgVars lets you set workflow variables from Run Script actions.
+// ArgVars lets you set workflow variables from Run Script actions. It emits the
+// arg and variables you set in the format required by Alfred.
 //
-// Write output of ArgVars.String() to STDOUT to pass variables to downstream
-// workflow elements.
+// Use ArgVars.Send() to pass variables to downstream workflow elements.
 type ArgVars struct {
 	arg  *string
 	vars map[string]string
@@ -521,8 +516,7 @@ func (a *ArgVars) Var(k, v string) *ArgVars {
 
 // String returns a string representation.
 //
-// If any variables are set, JSON is returned. Otherwise,
-// a plain string is returned.
+// If any variables are set, JSON is returned. Otherwise, a plain string is returned.
 func (a *ArgVars) String() (string, error) {
 	if len(a.vars) == 0 {
 		if a.arg != nil {
@@ -536,6 +530,16 @@ func (a *ArgVars) String() (string, error) {
 		return "", err
 	}
 	return string(data), nil
+}
+
+// Send outputs the set arg and variables to Alfred by printing a response to STDOUT.
+func (a *ArgVars) Send() error {
+	s, err := a.String()
+	if err != nil {
+		return err
+	}
+	_, err = fmt.Print(s)
+	return err
 }
 
 // MarshalJSON serialises ArgVars to JSON. You probably don't need to call this:

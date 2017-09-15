@@ -11,7 +11,7 @@ Features
 
 - Easy access to [Alfred context][context], such as data and cache directories.
 - Straightforward generation of [Alfred JSON feedback][feedback].
-- Support for all applicable Alfred features up to v3.4.1.
+- Support for all applicable Alfred features up to v3.5.
 - [Fuzzy sorting/filtering][fuzzy].
 - [Simple API][cache-api] for [caching/saving workflow data][cache].
 - [Catches panics, logs stack trace and shows user an error message][run].

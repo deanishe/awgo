@@ -20,7 +20,7 @@ The main features are:
 
 	- Easy access to Alfred context, such as data and cache directories.
 	- Straightforward generation of Alfred JSON feedback.
-	- Support for all applicable Alfred features up to v3.4.1.
+	- Support for all applicable Alfred features up to v3.5.
 	- Fuzzy sorting/filtering.
 	- Simple API for caching/saving workflow data.
 	- Catches panics, logs stack trace and shows user an error message.

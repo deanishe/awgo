@@ -73,7 +73,7 @@ func (ma MagicActions) Args(args []string, prefix string) []string {
 						Icon(IconInfo).
 						UID(action.Description()).
 						Autocomplete(prefix + kw).
-						SortKey(fmt.Sprintf("%s %s", action.Keyword(), action.Description()))
+						Match(fmt.Sprintf("%s %s", action.Keyword(), action.Description()))
 				}
 				Filter(query)
 				WarnEmpty("No matching action", "Try another query?")

@@ -8,7 +8,6 @@ package aw
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -130,8 +129,10 @@ var marshalItemTests = []struct {
 		ExpectedJSON: `{"title":"title","valid":false,"text":{"copy":"copy","largetype":"large"}}`},
 	// With arg and variable
 	{Item: &Item{title: "title", arg: p("value"), vars: map[string]string{"foo": "bar"}},
-		// ExpectedJSON: `{"title":"title","arg":"{\"alfredworkflow\":{\"arg\":\"value\",\"variables\":{\"foo\":\"bar\"}}}","valid":false}`},
 		ExpectedJSON: `{"title":"title","arg":"value","valid":false,"variables":{"foo":"bar"}}`},
+	// With match
+	{Item: &Item{title: "title", match: p("one two three")},
+		ExpectedJSON: `{"title":"title","match":"one two three","valid":false}`},
 }
 
 var marshalModifierTests = []struct {
@@ -467,8 +468,6 @@ func ExampleArgVars() {
 	av := NewArgVars()
 	av.Arg("baz")        // Set output (i.e. next action's {query}) to "baz"
 	av.Var("foo", "bar") // Set workflow variable "foo" to "bar"
-	if s, err := av.String(); err == nil {
-		fmt.Print(s)
-	}
+	av.Send()
 	// Output: {"alfredworkflow":{"arg":"baz","variables":{"foo":"bar"}}}
 }

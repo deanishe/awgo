@@ -1,10 +1,11 @@
 
 Features:
+	- Use "match" field for fuzzy sorting Items, not "sortkey" @3.5
+		"match" field added in Alfred 3.5
 
 Other:
 	- Check code for noob mistakes
 
-#	vim: ft=taskpaper ts=2 sw=2 tw=80 noet :
 
 Archive:
 	- Session-scoped cache @done(2017-08-13) @project(Features)
@@ -16,3 +17,5 @@ Archive:
 		LoadOrSave() - Read from cache or reload and cache.
 	- Make SemVer accept pre-release data without minor and patch numbers. @done(17-09-15 16:09) @project(Features)
 	- Separate HTTP connect and download timeouts in update.go. @done(17-09-15 15:52) @project(Features)
+
+#  vim: ft=taskpaper ts=2 sw=2 tw=80 noet :
