@@ -17,7 +17,7 @@ import (
 	"strconv"
 	"syscall"
 
-	"git.deanishe.net/deanishe/awgo/util"
+	"github.com/deanishe/awgo/util"
 )
 
 // AlreadyRunning is the error returned by RunInBackground if a job with

@@ -15,7 +15,7 @@ import (
 	"net/url"
 	"strings"
 
-	aw "git.deanishe.net/deanishe/awgo"
+	aw "github.com/deanishe/awgo"
 )
 
 const (

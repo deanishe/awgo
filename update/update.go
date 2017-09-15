@@ -23,7 +23,7 @@ import (
 	"sort"
 	"time"
 
-	"git.deanishe.net/deanishe/awgo/util"
+	"github.com/deanishe/awgo/util"
 )
 
 // DefaultUpdateInterval is how often to check for updates.

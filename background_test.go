@@ -12,7 +12,7 @@ import (
 	"os/exec"
 	"testing"
 
-	"git.deanishe.net/deanishe/awgo/util"
+	"github.com/deanishe/awgo/util"
 )
 
 // TestRunInBackground ensures background jobs work.

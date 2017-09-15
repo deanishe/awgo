@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"testing"
 
-	aw "git.deanishe.net/deanishe/awgo"
+	aw "github.com/deanishe/awgo"
 )
 
 var (

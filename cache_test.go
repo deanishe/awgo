@@ -16,7 +16,7 @@ import (
 	"testing"
 	"time"
 
-	"git.deanishe.net/deanishe/awgo/util"
+	"github.com/deanishe/awgo/util"
 )
 
 // WithTempDir creates a temporary directory, calls function fn, then deletes the directory.

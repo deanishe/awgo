@@ -39,8 +39,8 @@ import (
 	"log"
 	"os/exec"
 
-	"git.deanishe.net/deanishe/awgo"
-	"git.deanishe.net/deanishe/awgo/update"
+	"github.com/deanishe/awgo"
+	"github.com/deanishe/awgo/update"
 	"github.com/docopt/docopt-go"
 )
 

@@ -16,8 +16,8 @@ import (
 	"runtime/debug"
 	"time"
 
-	"git.deanishe.net/deanishe/awgo/fuzzy"
-	"git.deanishe.net/deanishe/awgo/util"
+	"github.com/deanishe/awgo/fuzzy"
+	"github.com/deanishe/awgo/util"
 
 	"os/exec"
 )

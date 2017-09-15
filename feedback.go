@@ -16,8 +16,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"git.deanishe.net/deanishe/awgo/fuzzy"
-	"git.deanishe.net/deanishe/awgo/util"
+	"github.com/deanishe/awgo/fuzzy"
+	"github.com/deanishe/awgo/util"
 )
 
 // Valid modifier keys for Item.NewModifier(). You can't combine these
