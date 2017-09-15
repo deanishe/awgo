@@ -17,8 +17,6 @@ var invalidV = []string{
 	"1.0b",
 	"1.0.3a",
 	"1.0.0.0",
-	"1.0-beta",
-	"2-beta",
 	"01",
 	"01.2.3",
 }
@@ -37,6 +35,9 @@ var validV = []string{
 	"8.10.11",
 	"9.4.3+20144353453",
 	"3.1.4-beta+20144334",
+	"1.1-beta",
+	"1-beta",
+	"5.1-beta+20170915",
 }
 
 var canonicalV = []struct {

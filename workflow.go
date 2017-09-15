@@ -55,8 +55,8 @@ type Updater interface {
 }
 
 // Option is a configuration option for Workflow. Pass one or more Options to
-// New(). An Option returns its inverse (i.e. an Option that restores the
-// previous value).
+// New() or Workflow.Configure(). An Option returns its inverse (i.e. an Option
+// that restores the previous value).
 type Option func(wf *Workflow) Option
 
 // options wraps multiple Options, allowing the application of their inverse
@@ -65,9 +65,9 @@ type options []Option
 
 // apply configures Workflow with all options and returns a single Option
 // to reverse all changes.
-func (o options) apply(wf *Workflow) Option {
-	previous := make(options, len(o))
-	for i, opt := range o {
+func (opts options) apply(wf *Workflow) Option {
+	previous := make(options, len(opts))
+	for i, opt := range opts {
 		previous[i] = wf.Configure(opt)
 	}
 	return previous.apply
@@ -300,9 +300,9 @@ func New(opts ...Option) *Workflow {
 // all Options passed to Configure.
 func Configure(opts ...Option) (previous Option) { return wf.Configure(opts...) }
 func (wf *Workflow) Configure(opts ...Option) (previous Option) {
-	prev := options{}
-	for _, opt := range opts {
-		prev = append(prev, opt(wf))
+	prev := make(options, len(opts))
+	for i, opt := range opts {
+		prev[i] = opt(wf)
 	}
 	return prev.apply
 }

@@ -53,23 +53,27 @@ func FindWorkflowRoot() (string, error) {
 func EnsureExists(dirpath string) string {
 	err := os.MkdirAll(dirpath, 0700)
 	if err != nil {
-		panic(fmt.Errorf("Couldn't create directory `%s` : %v", dirpath, err))
+		panic(fmt.Sprintf("Couldn't create directory `%s` : %v", dirpath, err))
 	}
 	return dirpath
 }
 
 // PathExists checks for the existence of path.
 func PathExists(path string) bool {
-	if _, err := os.Stat(path); err == nil {
+	_, err := os.Stat(path)
+	if err == nil {
 		return true
 	}
-	return false
+	if os.IsNotExist(err) {
+		return false
+	}
+	panic(err)
 }
 
 // FindFileUpwards searches for a file named filename. It first looks in startdir,
 // then its parent directory and so on until it reaches /
 //
-// TODO: Make function FindFileUpwards private.
+// TODO: Make function FindFileUpwards private?
 func FindFileUpwards(filename string, startdir string) (string, error) {
 	dirpath, _ := filepath.Abs(startdir)
 	for dirpath != "/" {
@@ -170,7 +174,7 @@ func ClearDirectory(p string) error {
 	err := os.RemoveAll(p)
 	EnsureExists(p)
 	if err == nil {
-		log.Printf("Deleted contents of `%s`", p)
+		log.Printf("deleted contents of `%s`", p)
 	}
 	return err
 }

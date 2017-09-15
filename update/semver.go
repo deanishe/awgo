@@ -9,7 +9,6 @@
 package update
 
 import (
-	"errors"
 	"fmt"
 	"sort"
 	"strconv"
@@ -43,9 +42,6 @@ func SortSemVer(versions []SemVer) {
 //
 // Unlike the semver standard:
 //	- Minor and patch versions are not required, e.g. "v1" and "v1.0" are valid.
-//	  NOTE: You may not specify pre-release data unless major, minor and patch
-//	  numbers are given, i.e. "1-beta" and "1.0-beta" are invalid, "1.0.0-beta"
-//	  is valid.
 //	- Version string may be prefixed with "v", e.g. "v1" or "v3.0.1-beta".
 //	  The "v" prefix is stripped, so "v1" == "1.0.0".
 //	- Dots and integers are ignored in pre-release identifiers: they are
@@ -72,12 +68,15 @@ func NewSemVer(s string) (SemVer, error) {
 	// Remove "v" prefix and extend short versions to full length.
 	s = strings.TrimPrefix(s, "v")
 
-	parts := strings.SplitN(s, ".", 3)
-	if len(parts) < 3 {
-		if strings.ContainsAny(parts[len(parts)-1], "+-") {
-			return SemVer{}, errors.New("Short versions may not contain pre-release or build data.")
-		}
+	// Extract build and pre tags
+	if i := strings.IndexRune(s, '+'); i != -1 {
+		s, build = s[:i], s[i+1:]
 	}
+	if i := strings.IndexRune(s, '-'); i != -1 {
+		s, pre = s[:i], s[i+1:]
+	}
+
+	parts := strings.SplitN(s, ".", 3)
 	for len(parts) < 3 { // Pad version
 		parts = append(parts, "0")
 	}
@@ -108,29 +107,21 @@ func NewSemVer(s string) (SemVer, error) {
 	}
 
 	// Patch
-	pat := parts[2]
-	if i := strings.IndexRune(pat, '+'); i != -1 {
-		pat, build = pat[:i], pat[i+1:]
+	if !containsOnly(parts[2], numbers) {
+		return SemVer{}, fmt.Errorf("Invalid char(s) in minor number %q", parts[2])
 	}
-	if i := strings.IndexRune(pat, '-'); i != -1 {
-		pat, pre = pat[:i], pat[i+1:]
-	}
-
-	if !containsOnly(pat, numbers) {
-		return SemVer{}, fmt.Errorf("Invalid char(s) in minor number %q", pat)
-	}
-	patch, err = strconv.ParseUint(pat, 10, 64)
+	patch, err = strconv.ParseUint(parts[2], 10, 64)
 	if err != nil {
-		return SemVer{}, fmt.Errorf("Invalid minor version %q: %s", pat, err)
+		return SemVer{}, fmt.Errorf("Invalid patch version %q: %s", parts[2], err)
 	}
 
-	v := SemVer{}
-	v.Major = major
-	v.Minor = minor
-	v.Patch = patch
-	v.Prerelease = pre
-	v.Build = build
-	return v, nil
+	return SemVer{
+		Major:      major,
+		Minor:      minor,
+		Patch:      patch,
+		Prerelease: pre,
+		Build:      build,
+	}, nil
 }
 
 // String returns a canonical semver string

@@ -15,6 +15,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -29,8 +30,7 @@ import (
 // DefaultUpdateInterval is how often to check for updates.
 const DefaultUpdateInterval = time.Duration(24 * time.Hour)
 
-// HTTPTimeout is the timeout for HTTP requests
-// TODO: implement separate timeouts for connect & download
+// HTTPTimeout is the timeout for establishing an HTTP(S) connection.
 var HTTPTimeout = (60 * time.Second)
 
 // Versioned has a semantic version number (for comparing to releases)
@@ -282,7 +282,15 @@ func (u *Updater) latest() *Release {
 // makeHTTPClient returns an http.Client with a sensible configuration.
 func makeHTTPClient() http.Client {
 	return http.Client{
-		Timeout: HTTPTimeout,
+		Transport: &http.Transport{
+			Dial: (&net.Dialer{
+				Timeout:   HTTPTimeout,
+				KeepAlive: HTTPTimeout,
+			}).Dial,
+			TLSHandshakeTimeout:   30 * time.Second,
+			ResponseHeaderTimeout: 30 * time.Second,
+			ExpectContinueTimeout: 10 * time.Second,
+		},
 	}
 }
 

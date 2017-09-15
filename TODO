@@ -1,7 +1,5 @@
 
 Features:
-	- Make SemVer accept pre-release data without minor and patch numbers.
-	- Separate HTTP connect and download timeouts in update.go.
 
 Other:
 	- Check code for noob mistakes
@@ -10,9 +8,11 @@ Other:
 
 Archive:
 	- Session-scoped cache @done(2017-08-13) @project(Features)
+	- Remove info.plist parsing (use envvars only) @done(2017-08-13) @project(Features)
+		Will probably require lots of changes to the tests
+	- Move MagicActions into Workflow @done(2017-08-13) @project(Features)
 	- Caching @done(2017-08-13) @project(Features)
 		Read/write bytes to named cache/data file.
 		LoadOrSave() - Read from cache or reload and cache.
-	- Move MagicActions into Workflow @done(2017-08-13) @project(Features)
-	- Remove info.plist parsing (use envvars only) @done(2017-08-13) @project(Features)
-		Will probably require lots of changes to the tests
+	- Make SemVer accept pre-release data without minor and patch numbers. @done(17-09-15 16:09) @project(Features)
+	- Separate HTTP connect and download timeouts in update.go. @done(17-09-15 15:52) @project(Features)
