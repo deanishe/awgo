@@ -1,5 +1,7 @@
 
 Features:
+	- Make SemVer accept pre-release data without minor and patch numbers.
+	- Separate HTTP connect and download timeouts in update.go.
 
 Other:
 	- Check code for noob mistakes

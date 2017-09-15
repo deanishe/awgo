@@ -68,8 +68,8 @@ Workflow struct. If you want to use custom options, you can create a new
 Workflow with New(), or get the default Workflow with DefaultWorkflow()
 and configure it with Workflow.Configure().
 
-Check out the examples/ subdirectory for some simple, but complete, which
-you can copy to get started.
+Check out the examples/ subdirectory for some simple, but complete,
+workflows which you can copy to get started.
 
 
 Fuzzy filtering
@@ -85,7 +85,7 @@ the query.
 
 See examples/fuzzy-simple for a basic demonstration.
 
-See examples/fuzzy-cached for a demonstration of implementing fuzzy.Interface
+See examples/fuzzy-custom for a demonstration of implementing fuzzy.Interface
 on your own structs and customising the sort settings.
 
 
