@@ -1,5 +1,5 @@
 
-![](./Icon.png "")
+![][icon]
 
 AwGo — A Go library for Alfred workflows
 ========================================
@@ -19,6 +19,46 @@ Features
 - [Built-in logging][logging] for easier debugging.
 - ["Magic" queries/actions][magic] for simplified development and user support.
 - macOS [system icons][icons].
+
+
+Installation & usage
+--------------------
+
+Install AwGo with:
+
+```sh
+go get -u github.com/deanishe/awgo
+```
+
+Typically, you'd call your program's main entry point via `Run()`. This
+way, the library will rescue any panic, log the stack trace and show
+an error message to the user in Alfred.
+
+program.go:
+
+```go
+package main
+
+// Package is called aw
+import "github.com/deanishe/awgo"
+
+func run() {
+    // Your workflow starts here
+    aw.NewItem("First result!")
+    aw.SendFeedback()
+}
+
+func main() {
+    aw.Run(run)
+}
+```
+
+In the Script Filter's Script box (Language = /bin/bash with input as
+argv):
+
+```sh
+./program "$1"
+```
 
 
 Documentation
@@ -63,3 +103,4 @@ The icon is based on the [Go Gopher][gopher] by [Renee French][renee].
 [icons]: https://godoc.org/github.com/deanishe/awgo#Icon
 [examples-code]: https://github.com/deanishe/awgo/tree/master/examples
 [examples-docs]: https://godoc.org/github.com/deanishe/awgo/examples
+[icon]: https://raw.githubusercontent.com/deanishe/awgo/master/Icon.png "AwGo icon"
