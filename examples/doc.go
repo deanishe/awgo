@@ -7,8 +7,8 @@
 //
 
 /*
-Each subdirectory contains a complete, but trivial, Alfred workflow
-demonstrating a feature of AwGo.
+Each subdirectory contains a trivial, but complete, Alfred workflow
+demonstrating a feature of AwGo and/or a useful workflow idiom.
 
 After building the executable, copy or symlink the directory to Alfred's
 workflow directory to try it out.
@@ -21,7 +21,7 @@ https://gist.github.com/deanishe/35faae3e7f89f629a94e
 If you've installed that script on your $PATH, you can try out the examples by
 running:
 
-	workflow-install -s /path/to/example
+	workflow-install -s /path/to/example/workflow
 
 which will symlink the workflow to Alfred's workflow directory.
 */

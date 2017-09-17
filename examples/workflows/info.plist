@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>bundleid</key>
-	<string>net.deanishe.alfred.awgo.demo-fuzzy-cached</string>
+	<string>net.deanishe.alfred.awgo.demo-caching</string>
 	<key>connections</key>
 	<dict>
 		<key>D61073F1-262D-482D-800D-A788FD7B9F69</key>
@@ -23,11 +23,11 @@
 	<key>createdby</key>
 	<string>Dean Jackson</string>
 	<key>description</key>
-	<string>Filter Gutenberg Ebooks</string>
+	<string>Filter Alfred Workflows on GitHub</string>
 	<key>disabled</key>
-	<true/>
+	<false/>
 	<key>name</key>
-	<string>AwGo Demo: Fuzzy Search (Very Large) Cached Dataset</string>
+	<string>AwGo Demo: Workflows</string>
 	<key>objects</key>
 	<array>
 		<dict>
@@ -59,11 +59,11 @@
 				<key>argumenttrimmode</key>
 				<integer>0</integer>
 				<key>argumenttype</key>
-				<integer>0</integer>
+				<integer>1</integer>
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>keyword</key>
-				<string>gutenberg</string>
+				<string>workflows</string>
 				<key>queuedelaycustom</key>
 				<integer>3</integer>
 				<key>queuedelayimmediatelyinitially</key>
@@ -73,17 +73,17 @@
 				<key>queuemode</key>
 				<integer>1</integer>
 				<key>runningsubtext</key>
-				<string>Loading books…</string>
+				<string>Loading repos…</string>
 				<key>script</key>
-				<string>./fuzzy-cached "{query}"</string>
+				<string>./workflows "$1"</string>
 				<key>scriptargtype</key>
-				<integer>0</integer>
+				<integer>1</integer>
 				<key>scriptfile</key>
 				<string></string>
 				<key>subtext</key>
-				<string>Filter ebooks from gutenberg.org</string>
+				<string>GitHub repos tagged "alfred-workflow"</string>
 				<key>title</key>
-				<string>Gutenberg Ebooks</string>
+				<string>Alfred Workflows on GitHub</string>
 				<key>type</key>
 				<integer>0</integer>
 				<key>withspace</key>
@@ -98,22 +98,20 @@
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>Awgo: Large Fuzzy Search Demo
-=============================
+	<string>Awgo: Caching demo
+==================
 
-This workflow demonstrates AwGo's performance on a large dataset (&gt;45K books).
+This workflow demonstrates how to use cached data for best-possible speed.
 
-It fetches TSV data from a server and caches it locally in a more efficient format (gob) that loads ~5 times faster.
+It filters a list of Alfred workflows fetched from GitHub.
 
-This workflow is pushing the bounds of acceptable performance, imo.
-
-A dataset this size belongs in sqlite, which can handle this many data with ease.</string>
+Filtering is always performed against cached data (rather than querying the API), and the cached data are updated if missing or too old.</string>
 	<key>uidata</key>
 	<dict>
 		<key>76AEA54C-6AD8-43B3-A8EB-7C693414C860</key>
 		<dict>
 			<key>note</key>
-			<string>Open actioned book's webpage in your browser.</string>
+			<string>Open actioned repo's webpage in your browser.</string>
 			<key>xpos</key>
 			<integer>240</integer>
 			<key>ypos</key>
@@ -122,9 +120,9 @@ A dataset this size belongs in sqlite, which can handle this many data with ease
 		<key>D61073F1-262D-482D-800D-A788FD7B9F69</key>
 		<dict>
 			<key>note</key>
-			<string>Download and cache list of Gutenberg.org ebooks, then search the cached data.
+			<string>Filter Alfred workflows from GitHub.
 
-There are &gt;45K books, and a proper database (e.g. sqlite) would be better suited.</string>
+Data are downloaded in the background and search is performed on the cached data.</string>
 			<key>xpos</key>
 			<integer>40</integer>
 			<key>ypos</key>
@@ -132,7 +130,7 @@ There are &gt;45K books, and a proper database (e.g. sqlite) would be better sui
 		</dict>
 	</dict>
 	<key>version</key>
-	<string>0.1</string>
+	<string>0.2</string>
 	<key>webaddress</key>
 	<string>https://godoc.org/github.com/deanishe/awgo</string>
 </dict>

@@ -26,7 +26,7 @@
 				<key>modifiersubtext</key>
 				<string></string>
 				<key>vitoclose</key>
-				<false/>
+				<true/>
 			</dict>
 		</array>
 	</dict>
@@ -45,6 +45,10 @@
 			<dict>
 				<key>alfredfiltersresults</key>
 				<false/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
 				<key>argumenttype</key>
 				<integer>1</integer>
 				<key>escaping</key>
@@ -62,7 +66,7 @@
 				<key>runningsubtext</key>
 				<string>Loading folders…</string>
 				<key>script</key>
-				<string>./fuzzy-simple "$1"</string>
+				<string>./fuzzy "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -114,7 +118,11 @@
 	</array>
 	<key>readme</key>
 	<string>AwGo: Fuzzy Sort Demo
-=====================</string>
+=====================
+
+Fuzzy-filter subdirectories of ~/.
+
+Demonstrates basic usage of fuzzy filtering using the API built into Workflow.</string>
 	<key>uidata</key>
 	<dict>
 		<key>7C574F95-18F7-4AA2-B8EF-812745DB293D</key>
@@ -134,9 +142,9 @@
 		<key>D61073F1-262D-482D-800D-A788FD7B9F69</key>
 		<dict>
 			<key>note</key>
-			<string>Program runs here.
+			<string>Fuzzy filter the directories in ~/
 
-The alternate actions are all configured in the Script Filter code/output (which is why you can't see the alternate subtitle text in the connection configuration).</string>
+The alternate actions are configured in the Script Filter code/output (which is why you can't see the alternate subtitle text in the connection configuration).</string>
 			<key>xpos</key>
 			<integer>50</integer>
 			<key>ypos</key>

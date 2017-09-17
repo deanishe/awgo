@@ -7,29 +7,35 @@
 //
 
 /*
-This workflow is an example of how to use AwGo's update API.
+Workflow update is an example of how to use AwGo's update API.
 
-Its own version (set in info.plist) is 0.1 and it's pointing to the
-GitHub repo "deanishe/alfred-ssh" (a completely different workflow), which
-is several version ahead.
+It demonstrates best practices for handling updates, in particular
+loading the list of releases in a background process and only showing
+an "Update is available!" message if the user query is empty.
 
-The Script Filter code loads the date of the last update check, and if
-a check is due, it calls this program with the "check" command via
-AwGo's background job API.
+Details
 
-When run with "check", the program calls Workflow.CheckForUpdate() to cache
-the available releases.
+Its own version (set in info.plist via Alfred's UI) is 0.2 and it's
+pointing to the GitHub repo "deanishe/alfred-ssh" (a completely
+different workflow), which is several versions ahead.
 
-After that has completed, subsequent runs of the Script Filter will
-show an "Update available!" item (if the query is empty).
+The Script Filter code loads the time of the last update check, and if a
+check is due, it calls itself with the "check" command via AwGo's
+background job API.
+
+When run with "check", the program calls Workflow.CheckForUpdate() to
+cache the available releases.
+
+After that has completed, subsequent runs of the Script Filter will show
+an "Update available!" item (if the query is empty).
 
 Actioning (hitting ↩ or ⌘+1) or completing the item (hitting ⇥)
 auto-completes the query to "workflow:update", which is the keyword for
 one of AwGo's "magic" actions.
 
-At this point, AwGo will take control of execution, and
-download & install the newer version of the workflow (but as it's pointing
-to a different workflow's repo, Alfred will install a different workflow
+At this point, AwGo will take control of execution, and download and
+install the newer version of the workflow (but as it's pointing to a
+different workflow's repo, Alfred will install a different workflow
 rather than actually updating this one).
 */
 package main
@@ -37,6 +43,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 
 	"github.com/deanishe/awgo"
@@ -47,7 +54,7 @@ import (
 // Name of the background job that checks for updates
 const updateJobName = "checkForUpdate"
 
-var usage = `update [search|check] [<query>]
+var usage = `update (search|check) [<query>]
 
 Demonstrates self-updating using AwGo.
 
@@ -61,9 +68,10 @@ Options:
 `
 
 var (
+	// Icon to show if an update is available
 	iconAvailable = &aw.Icon{Value: "update-available.png"}
-	repo          = "deanishe/alfred-ssh"
-	wf            *aw.Workflow
+	repo          = "deanishe/alfred-ssh" // GitHub repo
+	wf            *aw.Workflow            // Our Workflow struct
 )
 
 func init() {
@@ -71,11 +79,10 @@ func init() {
 }
 
 func run() {
-	// Pass wf.Args() to docopt because our update logic relies on
-	// AwGo's magic actions.
+	// Pass wf.Args() to docopt because our update logic relies on AwGo's magic actions.
 	args, _ := docopt.Parse(usage, wf.Args(), true, wf.Version(), false, true)
 
-	// Alternate action: Get available releases from remote
+	// Alternate action: Get available releases from remote.
 	if args["check"] != false {
 		wf.TextErrors = true
 		log.Println("Checking for updates...")
@@ -84,8 +91,11 @@ func run() {
 		}
 		return
 	}
+
 	// ----------------------------------------------------------------
 	// Script Filter
+	// ----------------------------------------------------------------
+
 	var query string
 	if args["<query>"] != nil {
 		query = args["<query>"].(string)
@@ -93,42 +103,42 @@ func run() {
 
 	log.Printf("query=%s", query)
 
-	// Call self with "check" command if an update is due and a
-	// check job isn't already running.
+	// Call self with "check" command if an update is due and a check
+	// job isn't already running.
 	if wf.UpdateCheckDue() && !aw.IsRunning(updateJobName) {
 		log.Println("Running update check in background...")
-		cmd := exec.Command("./update", "check")
+
+		cmd := exec.Command(os.Args[0], "check")
 		if err := aw.RunInBackground(updateJobName, cmd); err != nil {
 			log.Printf("Error starting update check: %s", err)
 		}
 	}
 
-	if query == "" { // Only show update status if query is empty
-		// Send update status to Alfred
-		if wf.UpdateAvailable() {
-			wf.NewItem("Update available!").
-				Subtitle("↩ to install").
-				Autocomplete("workflow:update").
-				Valid(false).
-				Icon(iconAvailable)
-		}
+	// Only show update status if query is empty.
+	if query == "" && wf.UpdateAvailable() {
+		wf.NewItem("Update available!").
+			Subtitle("↩ to install").
+			Autocomplete("workflow:update").
+			Valid(false).
+			Icon(iconAvailable)
 	}
 
 	// Script Filter results
 	for i := 1; i <= 20; i++ {
 		t := fmt.Sprintf("Item #%d", i)
 		wf.NewItem(t).
-			Icon(aw.IconFavourite).
 			Arg(t).
+			Icon(aw.IconFavourite).
 			Valid(true)
 	}
 
 	// Add an extra item to reset update status for demo purposes
 	wf.NewItem("Reset update status").
-		Valid(false).
 		Autocomplete("workflow:delcache").
-		Icon(aw.IconTrash)
+		Icon(aw.IconTrash).
+		Valid(false)
 
+	// Filter results on user query if present
 	if query != "" {
 		wf.Filter(query)
 	}

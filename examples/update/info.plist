@@ -100,7 +100,12 @@
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>AwGo demo workflow</string>
+	<string>AwGo: GitHub update &amp; background process demo
+=============================================
+
+This workflow demonstrates best practices for updating your workflow.
+
+The check for a new version is performed in the background, and a notification is only shown when the user query is empty.</string>
 	<key>uidata</key>
 	<dict>
 		<key>09D5F8E4-239F-449C-955E-C52F9C6F1DF0</key>
@@ -112,6 +117,8 @@
 		</dict>
 		<key>F3DFD0D4-B306-48DD-A915-34D3CF427B73</key>
 		<dict>
+			<key>note</key>
+			<string>Checks for updates in background, and shows an "Update available" message when a newer version is available.</string>
 			<key>xpos</key>
 			<integer>30</integer>
 			<key>ypos</key>
@@ -119,7 +126,7 @@
 		</dict>
 	</dict>
 	<key>version</key>
-	<string>0.1</string>
+	<string>0.2</string>
 	<key>webaddress</key>
 	<string>https://godoc.org/github.com/deanishe/awgo</string>
 </dict>

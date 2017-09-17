@@ -45,31 +45,6 @@ func TestOptions(t *testing.T) {
 	}
 }
 
-/*
-func TestParseInfo(t *testing.T) {
-	info := DefaultWorkflow().Info()
-	if info.BundleID != "net.deanishe.awgo" {
-		t.Fatalf("Incorrect bundle ID: %v", info.BundleID)
-	}
-
-	if info.Author != "Dean Jackson" {
-		t.Fatalf("Incorrect author: %v", info.Author)
-	}
-
-	if info.Description != "AwGo sample info.plist" {
-		t.Fatalf("Incorrect description: %v", info.Description)
-	}
-
-	if info.Name != "AwGo" {
-		t.Fatalf("Incorrect name: %v", info.Name)
-	}
-
-	if info.Website != "https://github.com/deanishe/awgo" {
-		t.Fatalf("Incorrect website: %v", info.Website)
-	}
-}
-*/
-
 // TestWorkflowValues tests workflow name, bundle ID etc.
 func TestWorkflowValues(t *testing.T) {
 	name := "AwGo"
@@ -82,28 +57,6 @@ func TestWorkflowValues(t *testing.T) {
 		t.Errorf("wrong bundle ID. Expected=%s, Got=%s", bundleID, wf.BundleID())
 	}
 }
-
-/*
-// TestParseVars tests that variables are read from info.plist
-func TestParseVars(t *testing.T) {
-	i := DefaultWorkflow().Info()
-	if i.Var("exported_var") != "exported_value" {
-		t.Fatalf("exported_var=%v, expected=exported_value", i.Var("exported_var"))
-	}
-
-	// Should unexported variables be ignored?
-	if i.Var("unexported_var") != "unexported_value" {
-		t.Fatalf("unexported_var=%v, expected=unexported_value", i.Var("unexported_var"))
-	}
-}
-
-
-func ExampleInfoPlist_Var() {
-	info := DefaultWorkflow().Info()
-	fmt.Println(info.Var("exported_var"))
-	// Output: exported_value
-}
-*/
 
 // New initialises a Workflow with the default settings. Name,
 // bundle ID, version etc. are read from the environment variables set by Alfred.

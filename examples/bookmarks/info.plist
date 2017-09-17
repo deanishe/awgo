@@ -23,11 +23,11 @@
 	<key>createdby</key>
 	<string>Dean Jackson</string>
 	<key>description</key>
-	<string>Explore Top iTunes Podcasts</string>
+	<string>Filter Safari Bookmarks</string>
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
-	<string>AwGo Demo: Custom Fuzzy Search</string>
+	<string>AwGo Demo: Bookmarks</string>
 	<key>objects</key>
 	<array>
 		<dict>
@@ -44,7 +44,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>keyword</key>
-				<string>workflows</string>
+				<string>bookmarks</string>
 				<key>queuedelaycustom</key>
 				<integer>3</integer>
 				<key>queuedelayimmediatelyinitially</key>
@@ -54,17 +54,17 @@
 				<key>queuemode</key>
 				<integer>1</integer>
 				<key>runningsubtext</key>
-				<string>Loading workflows…</string>
+				<string>Loading bookmarks…</string>
 				<key>script</key>
-				<string>./fuzzy-custom "$1"</string>
+				<string>./bookmarks "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
 				<string></string>
 				<key>subtext</key>
-				<string>Search a list of Alfred workflows</string>
+				<string>Search your Safari bookmarks</string>
 				<key>title</key>
-				<string>Alfred Workflows on GitHub</string>
+				<string>Safari Bookmarks</string>
 				<key>type</key>
 				<integer>0</integer>
 				<key>withspace</key>
@@ -98,9 +98,12 @@
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>Filter a list of workflows from GitHub.
+	<string>AwGo: Search Safari bookmarks
+=============================
 
-Based on search results for the topic "alfred-workflow".</string>
+This workflow demonstrates implementing fuzzy.Interface on your own structs.
+
+See file bookmarks.go.</string>
 	<key>uidata</key>
 	<dict>
 		<key>1ECEC7CE-5E5D-4F07-A284-F5976DADCC2B</key>
@@ -113,7 +116,7 @@ Based on search results for the topic "alfred-workflow".</string>
 		<key>3BF10786-C7AA-4EAF-AF73-08CFB7CA918F</key>
 		<dict>
 			<key>note</key>
-			<string>Filter list of workflows</string>
+			<string>Filter your Safari bookmarks</string>
 			<key>xpos</key>
 			<integer>40</integer>
 			<key>ypos</key>

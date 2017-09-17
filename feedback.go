@@ -93,7 +93,7 @@ func (it *Item) Arg(s string) *Item {
 }
 
 // UID sets Item's unique ID, which is used by Alfred to remember your choices.
-// Use blank string to force results to appear in the order you generate them.
+// Use a blank string to force results to appear in the order you add them.
 func (it *Item) UID(s string) *Item {
 	it.uid = &s
 	return it
