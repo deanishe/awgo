@@ -23,7 +23,7 @@ import (
 func WithTempDir(fn func(dir string)) {
 	root := os.TempDir()
 	p := filepath.Join(root, fmt.Sprintf("awgo-%d.%d", os.Getpid(), time.Now().Nanosecond()))
-	util.EnsureExists(p)
+	util.MustExist(p)
 	defer os.RemoveAll(p)
 	fn(p)
 }

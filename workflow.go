@@ -415,13 +415,13 @@ func (wf *Workflow) CacheDir() string {
 			"$HOME/Library/Caches/com.runningwithcrayons.Alfred-3/Workflow Data/%s",
 			wf.BundleID()))
 	}
-	return util.EnsureExists(wf.cacheDir)
+	return util.MustExist(wf.cacheDir)
 }
 
 // OpenCache opens the workflow's cache directory in the default application (usually Finder).
 func OpenCache() error { return wf.OpenCache() }
 func (wf *Workflow) OpenCache() error {
-	util.EnsureExists(wf.DataDir())
+	util.MustExist(wf.DataDir())
 	cmd := exec.Command("open", wf.CacheDir())
 	return cmd.Run()
 }
@@ -441,7 +441,7 @@ func (wf *Workflow) DataDir() string {
 			"$HOME/Library/Application Support/Alfred 3/Workflow Data/%s",
 			wf.BundleID()))
 	}
-	return util.EnsureExists(wf.dataDir)
+	return util.MustExist(wf.dataDir)
 }
 
 // OpenData opens the workflow's data directory in the default application (usually Finder).
@@ -728,13 +728,13 @@ func (wf *Workflow) outputErrorMsg(msg string) {
 // awDataDir is the directory for AwGo's own data.
 func awDataDir() string { return wf.awDataDir() }
 func (wf *Workflow) awDataDir() string {
-	return util.EnsureExists(filepath.Join(wf.DataDir(), "_aw"))
+	return util.MustExist(filepath.Join(wf.DataDir(), "_aw"))
 }
 
 // awCacheDir is the directory for AwGo's own cache.
 func awCacheDir() string { return wf.awCacheDir() }
 func (wf *Workflow) awCacheDir() string {
-	return util.EnsureExists(filepath.Join(wf.CacheDir(), "_aw"))
+	return util.MustExist(filepath.Join(wf.CacheDir(), "_aw"))
 }
 
 // --------------------------------------------------------------------
@@ -743,7 +743,7 @@ func (wf *Workflow) awCacheDir() string {
 // finishLog outputs the workflow duration
 func finishLog(fatal bool) {
 	elapsed := time.Now().Sub(startTime)
-	s := util.Pad(fmt.Sprintf(" %s ", util.ReadableDuration(elapsed)), "-", 50)
+	s := util.Pad(fmt.Sprintf(" %s ", util.HumanDuration(elapsed)), "-", 50)
 	if fatal {
 		log.Fatalln(s)
 	} else {

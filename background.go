@@ -110,6 +110,6 @@ func getPid(jobName string) (int, error) {
 
 // Path to PID file for job.
 func pidFile(jobName string) string {
-	dir := util.EnsureExists(filepath.Join(awCacheDir(), "jobs"))
+	dir := util.MustExist(filepath.Join(awCacheDir(), "jobs"))
 	return filepath.Join(dir, jobName+".pid")
 }

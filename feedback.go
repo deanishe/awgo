@@ -396,7 +396,7 @@ func (fb *Feedback) NewItem(title string) *Item {
 func (fb *Feedback) NewFileItem(path string) *Item {
 	t := filepath.Base(path)
 	it := fb.NewItem(t)
-	it.Subtitle(util.ShortenPath(path)).
+	it.Subtitle(util.PrettyPath(path)).
 		Arg(path).
 		Valid(true).
 		UID(path).

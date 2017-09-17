@@ -48,9 +48,10 @@ func FindWorkflowRoot() (string, error) {
 	return "", fmt.Errorf("info.plist not found")
 }
 
-// EnsureExists takes and returns a directory path, creating the directory
+// MustExist takes and returns a directory path, creating the directory
 // if necessary. Any created directories have permission set to 700.
-func EnsureExists(dirpath string) string {
+// Panics if the directory cannot be created.
+func MustExist(dirpath string) string {
 	err := os.MkdirAll(dirpath, 0700)
 	if err != nil {
 		panic(fmt.Sprintf("Couldn't create directory `%s` : %v", dirpath, err))
@@ -88,8 +89,8 @@ func FindFileUpwards(filename string, startdir string) (string, error) {
 	return "", err
 }
 
-// ShortenPath replaces $HOME with ~ in path
-func ShortenPath(path string) string {
+// PrettyPath replaces $HOME with ~ in path
+func PrettyPath(path string) string {
 	return strings.Replace(path, os.Getenv("HOME"), "~", -1)
 }
 
@@ -132,9 +133,8 @@ func Pad(str, pad string, n int) string {
 	}
 }
 
-// ReadableDuration returns a sensibly-formatted string for
-// non-benchmarking purposes.
-func ReadableDuration(d time.Duration) string {
+// HumanDuration returns a sensibly-formatted string for non-benchmarking purposes.
+func HumanDuration(d time.Duration) string {
 	if d.Hours() >= 72 { // 3 days
 		return fmt.Sprintf("%dd", int(d.Hours()/24))
 	}
@@ -172,7 +172,7 @@ func ClearDirectory(p string) error {
 		return nil
 	}
 	err := os.RemoveAll(p)
-	EnsureExists(p)
+	MustExist(p)
 	if err == nil {
 		log.Printf("deleted contents of `%s`", p)
 	}

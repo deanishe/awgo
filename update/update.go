@@ -168,7 +168,7 @@ func (u *Updater) CheckDue() bool {
 		return true
 	}
 	elapsed := time.Now().Sub(u.LastCheck)
-	log.Printf("%s since last check for update", util.ReadableDuration(elapsed))
+	log.Printf("%s since last check for update", util.HumanDuration(elapsed))
 	return elapsed.Nanoseconds() > u.updateInterval.Nanoseconds()
 }
 
@@ -215,7 +215,7 @@ func (u *Updater) Install() error {
 
 // cachePath returns a filepath within AwGo's update cache directory.
 func (u *Updater) cachePath(filename string) string {
-	dp := util.EnsureExists(filepath.Join(u.cacheDir, "update"))
+	dp := util.MustExist(filepath.Join(u.cacheDir, "update"))
 	return filepath.Join(dp, filename)
 }
 

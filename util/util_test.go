@@ -96,16 +96,16 @@ func ExamplePad() {
 }
 
 func ExampleReadableDuration() {
-	fmt.Println(ReadableDuration(time.Hour * 96))
-	fmt.Println(ReadableDuration(time.Hour * 48))
-	fmt.Println(ReadableDuration(time.Hour * 12))
-	fmt.Println(ReadableDuration(time.Minute * 130))
-	fmt.Println(ReadableDuration(time.Minute * 90))
-	fmt.Println(ReadableDuration(time.Second * 315))
-	fmt.Println(ReadableDuration(time.Second * 70))
-	fmt.Println(ReadableDuration(time.Second * 5))
-	fmt.Println(ReadableDuration(time.Millisecond * 320))
-	fmt.Println(ReadableDuration(time.Millisecond * 50))
+	fmt.Println(HumanDuration(time.Hour * 96))
+	fmt.Println(HumanDuration(time.Hour * 48))
+	fmt.Println(HumanDuration(time.Hour * 12))
+	fmt.Println(HumanDuration(time.Minute * 130))
+	fmt.Println(HumanDuration(time.Minute * 90))
+	fmt.Println(HumanDuration(time.Second * 315))
+	fmt.Println(HumanDuration(time.Second * 70))
+	fmt.Println(HumanDuration(time.Second * 5))
+	fmt.Println(HumanDuration(time.Millisecond * 320))
+	fmt.Println(HumanDuration(time.Millisecond * 50))
 	// Output: 4d
 	// 48h
 	// 12h0m
