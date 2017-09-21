@@ -20,7 +20,7 @@ which will symlink the workflow to Alfred's workflow directory.
 
 Custom implementation of [`fuzzy.Interface`][fuzzy-if].
 
-Displays and filters a list of GitHub repos tagged `alfred-workflow`.
+Displays and filters a list of your Safari bookmarks.
 
 
 ## fuzzy ##
