@@ -7,7 +7,7 @@
 //
 
 /*
-Package fuzzy implements fuzzy sorting and filtering
+Package fuzzy implements fuzzy sorting and filtering.
 
 Sort() and Match() implement fuzzy search, e.g. "of" will match "OmniFocus"
 and "got" will match "Game of Thrones".
