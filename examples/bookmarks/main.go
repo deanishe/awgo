@@ -15,6 +15,9 @@ Filter() method, which returns another Bookmarks struct containing
 all bookmarks that match the given query.
 
 See bookmarks.go for the implementation.
+
+Alfred also allows you to search your Safari bookmarks, but not
+with fuzzy search.
 */
 package main
 

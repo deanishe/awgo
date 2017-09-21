@@ -16,29 +16,34 @@ workflow-install -s /path/to/example
 which will symlink the workflow to Alfred's workflow directory.
 
 
-fuzzy-simple
-------------
-
-Basic demonstration of using fuzzy filtering.
-
-Displays and filters a list of subdirectories of ~/ in Alfred, and allows you to open the folders or browse them in Alfred.
-
-
-fuzzy-custom
-------------
+## bookmarks ##
 
 Custom implementation of [`fuzzy.Interface`][fuzzy-if].
 
 Displays and filters a list of GitHub repos tagged `alfred-workflow`.
 
 
-update
-------
+## fuzzy ##
+
+Basic demonstration of using fuzzy filtering.
+
+Displays and filters a list of subdirectories of ~/ in Alfred, and allows you to open the folders or browse them in Alfred.
+
+
+## update ##
 
 Demonstration of how to enable your workflow to update itself from GitHub releases.
 
 A good template for new workflows.
 
 
+## workflows ##
+
+Demonstrates AwGo's [caching API][caching].
+
+Shows a list of repos from GitHub tagged `alfred-workflow`.
+
+
+[caching]: https://godoc.org/github.com/deanishe/awgo#Cache
 [installer]: https://gist.github.com/deanishe/35faae3e7f89f629a94e
 [fuzzy-if]: https://godoc.org/github.com/deanishe/awgo/fuzzy#Interface
