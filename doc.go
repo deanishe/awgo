@@ -83,9 +83,9 @@ Feedback and Workflow structs provide an additional Filter() method,
 which fuzzy-sorts the contained Items and removes any that do not match
 the query.
 
-See examples/fuzzy-simple for a basic demonstration.
+See examples/fuzzy for a basic demonstration.
 
-See examples/fuzzy-custom for a demonstration of implementing fuzzy.Interface
+See examples/bookmarks for a demonstration of implementing fuzzy.Interface
 on your own structs and customising the sort settings.
 
 
