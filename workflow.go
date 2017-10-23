@@ -23,7 +23,7 @@ import (
 )
 
 // AwGoVersion is the semantic version number of this library.
-const AwGoVersion = "0.9"
+const AwGoVersion = "0.10"
 
 var (
 	startTime time.Time // Time execution started
@@ -467,7 +467,6 @@ func (wf *Workflow) SessionID() string {
 			wf.sessionID = ev
 		} else {
 			wf.sessionID = NewSessionID()
-			wf.Var("AW_SESSION_ID", wf.sessionID)
 		}
 	}
 	return wf.sessionID
@@ -583,6 +582,9 @@ func (wf *Workflow) Run(fn func()) {
 	}
 	log.Println(util.Pad(vstr, "-", 50))
 
+	// Clear expired session data
+	wf.Session.Clear(false)
+
 	// Catch any `panic` and display an error in Alfred.
 	// Fatal(msg) will terminate the process (via log.Fatal).
 	defer func() {
@@ -647,6 +649,8 @@ func (wf *Workflow) WarnEmpty(title, subtitle string) {
 // workflow complete; sending further responses will have no effect.
 func SendFeedback() { wf.SendFeedback() }
 func (wf *Workflow) SendFeedback() *Workflow {
+	// Set session ID
+	wf.Var("AW_SESSION_ID", wf.SessionID())
 	// Truncate Items if MaxResults is set
 	if wf.MaxResults > 0 && len(wf.Feedback.Items) > wf.MaxResults {
 		wf.Feedback.Items = wf.Feedback.Items[0:wf.MaxResults]

@@ -199,7 +199,6 @@ type Session struct {
 // NewSession creates and initialises a Session.
 func NewSession(dir, sessionID string) *Session {
 	s := &Session{sessionID, NewCache(dir)}
-	s.Clear(false) // Clear old session data
 	return s
 }
 
@@ -263,8 +262,8 @@ func (s *Session) LoadJSON(name string, v interface{}) error {
 // data are cached & returned.
 //
 // If maxAge is 0, any cached data are always returned.
-func (s *Session) LoadOrStore(name string, maxAge time.Duration, reload func() ([]byte, error)) ([]byte, error) {
-	return s.cache.LoadOrStore(s.name(name), maxAge, reload)
+func (s *Session) LoadOrStore(name string, reload func() ([]byte, error)) ([]byte, error) {
+	return s.cache.LoadOrStore(s.name(name), 0, reload)
 }
 
 // LoadOrStoreJSON loads JSON-serialised data from cache if they exist and are
@@ -272,8 +271,8 @@ func (s *Session) LoadOrStore(name string, maxAge time.Duration, reload func() (
 // is called, and the returned interface{} is cached and returned.
 //
 // If maxAge is 0, any cached data are always returned.
-func (s *Session) LoadOrStoreJSON(name string, maxAge time.Duration, reload func() (interface{}, error), v interface{}) error {
-	return s.cache.LoadOrStoreJSON(s.name(name), maxAge, reload, v)
+func (s *Session) LoadOrStoreJSON(name string, reload func() (interface{}, error), v interface{}) error {
+	return s.cache.LoadOrStoreJSON(s.name(name), 0, reload, v)
 }
 
 // Exists returns true if the named cache exists.

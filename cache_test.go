@@ -439,7 +439,8 @@ func TestSession(t *testing.T) {
 			t.Errorf("cached data do not exist: %s", n)
 		}
 
-		NewSession(dir, sid2)
+		s = NewSession(dir, sid2)
+		s.Clear(false)
 
 		if s.Exists(n) {
 			t.Errorf("expired data still exist: %s", n)
