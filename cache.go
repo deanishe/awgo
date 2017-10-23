@@ -28,6 +28,10 @@ var (
 	letters       = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 )
 
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
+
 // Cache implements a simple store/load API, saving data to specified directory.
 //
 // There are two APIs, one for storing/loading bytes and one for
