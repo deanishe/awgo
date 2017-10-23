@@ -194,7 +194,23 @@ func (c *Cache) Age(name string) (time.Duration, error) {
 // path returns the path to a named file within cache directory.
 func (c *Cache) path(name string) string { return filepath.Join(c.Dir, name) }
 
-// Session is a Cache that is scoped to the current workflow session.
+// Session is a Cache that is tied to the `sessionID` value passed to NewSession().
+//
+// All cached data are stored under the sessionID. NewSessionID() creates
+// a pseudo-random string based on the current UNIX time (in nanoseconds).
+// The Workflow struct persists this value as a session ID as long as the
+// user is using the current workflow via the `AW_SESSION_ID` top-level
+// workflow variable.
+//
+// As soon as Alfred closes or the user calls another workflow, this variable
+// is lost and the data are "hidden". Session.Clear(false) must be called to
+// actually remove the data from the cache directory, which Workflow.Run() does.
+//
+// In contrast to the Cache API, Session methods lack an explicit `maxAge`
+// parameter. It is always `0`, i.e. cached data are always loaded regardless
+// of age as long as the session is valid.
+//
+// TODO: Embed Cache rather than wrapping it.
 type Session struct {
 	SessionID string
 	cache     *Cache
@@ -206,7 +222,8 @@ func NewSession(dir, sessionID string) *Session {
 	return s
 }
 
-// NewSessionID returns a random string.
+// NewSessionID returns a pseudo-random string based on the current UNIX time
+// in nanoseconds.
 func NewSessionID() string {
 	b := make([]rune, sidLength)
 	for i := range b {
@@ -261,20 +278,17 @@ func (s *Session) LoadJSON(name string, v interface{}) error {
 	return s.cache.LoadJSON(s.name(name), v)
 }
 
-// LoadOrStore loads data from cache if they exist and are newer than maxAge. If
-// data do not exist or are older than maxAge, reload is called, and the returned
-// data are cached & returned.
+// LoadOrStore loads data from cache if they exist. If data do not exist,
+// reload is called, and the resulting data are cached & returned.
 //
 // If maxAge is 0, any cached data are always returned.
 func (s *Session) LoadOrStore(name string, reload func() ([]byte, error)) ([]byte, error) {
 	return s.cache.LoadOrStore(s.name(name), 0, reload)
 }
 
-// LoadOrStoreJSON loads JSON-serialised data from cache if they exist and are
-// newer than maxAge. If the data do not exist or are older than maxAge, reload
-// is called, and the returned interface{} is cached and returned.
-//
-// If maxAge is 0, any cached data are always returned.
+// LoadOrStoreJSON loads JSON-serialised data from cache if they exist.
+// If the data do not exist, reload is called, and the resulting interface{}
+// is cached and returned.
 func (s *Session) LoadOrStoreJSON(name string, reload func() (interface{}, error), v interface{}) error {
 	return s.cache.LoadOrStoreJSON(s.name(name), 0, reload, v)
 }
