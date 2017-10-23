@@ -58,6 +58,11 @@ func run() {
 	// ----------------------------------------------------------------
 	// Handle CLI arguments
 	// ----------------------------------------------------------------
+
+	// You should always use wf.Args() in Script Filters. It contains the
+	// same as os.Args[1:], but the arguments are first parsed for AwGo's
+	// magic actions (i.e. `workflow:*` to allow the user to easily open
+	// the log or data/cache directory).
 	args = wf.Args()
 	if len(args) > 0 {
 		// When run from a workflow, because the program is called from

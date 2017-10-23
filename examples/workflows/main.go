@@ -5,11 +5,21 @@
 //
 
 /*
-Workflow workflows demonstrates using cached data for maximum speed.
+Workflow workflows searches GitHub repos tagged with "alfred-workflow".
 
+It demonstrates the use of the caching and background-process APIs to
+provide a responsive workflow by updating the datastore in the background.
 
+It shows results based on cached data (if available), and if the cached data
+are out-of-date, starts a background process to refresh the cache.
 
-It demonstrates using AwGo's caching API.
+The Script Filter reloads the results (by setting Workflow.Rerun) until the
+cached data have been updated (at which point it's showing the latest data).
+
+This is a very useful idiom for workflows that don't need data that are
+absolutely bang up-to-date. The user still gets (potentially out-of-date)
+results, preserving the responsiveness of the workflow, and the latest data
+are shown as soon as they're available.
 */
 package main
 
@@ -40,15 +50,16 @@ Usage:
 	repos -h|--version
 
 Options:
-    --download  Download list of books to cache.
-	-h, --help  Show this message and exit.
-	--version   Show version number and exit.
+    --download     download list of workflows to cache
+	-h, --help     show this message and exit
+	--version      show version number and exit
 `
 	sopts []fuzzy.Option
 	wf    *aw.Workflow
 )
 
 func init() {
+	// Set some custom fuzzy search options
 	sopts = []fuzzy.Option{
 		fuzzy.AdjacencyBonus(10.0),
 		fuzzy.LeadingLetterPenalty(-0.1),
@@ -97,6 +108,9 @@ func run() {
 		}
 	}
 
+	// If the cache has expired, set Rerun (which tells Alfred to re-run the
+	// workflow), and start the background update process if it isn't already
+	// running.
 	if wf.Cache.Expired(cacheName, maxCacheAge) {
 		wf.Rerun(0.3)
 		if !aw.IsRunning("download") {
@@ -107,7 +121,8 @@ func run() {
 		} else {
 			log.Printf("download job already running.")
 		}
-		// Exit if there are no repos to show
+		// Cache is also "expired" if it doesn't exist. So if there are no
+		// cached data, show a corresponding message and exit.
 		if len(repos) == 0 {
 			wf.NewItem("Downloading repos…").
 				Icon(aw.IconInfo)
@@ -117,6 +132,7 @@ func run() {
 
 	}
 
+	// Add results for cached repos
 	for _, r := range repos {
 		wf.NewItem(r.FullName()).
 			Subtitle(r.Description).
@@ -125,13 +141,22 @@ func run() {
 			Valid(true)
 	}
 
+	// Filter results against query if user entered one
 	if query != "" {
 		res := wf.Filter(query)
 		log.Printf("[main] %d/%d repos match \"%s\"", len(res), len(repos), query)
 	}
 
+	// Convenience method that shows a warning if there are no results to show.
+	// Alfred's default behaviour if no results are returned is to show its
+	// fallback searches, which is also what it does if a workflow errors out.
+	//
+	// As such, it's a good idea to display a message in this situation,
+	// otherwise the user can't tell if the workflow failed or simply found
+	// no matching results.
 	wf.WarnEmpty("No repos found", "Try a different query?")
 
+	// Send results/warning message to Alfred
 	wf.SendFeedback()
 }
 

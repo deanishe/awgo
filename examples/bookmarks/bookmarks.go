@@ -31,7 +31,8 @@ func (b Bookmarks) Len() int           { return len(b) }
 func (b Bookmarks) Swap(i, j int)      { b[i], b[j] = b[j], b[i] }
 func (b Bookmarks) Less(i, j int) bool { return b[i].Title < b[j].Title }
 
-// SortKey implements fuzzy.Interface.
+// SortKey implements fuzzy.Interface. It sets the search keywords to the
+// title of the bookmark plus the URL domain.
 func (b Bookmarks) SortKey(i int) string {
 	return fmt.Sprintf("%s %s", b[i].Title, b[i].Domain)
 }
@@ -57,8 +58,8 @@ type Bookmark struct {
 	URL    string // Bookmark URL
 }
 
-// entry is an node in Safari's Bookmarks.plist file. This struct
-// matches all types of nodes in the file.
+// entry is a node in Safari's Bookmarks.plist file. This struct matches all
+// types of nodes in the file.
 type entry struct {
 	Title    string            `plist:"Title"`
 	Type     string            `plist:"WebBookmarkType"`
@@ -75,8 +76,10 @@ func loadBookmarks() (Bookmarks, error) {
 		return nil, err
 	}
 
-	root := entry{}
-	entries := []*entry{}
+	var (
+		root    entry    // entire tree
+		entries []*entry // where we'll store the actual bookmark items
+	)
 	dec := plist.NewDecoder(file)
 	if err := dec.Decode(&root); err != nil {
 		return nil, err
@@ -99,7 +102,7 @@ func loadBookmarks() (Bookmarks, error) {
 		// with different titles to stil be shown, even if the URL is
 		// a duplicate
 		key := e.Title + e.URL
-		if seen[key] == true {
+		if seen[key] {
 			continue
 		}
 
@@ -110,6 +113,8 @@ func loadBookmarks() (Bookmarks, error) {
 		} else {
 			title = e.URIDict["title"]
 		}
+
+		// Ignore invalid URLs
 		u, err := url.Parse(e.URL)
 		if err != nil {
 			log.Printf("couldn't parse URL \"%s\" (%s): %v", e.URL, title, err)

@@ -7,17 +7,20 @@
 //
 
 /*
-Workflow bookmarks demonstrates implementing fuzzy.Interface.
+Workflow bookmarks demonstrates implementing fuzzy.Interface on your own structs.
 
-It loads your Safari bookmarks from ~/Library/Safari/Bookmarks.plist
-into the Bookmarks struct, which implements fuzzy.Interface and a
-Filter() method, which returns another Bookmarks struct containing
-all bookmarks that match the given query.
+(This is not strictly necessary, as the Workflow/Feedback structs also
+implement fuzzy.Interface.)
+
+It loads your Safari bookmarks from ~/Library/Safari/Bookmarks.plist into the
+Bookmarks struct, which implements fuzzy.Interface and a Filter() method,
+which returns another Bookmarks struct containing all bookmarks that match
+the given query.
 
 See bookmarks.go for the implementation.
 
-Alfred also allows you to search your Safari bookmarks, but not
-with fuzzy search.
+Alfred also allows you to search your Safari bookmarks, but not with fuzzy
+search.
 */
 package main
 
