@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime/debug"
+	"sync"
 	"time"
 
 	"github.com/deanishe/awgo/fuzzy"
@@ -197,6 +198,7 @@ func RemoveMagic(actions ...MagicAction) Option {
 //
 // See the examples/ subdirectory for some full examples of workflows.
 type Workflow struct {
+	sync.WaitGroup
 	// The response that will be sent to Alfred. Workflow provides
 	// convenience wrapper methods, so you don't normally have to
 	// interact with this directly.
@@ -583,7 +585,11 @@ func (wf *Workflow) Run(fn func()) {
 	log.Println(util.Pad(vstr, "-", 50))
 
 	// Clear expired session data
-	wf.Session.Clear(false)
+	wf.Add(1)
+	go func() {
+		defer wf.Done()
+		wf.Session.Clear(false)
+	}()
 
 	// Catch any `panic` and display an error in Alfred.
 	// Fatal(msg) will terminate the process (via log.Fatal).
@@ -604,6 +610,7 @@ func (wf *Workflow) Run(fn func()) {
 	// Call the workflow's main function.
 	fn()
 
+	wf.Wait()
 	finishLog(false)
 }
 
