@@ -33,7 +33,7 @@ const (
 var stripper transform.Transformer
 
 func init() {
-	stripper = transform.Chain(norm.NFD, transform.RemoveFunc(isMn), norm.NFC)
+	stripper = transform.Chain(norm.NFD, transform.RemoveFunc(isMn))
 }
 
 // Interface makes the implementer fuzzy-sortable. It is a superset
@@ -198,6 +198,7 @@ func (s *Sorter) Sort(query string) []*Result {
 	// Generate matches for Data, then call sort.Sort()
 	for i := 0; i < s.Data.Len(); i++ {
 		key := s.Data.SortKey(i)
+		// TODO: Use goroutines to speed up scoring
 		s.results[i] = s.Match(key)
 	}
 	sort.Sort(s)
