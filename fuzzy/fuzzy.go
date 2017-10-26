@@ -190,16 +190,13 @@ func (s *Sorter) Swap(i, j int) {
 
 // Sort sorts data against query.
 func (s *Sorter) Sort(query string) []*Result {
-	s.results = make([]*Result, s.Data.Len())
 	s.query = query
 	if isASCII(query) && s.StripDiacritics {
 		s.stripDiacritics = true
 	}
-	// Generate matches for Data, then call sort.Sort()
+
 	for i := 0; i < s.Data.Len(); i++ {
-		key := s.Data.SortKey(i)
-		// TODO: Use goroutines to speed up scoring
-		s.results[i] = s.Match(key)
+		s.results[i] = s.Match(s.Data.SortKey(i))
 	}
 	sort.Sort(s)
 	return s.results
