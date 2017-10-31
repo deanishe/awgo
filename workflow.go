@@ -24,7 +24,7 @@ import (
 )
 
 // AwGoVersion is the semantic version number of this library.
-const AwGoVersion = "0.10.1"
+const AwGoVersion = "0.11"
 
 var (
 	startTime time.Time // Time execution started
@@ -81,6 +81,12 @@ func (opts options) apply(wf *Workflow) Option {
 func HelpURL(URL string) Option {
 	return func(wf *Workflow) Option {
 		prev := wf.HelpURL
+		ma := &helpMagic{URL}
+		if URL != "" {
+			wf.MagicActions.Register(ma)
+		} else {
+			wf.MagicActions.Unregister(ma)
+		}
 		wf.HelpURL = URL
 		return HelpURL(prev)
 	}
@@ -149,6 +155,20 @@ func SortOptions(opts ...fuzzy.Option) Option {
 		prev := wf.SortOptions
 		wf.SortOptions = opts
 		return SortOptions(prev...)
+	}
+}
+
+// SuppressUIDs prevents UIDs from being set on feedback Items.
+// This turns off Alfred's knowledge, so items will be shown in the order
+// you add them. Useful if you need a particular item to be the top result,
+// e.g. a notification of an update.
+//
+// This setting only applies to Items created *after* it has been set.
+func SuppressUIDs(on bool) Option {
+	return func(wf *Workflow) Option {
+		prev := wf.Feedback.NoUIDs
+		wf.Feedback.NoUIDs = on
+		return SuppressUIDs(prev)
 	}
 }
 
@@ -503,6 +523,15 @@ func (wf *Workflow) OpenLog() error {
 		log.Println("Creating log file...")
 	}
 	cmd := exec.Command("open", wf.LogFile())
+	return cmd.Run()
+}
+
+func OpenHelp() error { return wf.OpenHelp() }
+func (wf *Workflow) OpenHelp() error {
+	if wf.HelpURL == "" {
+		return errors.New("Help URL is not set")
+	}
+	cmd := exec.Command("open", wf.HelpURL)
 	return cmd.Run()
 }
 

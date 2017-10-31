@@ -215,7 +215,7 @@ func (u *Updater) Install() error {
 
 // cachePath returns a filepath within AwGo's update cache directory.
 func (u *Updater) cachePath(filename string) string {
-	dp := util.MustExist(filepath.Join(u.cacheDir, "update"))
+	dp := util.MustExist(filepath.Join(u.cacheDir, "_aw/update"))
 	return filepath.Join(dp, filename)
 }
 

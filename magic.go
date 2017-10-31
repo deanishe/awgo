@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -35,10 +36,17 @@ var (
 // interface for full documentation.
 type MagicActions map[string]MagicAction
 
-// Register adds a MagicArgument to the mapping. Previous entries are overwritten.
+// Register adds a MagicAction to the mapping. Previous entries are overwritten.
 func (ma MagicActions) Register(actions ...MagicAction) {
 	for _, action := range actions {
 		ma[action.Keyword()] = action
+	}
+}
+
+// Unregister removes a MagicAction from the mapping (based on its keyword).
+func (ma MagicActions) Unregister(actions ...MagicAction) {
+	for _, action := range actions {
+		delete(ma, action.Keyword())
 	}
 }
 
@@ -116,10 +124,11 @@ func (ma MagicActions) Args(args []string, prefix string) []string {
 //    <prefix>deldata   | Delete everything in the workflow's data directory.
 //    <prefix>delcache  | Delete everything in the workflow's cache directory.
 //    <prefix>reset     | Delete everything in the workflow's data and cache directories.
+//    <prefix>help      | Open help URL in default browser.
+//                      | Only registered if you have set a HelpURL.
 //    <prefix>update    | Check for updates and install a newer version of the workflow
 //                      | if available.
-//                      | Only registered if you have set an Updater via SetUpdater()
-//                      | or the GitHub value in Options.
+//                      | Only registered if you have set an Updater.
 //
 type MagicAction interface {
 	// Keyword is what the user must enter to run the action after
@@ -182,6 +191,19 @@ func (a resetMagic) Keyword() string     { return "reset" }
 func (a resetMagic) Description() string { return "Delete all saved and cached workflow data" }
 func (a resetMagic) RunText() string     { return "Deleted workflow saved and cached data" }
 func (a resetMagic) Run() error          { return Reset() }
+
+// Opens URL in default browser.
+type helpMagic struct {
+	URL string
+}
+
+func (a helpMagic) Keyword() string     { return "help" }
+func (a helpMagic) Description() string { return "Open workflow help URL in default browser" }
+func (a helpMagic) RunText() string     { return "Opening help in your browser…" }
+func (a helpMagic) Run() error {
+	cmd := exec.Command("open", a.URL)
+	return cmd.Run()
+}
 
 // Updates the workflow if a newer release is available.
 type updateMagic struct {

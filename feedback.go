@@ -64,6 +64,7 @@ type Item struct {
 	vars         map[string]string
 	mods         map[string]*Modifier
 	icon         *Icon
+	noUID        bool // Suppress UID in JSON
 }
 
 // Title sets the title of the item in Alfred's results
@@ -95,6 +96,9 @@ func (it *Item) Arg(s string) *Item {
 // UID sets Item's unique ID, which is used by Alfred to remember your choices.
 // Use a blank string to force results to appear in the order you add them.
 func (it *Item) UID(s string) *Item {
+	if it.noUID {
+		s = ""
+	}
 	it.uid = &s
 	return it
 }
@@ -331,19 +335,16 @@ func (m *Modifier) MarshalJSON() ([]byte, error) {
 // It is important to use the constructor functions for Feedback, Item
 // and Modifier structs.
 type Feedback struct {
-	// Items are the results to be sent to Alfred.
-	Items []*Item
-	rerun float64           // Tell Alfred to re-run Script Filter.
-	sent  bool              // Set to true when feedback has been sent.
-	vars  map[string]string // Top-level feedback variables.
+	Items  []*Item           // The results to be sent to Alfred.
+	NoUIDs bool              // If true, suppress Item UIDs.
+	rerun  float64           // Tell Alfred to re-run Script Filter.
+	sent   bool              // Set to true when feedback has been sent.
+	vars   map[string]string // Top-level feedback variables.
 }
 
 // NewFeedback creates a new, initialised Feedback struct.
 func NewFeedback() *Feedback {
-	fb := &Feedback{}
-	fb.Items = []*Item{}
-	fb.vars = map[string]string{}
-	return fb
+	return &Feedback{Items: []*Item{}, vars: map[string]string{}}
 }
 
 // Var sets an Alfred variable for subsequent workflow elements.
@@ -381,7 +382,7 @@ func (fb *Feedback) IsEmpty() bool { return len(fb.Items) == 0 }
 // The Item inherits any workflow variables set on the Feedback parent at
 // time of creation.
 func (fb *Feedback) NewItem(title string) *Item {
-	it := &Item{title: title, vars: map[string]string{}}
+	it := &Item{title: title, vars: map[string]string{}, noUID: fb.NoUIDs}
 	fb.Items = append(fb.Items, it)
 	return it
 }
