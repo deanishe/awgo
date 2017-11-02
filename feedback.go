@@ -298,6 +298,12 @@ func (m *Modifier) Valid(v bool) *Modifier {
 	return m
 }
 
+// Icon sets an icon for the Modifier.
+func (m *Modifier) Icon(i *Icon) *Modifier {
+	m.icon = i
+	return m
+}
+
 // Var sets a variable for the Modifier.
 func (m *Modifier) Var(k, v string) *Modifier {
 	m.vars[k] = v
