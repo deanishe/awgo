@@ -42,7 +42,7 @@ func TestStoreAndLoad(t *testing.T) {
 		}
 
 		// Delete non-existant store
-		if err := c.Store(n, []byte{}); err != nil {
+		if err := c.Store(n, nil); err != nil {
 			t.Errorf("unexpected error clearing cache: %v", err)
 		}
 
@@ -88,7 +88,7 @@ func TestStoreAndLoad(t *testing.T) {
 		}
 
 		// Delete data
-		if err := c.Store(n, []byte{}); err != nil {
+		if err := c.Store(n, nil); err != nil {
 			t.Errorf("couldn't delete cache %s: %v", p, err)
 		}
 
@@ -383,7 +383,7 @@ func TestSession(t *testing.T) {
 		}
 
 		// Delete non-existant store
-		if err := s.Store(n, []byte{}); err != nil {
+		if err := s.Store(n, nil); err != nil {
 			t.Errorf("unexpected error clearing cache: %v", err)
 		}
 

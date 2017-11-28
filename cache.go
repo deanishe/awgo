@@ -52,11 +52,10 @@ func NewCache(dir string) *Cache {
 	return &Cache{dir}
 }
 
-// Store saves data under the given name. If len(data) is 0, the file is
-// deleted.
+// Store saves data under the given name. If data is nil, the file is deleted.
 func (c *Cache) Store(name string, data []byte) error {
 	p := c.path(name)
-	if len(data) == 0 {
+	if data == nil {
 		if util.PathExists(p) {
 			return os.Remove(p)
 		}
@@ -130,9 +129,10 @@ func (c *Cache) LoadOrStore(name string, maxAge time.Duration, reload func() ([]
 
 // LoadOrStoreJSON loads JSON-serialised data from cache if they exist and are
 // newer than maxAge. If the data do not exist or are older than maxAge, reload
-// is called, and the returned interface{} is cached and returned.
+// is called, and the returned data are marshalled to JSON and cached, and
+// unmarshalled into v.
 //
-// If maxAge is 0, any cached data are always returned.
+// If maxAge is 0, any cached data are loaded regardless of age.
 func (c *Cache) LoadOrStoreJSON(name string, maxAge time.Duration, reload func() (interface{}, error), v interface{}) error {
 	var (
 		load bool
