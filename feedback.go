@@ -12,7 +12,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/url"
 	"os"
 	"path/filepath"
 
@@ -20,31 +19,20 @@ import (
 	"github.com/deanishe/awgo/util"
 )
 
-// Valid modifier keys for Item.NewModifier(). You can't combine these
-// in any way: Alfred only permits one modifier at a time.
-const (
-	ModCmd   = "cmd"
-	ModAlt   = "alt"
-	ModCtrl  = "ctrl"
-	ModShift = "shift"
-	ModFn    = "fn"
-)
+// ModKey is a modifier key pressed by the user to run an alternate
+// item action in Alfred (in combination with ↩).
+//
+// It is passed to Item.NewModifier(). ModKeys cannot be combined:
+// Alfred only permits one modifier at a time.
+type ModKey string
 
-var (
-	// Permitted modifiers
-	validModifiers = map[string]bool{
-		ModCmd:   true,
-		ModAlt:   true,
-		ModCtrl:  true,
-		ModShift: true,
-		ModFn:    true,
-	}
-	// Permitted icon types
-	validIconTypes = map[string]bool{
-		IconTypeImageFile: true,
-		IconTypeFileIcon:  true,
-		IconTypeFileType:  true,
-	}
+// Valid modifier keys
+const (
+	ModCmd   ModKey = "cmd"   // Alternate action for ⌘↩
+	ModAlt   ModKey = "alt"   // Alternate action for ⌥↩
+	ModCtrl  ModKey = "ctrl"  // Alternate action for ^↩
+	ModShift ModKey = "shift" // Alternate action for ⇧↩
+	ModFn    ModKey = "fn"    // Alternate action for fn↩
 )
 
 // Item is a single Alfred result. Add them to a Feedback struct to
@@ -60,9 +48,9 @@ type Item struct {
 	file         bool
 	copytext     *string
 	largetype    *string
-	qlurl        *url.URL
+	ql           *string
 	vars         map[string]string
-	mods         map[string]*Modifier
+	mods         map[ModKey]*Modifier
 	icon         *Icon
 	noUID        bool // Suppress UID in JSON
 }
@@ -87,7 +75,8 @@ func (it *Item) Match(s string) *Item {
 	return it
 }
 
-// Arg sets Item's arg, i.e. the value that is passed as {query} to the next action in the workflow
+// Arg sets Item's arg, i.e. the value that is passed as {query} to the
+// next action in the workflow.
 func (it *Item) Arg(s string) *Item {
 	it.arg = &s
 	return it
@@ -137,9 +126,16 @@ func (it *Item) Largetype(s string) *Item {
 	return it
 }
 
+// Quicklook is a path or URL shown in a macOS Quicklook window on SHIFT
+// or CMD+Y.
+func (it *Item) Quicklook(s string) *Item {
+	it.ql = &s
+	return it
+}
+
 // Icon sets the icon for the Item. Can point to an image file, a filepath
-// of a file whose icon should be used, or a UTI, such as
-// "com.apple.folder".
+// of a file whose icon should be used, or a UTI.
+// See the documentation for Icon for more details.
 func (it *Item) Icon(icon *Icon) *Item {
 	it.icon = icon
 	return it
@@ -156,10 +152,7 @@ func (it *Item) Var(k, v string) *Item {
 
 // NewModifier returns an initialised Modifier bound to this Item.
 // It also populates the Modifier with any workflow variables set in the Item.
-//
-// The workflow will terminate (call FatalError) if key is not a valid
-// modifier.
-func (it *Item) NewModifier(key string) *Modifier {
+func (it *Item) NewModifier(key ModKey) *Modifier {
 	m, err := newModifier(key)
 	if err != nil {
 		wf.FatalError(err)
@@ -178,11 +171,8 @@ func (it *Item) NewModifier(key string) *Modifier {
 
 // SetModifier sets a Modifier for a modifier key.
 func (it *Item) SetModifier(m *Modifier) error {
-	if ok := validModifiers[m.Key]; !ok {
-		return fmt.Errorf("Invalid modifier: %s", m.Key)
-	}
 	if it.mods == nil {
-		it.mods = map[string]*Modifier{}
+		it.mods = map[ModKey]*Modifier{}
 	}
 	it.mods[m.Key] = m
 	return nil
@@ -197,17 +187,17 @@ func (it *Item) Vars() map[string]string {
 // need to call this directly: use Feedback.Send() instead.
 func (it *Item) MarshalJSON() ([]byte, error) {
 	var (
-		typ   string
-		qlurl string
-		text  *itemText
+		typ  string
+		ql   string
+		text *itemText
 	)
 
 	if it.file {
 		typ = "file"
 	}
 
-	if it.qlurl != nil {
-		qlurl = it.qlurl.String()
+	if it.ql != nil {
+		ql = *it.ql
 	}
 
 	if it.copytext != nil || it.largetype != nil {
@@ -228,7 +218,7 @@ func (it *Item) MarshalJSON() ([]byte, error) {
 		Icon      *Icon                `json:"icon,omitempty"`
 		Quicklook string               `json:"quicklookurl,omitempty"`
 		Variables map[string]string    `json:"variables,omitempty"`
-		Mods      map[string]*Modifier `json:"mods,omitempty"`
+		Mods      map[ModKey]*Modifier `json:"mods,omitempty"`
 	}{
 		Title:     it.title,
 		Subtitle:  it.subtitle,
@@ -240,7 +230,7 @@ func (it *Item) MarshalJSON() ([]byte, error) {
 		Type:      typ,
 		Text:      text,
 		Icon:      it.icon,
-		Quicklook: qlurl,
+		Quicklook: ql,
 		Variables: it.vars,
 		Mods:      it.mods,
 	})
@@ -263,7 +253,7 @@ type itemText struct {
 // after creating the Modifier are not inherited.
 type Modifier struct {
 	// The modifier key. May be any of ValidModifiers.
-	Key         string
+	Key         ModKey
 	arg         *string
 	subtitle    *string
 	subtitleSet bool
@@ -273,10 +263,7 @@ type Modifier struct {
 }
 
 // newModifier creates a Modifier, validating key.
-func newModifier(key string) (*Modifier, error) {
-	if ok := validModifiers[key]; !ok {
-		return nil, fmt.Errorf("Invalid modifier key: %s", key)
-	}
+func newModifier(key ModKey) (*Modifier, error) {
 	return &Modifier{Key: key, vars: map[string]string{}}, nil
 }
 

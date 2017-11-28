@@ -8,22 +8,27 @@ package aw
 
 import "fmt"
 
-// Valid icon types for Icon. You can use an image file, the icon of a file,
-// e.g. an application's icon, or the icon for a filetype (specified by a UTI).
+// IconType specifies the type of an aw.Icon struct. It can be an image file,
+// the icon of a file, e.g. an application's icon, or the icon for a UTI.
+type IconType string
+
+// Valid icon types.
 const (
-	// For image files you wish to show in Alfred.
-	IconTypeImageFile = ""
-	// Show the icon of a file, e.g. combine with "/Applications/Safari.app"
-	// to show Safari's icon in Alfred.
-	IconTypeFileIcon = "fileicon"
-	// For UTIs to show the icon for a filetype, e.g. "public.folder",
+	// Indicates that Icon.Value is the path to an image file that should
+	// be used as the Item's icon.
+	IconTypeImageFile IconType = ""
+	// Icon.Value points to an object whose icon should be show in Alfred,
+	//e.g. combine with "/Applications/Safari.app" to show Safari's icon.
+	IconTypeFileIcon IconType = "fileicon"
+	// Indicates that Icon.Value is a UTI, e.g. "public.folder",
 	// which will give you the icon for a folder.
-	IconTypeFileType = "filetype"
+	IconTypeFileType IconType = "filetype"
 )
 
 // Ready-to-use icons based on built-in OS X system icons.
 // These icons are all found in
-// /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources.
+//
+//     /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources
 //
 // The icons are the same as found in the Alfred-Workflow library
 // for Python. Preview them here:
@@ -64,16 +69,16 @@ var (
 // Type = "" (the default) will treat Value as the path to a PNG or ICNS
 // file.
 //
-// Type = "fileicon" will treat Value as the path to a file or directory
-// and use that file's icon, e.g:
+// Type = IconTypeFileIcon will treat Value as the path to a file or
+// directory and use that file's icon, e.g:
 //
-//    icon := Icon{"/Applications/Mail.app", "fileicon"}
+//    icon := Icon{"/Applications/Mail.app", IconTypeFileIcon}
 //
 // will display Mail.app's icon.
 //
-// Type = "filetype" will treat Value as a UTI, such as "public.movie"
-// or "com.microsoft.word.doc". UTIs are useful when you don't have
-// a local path to point to.
+// Type = IconTypeFileType will treat Value as a UTI, such as
+// "public.movie" or "com.microsoft.word.doc". UTIs are useful when
+// you don't have a local path to point to.
 //
 // You can find out the UTI of a filetype by dragging one of the files
 // to a File Filter's File Types list in Alfred, or in a shell with:
@@ -82,8 +87,8 @@ var (
 //
 // This will only work on Spotlight-indexed files.
 type Icon struct {
-	Value string `json:"path"`           // Path or UTI
-	Type  string `json:"type,omitempty"` // "fileicon", "filetype" or ""
+	Value string   `json:"path"`           // Path or UTI
+	Type  IconType `json:"type,omitempty"` // "fileicon", "filetype" or ""
 }
 
 func systemIcon(filename string) *Icon {
@@ -92,7 +97,7 @@ func systemIcon(filename string) *Icon {
 	path = fmt.Sprintf(
 		"/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/%s.icns", filename)
 	icon.Value = path
-	icon.Type = ""
+	icon.Type = IconTypeImageFile
 	return icon
 }
 

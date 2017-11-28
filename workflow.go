@@ -24,7 +24,7 @@ import (
 )
 
 // AwGoVersion is the semantic version number of this library.
-const AwGoVersion = "0.12"
+const AwGoVersion = "0.13"
 
 var (
 	startTime time.Time // Time execution started

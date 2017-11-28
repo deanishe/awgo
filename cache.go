@@ -84,7 +84,6 @@ func (c *Cache) StoreJSON(name string, v interface{}) error {
 
 // Load reads data saved under given name.
 func (c *Cache) Load(name string) ([]byte, error) {
-	// TODO: load data
 	p := c.path(name)
 	if _, err := os.Stat(p); err != nil {
 		return nil, err

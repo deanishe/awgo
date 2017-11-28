@@ -82,7 +82,7 @@ var marshalItemTests = []struct {
 		ExpectedJSON: `{"title":"title","subtitle":"subtitle","valid":false}`},
 	// Alternate subtitle
 	{Item: &Item{title: "title", subtitle: p("subtitle"),
-		mods: map[string]*Modifier{
+		mods: map[ModKey]*Modifier{
 			"cmd": &Modifier{
 				Key:      "cmd",
 				subtitle: p("command sub")}}},
