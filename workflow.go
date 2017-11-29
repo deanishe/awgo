@@ -75,9 +75,8 @@ func (opts options) apply(wf *Workflow) Option {
 }
 
 // HelpURL sets the link to your issues/page forum thread where users can
-// ask for help. It is shown in the debugger/log if an error occurs. If no
-// HelpURL is specified, the website specified in the main workflow setup
-// dialog is shown instead (if one is set).
+// ask for help. It is shown in the debugger/log if an error occurs
+// ("Get help at http://…").
 func HelpURL(URL string) Option {
 	return func(wf *Workflow) Option {
 		prev := wf.HelpURL
@@ -231,8 +230,6 @@ type Workflow struct {
 
 	// HelpURL is a link to your issues page/forum thread where users can
 	// report bugs. It is shown in the debugger if the workflow crashes.
-	// If no HelpURL is specified, the Website specified in the main
-	// workflow setup dialog will be shown (if one is set).
 	HelpURL string
 
 	// LogPrefix is the character printed to the log at the start of each run.
@@ -269,7 +266,7 @@ type Workflow struct {
 	// debug is set from Alfred's `alfred_debug` environment variable.
 	debug bool
 
-	// version holds value set by user or read from environment variable or info.plist.
+	// version is a semantic version set by user or read from environment variable.
 	version string
 
 	// Updater fetches updates for the workflow.
@@ -378,7 +375,8 @@ func Debug() bool                { return wf.debug }
 func (wf *Workflow) Debug() bool { return wf.debug }
 
 // BundleID returns the workflow's bundle ID. This library will not
-// work without a bundle ID, which is set in info.plist.
+// work without a bundle ID, which is set in the workflow's main
+// setup sheet in Alfred Preferences.
 func BundleID() string { return wf.BundleID() }
 func (wf *Workflow) BundleID() string {
 	if wf.Ctx.BundleID == "" {
@@ -387,11 +385,13 @@ func (wf *Workflow) BundleID() string {
 	return wf.Ctx.BundleID
 }
 
-// Name returns the workflow's name as specified in info.plist.
+// Name returns the workflow's name as specified in the workflow's main
+// setup sheet in Alfred Preferences.
 func Name() string                { return wf.Name() }
 func (wf *Workflow) Name() string { return wf.Ctx.Name }
 
-// Version returns the workflow's version from info.plist.
+// Version returns the workflow's version set in the workflow's configuration
+// sheet in Alfred Preferences.
 func Version() string                { return wf.Version() }
 func (wf *Workflow) Version() string { return wf.Ctx.WorkflowVersion }
 

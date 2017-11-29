@@ -23,6 +23,7 @@ import (
 )
 
 var (
+	// Filenames of session cache files are prefixed with this string
 	sessionPrefix = "_aw_session"
 	sidLength     = 24
 	letters       = []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
