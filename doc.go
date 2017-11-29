@@ -1,17 +1,20 @@
 /*
-Package aw provides utilities for building workflows for Alfred 3.
+Package aw is a utility library/framework for building workflows for Alfred.
 https://www.alfredapp.com/
 
-Alfred 2 is not supported.
+It provides APIs for interacting with Alfred (e.g. generating Script Filter
+feedback and setting workflow variables) with a host of convenience functions,
+plus support for common workflow idioms, such as caching data from
+applications/web services and running background processes to update cached
+data while keeping your workflow responsive.
 
-NOTE: This library is currently in development. The API will likely change
-as I learn to write idiomatic Go.
+NOTE: AwGo is currently in development. The API *will* change as I learn to
+write idiomatic Go, and should not be considered stable until v1.0.
 
 This library is released under the MIT licence, which you can read
 online at https://opensource.org/licenses/MIT
 
-To read this documentation on godoc.org, see
-http://godoc.org/github.com/deanishe/awgo
+Read this documentation online at http://godoc.org/github.com/deanishe/awgo
 
 
 Features
@@ -19,15 +22,15 @@ Features
 The main features are:
 
 	- Easy access to Alfred context, such as data and cache directories.
-	- Straightforward generation of Alfred JSON feedback.
+	- Fluent API for generating Alfred JSON feedback for Script Filters.
 	- Support for all applicable Alfred features up to v3.5.
 	- Fuzzy sorting/filtering.
-	- Simple API for caching/saving workflow data.
+	- Simple, but powerful, API for caching/saving workflow data.
 	- Catches panics, logs stack trace and shows user an error message.
 	- Workflow updates API with built-in support for GitHub releases.
-	- (Rotated) Log file for easier debugging.
+	- Pre-configured logging for easier debugging, with a rotated log file.
 	- "Magic" queries/actions for simplified development and user support.
-	- OS X system icons.
+	- macOS system icons.
 
 
 Usage
@@ -43,14 +46,18 @@ program.go:
 	// Package is called aw
 	import "github.com/deanishe/awgo"
 
+	// Your workflow starts here
 	func run() {
-	    // Your workflow starts here
-	    aw.NewItem("First result!")
-	    aw.SendFeedback()
+		// Add a "Script Filter" result
+		aw.NewItem("First result!")
+		// Send results to Alfred
+		aw.SendFeedback()
 	}
 
 	func main() {
-	    aw.Run(run)
+		// Wrap your entry point with Run() to catch and log panics and
+		// show an error in Alfred instead of silently dying
+		aw.Run(run)
 	}
 
 In the Script Filter's Script box (Language = /bin/bash with input as
@@ -61,12 +68,15 @@ argv):
 
 The Item struct isn't intended to be used as the workflow's data model,
 just as a way to encapsulate search results for Alfred. In particular,
-its variables are only settable, not gettable.
+its variables are only settable, not gettable. However, the Feedback struct,
+to which Items belong, supports fuzzy.Interface, so in most situations, it's
+not necessary to implement fuzzy.Interface yourself in order to use fuzzy
+filtering.
 
 Most package-level functions call the methods of the same name on the default
 Workflow struct. If you want to use custom options, you can create a new
-Workflow with New(), or get the default Workflow with DefaultWorkflow()
-and configure it with Workflow.Configure().
+Workflow with New(), or reconfigure the default Workflow via the package-level
+Configure() function.
 
 Check out the examples/ subdirectory for some simple, but complete,
 workflows which you can copy to get started.
@@ -75,18 +85,18 @@ workflows which you can copy to get started.
 Fuzzy filtering
 
 Subpackage fuzzy provides a fuzzy search algorithm modelled on Sublime
-Text's search. Implement fuzzy.Interface to make a struct fuzzy-sortable.
+Text's search. Implement fuzzy.Interface to make a slice fuzzy-sortable.
 
 The Feedback struct implements this interface.
 
-Feedback and Workflow structs provide an additional Filter() method,
+Feedback and Workflow provide an additional Filter() method,
 which fuzzy-sorts the contained Items and removes any that do not match
 the query.
 
 See examples/fuzzy for a basic demonstration.
 
 See examples/bookmarks for a demonstration of implementing fuzzy.Interface
-on your own structs and customising the sort settings.
+on your own structs and customising the fuzzy sort settings.
 
 
 Sending results to Alfred
@@ -146,8 +156,10 @@ Saving and caching data
 
 Alfred provides data and cache directories for each workflow. The data
 directory is for permanent data and the cache directory for temporary data.
+You should use the CacheDir() and DataDir() methods to get the paths to
+these directories, as the methods will ensure that the directories exist.
 
-AwGo's Workflow struct has a simple API for caching data to these
+AwGo's Workflow struct has a simple API for saving data to these
 directories. There are basic load/store methods for saving bytes or
 (un)marshalling structs to/from JSON, plus LoadOrStore methods that return
 cached data if they exist and are new enough, or refresh the cache via a

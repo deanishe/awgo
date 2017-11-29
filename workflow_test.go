@@ -68,7 +68,7 @@ func ExampleNew() {
 	fmt.Println(wf.Version())
 	// Output:
 	// net.deanishe.awgo
-	// 0.2.2
+	// 0.13
 }
 
 // Pass one or more Options to New() to configure the created Workflow.

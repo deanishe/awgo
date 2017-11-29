@@ -1,5 +1,7 @@
 
-![][icon]
+<div align="center">
+    <img src="./Icon.png" alt="AwGo Logo" title="AwGo Logo">
+</div>
 
 AwGo — A Go library for Alfred workflows
 ========================================
@@ -10,13 +12,13 @@ Features
 --------
 
 - Easy access to [Alfred context][context], such as data and cache directories.
-- Straightforward generation of [Alfred JSON feedback][feedback].
+- Fluent API for generating [Alfred JSON feedback][feedback] for Script Filters.
 - Support for all applicable Alfred features up to v3.5.
-- [Fuzzy sorting/filtering][fuzzy].
-- [Simple API][cache-api] for [caching/saving workflow data][cache].
+- [Fuzzy sorting/filtering][fuzzy] of results.
+- [Simple, but powerful, API][cache-api] for [caching/saving workflow data][cache].
 - [Catches panics, logs stack trace and shows user an error message][run].
 - Workflow [updates API][update] with built-in support for [GitHub releases][update-github].
-- [Built-in logging][logging] for easier debugging.
+- [Pre-configured logging][logging] for easier debugging, with a rotated log file.
 - ["Magic" queries/actions][magic] for simplified development and user support.
 - macOS [system icons][icons].
 
@@ -42,13 +44,17 @@ package main
 // Package is called aw
 import "github.com/deanishe/awgo"
 
+// Your workflow starts here
 func run() {
-    // Your workflow starts here
+    // Add a "Script Filter" result
     aw.NewItem("First result!")
+    // Send results to Alfred
     aw.SendFeedback()
 }
 
 func main() {
+    // Wrap your entry point with Run() to catch and log panics and
+    // show an error in Alfred instead of silently dying
     aw.Run(run)
 }
 ```
@@ -103,4 +109,3 @@ The icon is based on the [Go Gopher][gopher] by [Renee French][renee].
 [icons]: https://godoc.org/github.com/deanishe/awgo#Icon
 [examples-code]: https://github.com/deanishe/awgo/tree/master/examples
 [examples-docs]: https://godoc.org/github.com/deanishe/awgo/examples
-[icon]: https://raw.githubusercontent.com/deanishe/awgo/master/Icon.png "AwGo icon"

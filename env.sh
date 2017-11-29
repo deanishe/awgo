@@ -1,4 +1,5 @@
 # Workflow environment variables
+# These variables create an Alfred-like environment
 
 export alfred_debug="1"
 export alfred_preferences="$HOME/Dropbox/Config/Alfred 3/Alfred.alfredpreferences"
@@ -7,11 +8,11 @@ export alfred_theme="alfred.theme.custom.DE3D17CA-64A2-4B42-A3F6-C71DB1201F88"
 export alfred_theme_background="rgba(255,255,255,1.00)"
 export alfred_theme_selection_background="rgba(255,255,255,1.00)"
 export alfred_theme_subtext="0"
-export alfred_version="3.4.1"
-export alfred_version_build="860"
+export alfred_version="3.5.1"
+export alfred_version_build="883"
 export alfred_workflow_bundleid="net.deanishe.awgo"
 export alfred_workflow_cache="$HOME/Library/Caches/com.runningwithcrayons.Alfred-3/Workflow Data/net.deanishe.awgo"
 export alfred_workflow_data="$HOME/Library/Application Support/Alfred 3/Workflow Data/net.deanishe.awgo"
 export alfred_workflow_name="AwGo"
 export alfred_workflow_uid="user.workflow.4B0E9731-E139-4179-BC50-D7FFF82B269A"
-export alfred_workflow_version="0.2.2"
+export alfred_workflow_version="0.13"

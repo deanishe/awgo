@@ -16,13 +16,13 @@ import (
 // TestContext tests Context
 func TestContext(t *testing.T) {
 	var (
-		version                  = "0.2.2"
+		version                  = "0.13"
 		name                     = "AwGo"
 		bundleID                 = "net.deanishe.awgo"
 		uid                      = "user.workflow.4B0E9731-E139-4179-BC50-D7FFF82B269A"
 		debug                    = true
-		alfredVersion            = "3.4.1"
-		alfredBuild              = "860"
+		alfredVersion            = "3.5.1"
+		alfredBuild              = "883"
 		theme                    = "alfred.theme.custom.DE3D17CA-64A2-4B42-A3F6-C71DB1201F88"
 		themeBackground          = "rgba(255,255,255,1.00)"
 		themeSelectionBackground = "rgba(255,255,255,1.00)"
