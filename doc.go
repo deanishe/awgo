@@ -5,8 +5,8 @@ https://www.alfredapp.com/
 It provides APIs for interacting with Alfred (e.g. generating Script Filter
 feedback and setting workflow variables) with a host of convenience functions,
 plus support for common workflow idioms, such as caching data from
-applications/web services and running background processes to update cached
-data while keeping your workflow responsive.
+applications/web services and updating the cache in a background process to
+keep your workflow super-responsive.
 
 NOTE: AwGo is currently in development. The API *will* change as I learn to
 write idiomatic Go, and should not be considered stable until v1.0.

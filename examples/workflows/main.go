@@ -72,7 +72,8 @@ func init() {
 func run() {
 	var query string
 
-	// Version is parsed from info.plist
+	// Version is read from the `alfred_workflow_version` environment variable,
+	// which Alfred sets to the value specified in info.plist.
 	args, err := docopt.Parse(usage, wf.Args(), true, wf.Version(), false)
 	if err != nil {
 		log.Fatalf("Error parsing CLI options : %v", err)
