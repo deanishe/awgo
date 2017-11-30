@@ -260,18 +260,20 @@ func (u *Updater) latest() *Release {
 	}
 
 	SortReleases(u.releases)
+
 	if u.Prereleases {
 		return u.releases[len(u.releases)-1]
 	}
 
 	// Find newest non-pre-release version
 	i := len(u.releases) - 1
-	for i >= 0 {
+	for i > 0 {
 		if !u.releases[i].Prerelease {
 			break
 		}
 		i--
 	}
+
 	r := u.releases[i]
 	if r.Prerelease {
 		return nil

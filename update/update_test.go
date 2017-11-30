@@ -37,18 +37,36 @@ func (v *versioned) CacheDir() string {
 }
 func (v *versioned) Clean() { os.RemoveAll(v.dir) }
 
+// testReleaser is a test implementation of Releaser
 type testReleaser struct {
 	releases []*Release
 }
 
 func (r testReleaser) Releases() ([]*Release, error) {
-	return []*Release{
-		&Release{"workflow.alfredworkflow", nil, true, mustVersion("0.5.0-beta")},
-		&Release{"workflow.alfredworkflow", nil, false, mustVersion("0.1")},
-		&Release{"workflow.alfredworkflow", nil, false, mustVersion("0.4")},
-		&Release{"workflow.alfredworkflow", nil, false, mustVersion("0.2")},
-		&Release{"workflow.alfredworkflow", nil, false, mustVersion("0.3")},
-	}, nil
+	return r.releases, nil
+}
+
+var (
+	tr, trPre *testReleaser
+)
+
+func init() {
+	tr = &testReleaser{
+		releases: []*Release{
+			&Release{"workflow.alfredworkflow", nil, true, mustVersion("0.5.0-beta")},
+			&Release{"workflow.alfredworkflow", nil, false, mustVersion("0.1")},
+			&Release{"workflow.alfredworkflow", nil, false, mustVersion("0.4")},
+			&Release{"workflow.alfredworkflow", nil, false, mustVersion("0.2")},
+			&Release{"workflow.alfredworkflow", nil, false, mustVersion("0.3")},
+		},
+	}
+	trPre = &testReleaser{
+		releases: []*Release{
+			&Release{"workflow.alfredworkflow", nil, true, mustVersion("0.5.0-beta")},
+			&Release{"workflow.alfredworkflow", nil, true, mustVersion("0.4.0-beta")},
+			&Release{"workflow.alfredworkflow", nil, true, mustVersion("0.3.0-beta")},
+		},
+	}
 }
 
 func clearUpdateCache() error {
@@ -68,8 +86,7 @@ func TestUpdater(t *testing.T) {
 	}
 	v := &versioned{version: "0.2.2"}
 	defer v.Clean()
-	rl := testReleaser{}
-	u, err := New(v, rl)
+	u, err := New(v, tr)
 	if err != nil {
 		t.Fatalf("Error creating updater: %s", err)
 	}
@@ -92,6 +109,34 @@ func TestUpdater(t *testing.T) {
 	u.CurrentVersion = mustVersion("0.4.5")
 	if !u.UpdateAvailable() {
 		t.Fatal("Bad update #4")
+	}
+	if err := clearUpdateCache(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// TestUpdaterPreOnly tests that updater works with only pre-releases available
+func TestUpdaterPreOnly(t *testing.T) {
+	if err := clearUpdateCache(); err != nil {
+		t.Fatal(err)
+	}
+	v := &versioned{version: "0.2.2"}
+	defer v.Clean()
+	u, err := New(v, trPre)
+	if err != nil {
+		t.Fatalf("Error creating updater: %s", err)
+	}
+	if err := u.CheckForUpdate(); err != nil {
+		t.Fatalf("Error getting releases: %s", err)
+	}
+	u.CurrentVersion = mustVersion("1")
+	if u.UpdateAvailable() {
+		t.Fatal("Bad update #1")
+	}
+	u.Prereleases = true
+	u.CurrentVersion = mustVersion("0.4.5")
+	if !u.UpdateAvailable() {
+		t.Fatal("Bad update #2")
 	}
 	if err := clearUpdateCache(); err != nil {
 		t.Fatal(err)
