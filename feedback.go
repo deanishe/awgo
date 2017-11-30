@@ -86,7 +86,7 @@ func (it *Item) Arg(s string) *Item {
 // Use a blank string to force results to appear in the order you add them.
 func (it *Item) UID(s string) *Item {
 	if it.noUID {
-		s = ""
+		return it
 	}
 	it.uid = &s
 	return it
