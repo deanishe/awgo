@@ -13,7 +13,7 @@ import (
 	"testing"
 )
 
-// TestContext tests Context
+// TestContext verifies that Context holds the expected values.
 func TestContext(t *testing.T) {
 	var (
 		version                  = "0.13"
@@ -31,7 +31,9 @@ func TestContext(t *testing.T) {
 		cacheDir                 = os.ExpandEnv("$HOME/Library/Caches/com.runningwithcrayons.Alfred-3/Workflow Data/net.deanishe.awgo")
 		dataDir                  = os.ExpandEnv("$HOME/Library/Application Support/Alfred 3/Workflow Data/net.deanishe.awgo")
 	)
+
 	ctx := NewContext()
+
 	if ctx.WorkflowVersion != version {
 		t.Errorf("bad version. Expected=%s, Got=%s", version, ctx.WorkflowVersion)
 	}
