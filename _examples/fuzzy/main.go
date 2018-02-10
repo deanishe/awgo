@@ -92,7 +92,7 @@ func run() {
 		res := wf.Filter(query)
 		log.Printf("%d results match \"%s\"", len(res), query)
 		for i, r := range res {
-			log.Printf("%02d. score=%0.1f sortkey=%s", i+1, r.Score, wf.Feedback.SortKey(i))
+			log.Printf("%02d. score=%0.1f sortkey=%s", i+1, r.Score, wf.Feedback.Keywords(i))
 		}
 	}
 

@@ -31,9 +31,9 @@ func (b Bookmarks) Len() int           { return len(b) }
 func (b Bookmarks) Swap(i, j int)      { b[i], b[j] = b[j], b[i] }
 func (b Bookmarks) Less(i, j int) bool { return b[i].Title < b[j].Title }
 
-// SortKey implements fuzzy.Interface. It sets the search keywords to the
+// Keywords implements fuzzy.Interface. It sets the search keywords to the
 // title of the bookmark plus the URL domain.
-func (b Bookmarks) SortKey(i int) string {
+func (b Bookmarks) Keywords(i int) string {
 	return fmt.Sprintf("%s %s", b[i].Title, b[i].Domain)
 }
 
