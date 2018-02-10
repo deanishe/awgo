@@ -49,7 +49,7 @@ func ssEq(a, b []string) bool {
 func TestNonMagicArgs(t *testing.T) {
 	for _, td := range testArgs {
 		ma := MagicActions{}
-		ma.Register(DefaultMagicActions...)
+		ma.Register(defaultMagicActions...)
 		args := ma.Args(td.in, DefaultMagicPrefix)
 		if !ssEq(args, td.out) {
 			t.Errorf("not equal. Expected=%v, Got=%v", td.out, args)
@@ -62,7 +62,7 @@ func TestMagicArgs(t *testing.T) {
 	if os.Getenv("MAGIC") != "" {
 		args := strings.Split(os.Getenv("ARGS"), ":")
 		ma := MagicActions{}
-		ma.Register(DefaultMagicActions...)
+		ma.Register(defaultMagicActions...)
 		ma.Args(args, DefaultMagicPrefix)
 		return
 	}

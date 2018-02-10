@@ -20,24 +20,30 @@ import (
 	"github.com/deanishe/awgo/util"
 )
 
-// AlreadyRunning is the error returned by RunInBackground if a job with
+// ErrJobExists is the error returned by RunInBackground if a job with
 // the given name is already running.
-type AlreadyRunning struct {
-	Name string
-	Pid  int
+type ErrJobExists struct {
+	Name string // Name of the job
+	Pid  int    // PID of the running job
 }
 
 // Error implements error interface.
-func (a AlreadyRunning) Error() string {
+func (a ErrJobExists) Error() string {
 	return fmt.Sprintf("Job '%s' already running with PID %d", a.Name, a.Pid)
 }
 
+// IsJobExists returns true if error is of type ErrJobExists.
+func IsJobExists(err error) bool {
+	_, ok := err.(ErrJobExists)
+	return ok
+}
+
 // RunInBackground executes cmd in the background. It returns an
-// AlreadyRunning error if a job of the same name is already running.
+// ErrJobExists error if a job of the same name is already running.
 func RunInBackground(jobName string, cmd *exec.Cmd) error {
 	if IsRunning(jobName) {
 		pid, _ := getPid(jobName)
-		return AlreadyRunning{jobName, pid}
+		return ErrJobExists{jobName, pid}
 	}
 
 	if cmd.SysProcAttr == nil {

@@ -1,4 +1,11 @@
 
+# Tests that actually call Alfred
+*_private_test.go
+
+# Created by test
+/testenv
+/info.plist
+
 # Created by https://www.gitignore.io/api/go,atom,sublimetext,vim
 
 ### Go ###

@@ -6,8 +6,6 @@
 
 package aw
 
-import "fmt"
-
 // IconType specifies the type of an aw.Icon struct. It can be an image file,
 // the icon of a file, e.g. an application's icon, or the icon for a UTI.
 type IconType string
@@ -25,8 +23,7 @@ const (
 	IconTypeFileType IconType = "filetype"
 )
 
-// Ready-to-use icons based on built-in OS X system icons.
-// These icons are all found in
+// Ready-to-use icons based on macOS system icons. These icons are all found in
 //
 //     /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources
 //
@@ -34,30 +31,34 @@ const (
 // for Python. Preview them here:
 // http://www.deanishe.net/alfred-workflow/user-manual/icons.html#list-of-icons
 var (
-	IconWorkflow  *Icon // icon.png (workflow's own icon)
-	IconAccount   *Icon // Accounts.icns
-	IconBurn      *Icon // BurningIcon.icns
-	IconClock     *Icon // Clock.icns
-	IconColor     *Icon // ProfileBackgroundColor.icns
-	IconColour    *Icon // ProfileBackgroundColor.icns
-	IconEject     *Icon // EjectMediaIcon.icns
-	IconError     *Icon // AlertStopIcon.icns
-	IconFavorite  *Icon // ToolbarFavoritesIcon.icns
-	IconFavourite *Icon // ToolbarFavoritesIcon.icns
-	IconGroup     *Icon // GroupIcon.icns
-	IconHelp      *Icon // HelpIcon.icns
-	IconHome      *Icon // HomeFolderIcon.icns
-	IconInfo      *Icon // ToolbarInfo.icns
-	IconNetwork   *Icon // GenericNetworkIcon.icns
-	IconNote      *Icon // AlertNoteIcon.icns
-	IconSettings  *Icon // ToolbarAdvanced.icns
-	IconSwirl     *Icon // ErasingIcon.icns
-	IconSwitch    *Icon // General.icns
-	IconSync      *Icon // Sync.icns
-	IconTrash     *Icon // TrashIcon.icns
-	IconUser      *Icon // UserIcon.icns
-	IconWarning   *Icon // AlertCautionIcon.icns
-	IconWeb       *Icon // BookmarkIcon.icns
+	// Workflow's own icon
+	IconWorkflow = &Icon{"icon.png", IconTypeImageFile}
+
+	sysIconDir = "/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/"
+	// System icons
+	IconAccount   = &Icon{sysIconDir + "Accounts.icns", IconTypeImageFile}
+	IconBurn      = &Icon{sysIconDir + "BurningIcon.icns", IconTypeImageFile}
+	IconClock     = &Icon{sysIconDir + "Clock.icns", IconTypeImageFile}
+	IconColor     = &Icon{sysIconDir + "ProfileBackgroundColor.icns", IconTypeImageFile}
+	IconColour    = &Icon{sysIconDir + "ProfileBackgroundColor.icns", IconTypeImageFile}
+	IconEject     = &Icon{sysIconDir + "EjectMediaIcon.icns", IconTypeImageFile}
+	IconError     = &Icon{sysIconDir + "AlertStopIcon.icns", IconTypeImageFile}
+	IconFavorite  = &Icon{sysIconDir + "ToolbarFavoritesIcon.icns", IconTypeImageFile}
+	IconFavourite = &Icon{sysIconDir + "ToolbarFavoritesIcon.icns", IconTypeImageFile}
+	IconGroup     = &Icon{sysIconDir + "GroupIcon.icns", IconTypeImageFile}
+	IconHelp      = &Icon{sysIconDir + "HelpIcon.icns", IconTypeImageFile}
+	IconHome      = &Icon{sysIconDir + "HomeFolderIcon.icns", IconTypeImageFile}
+	IconInfo      = &Icon{sysIconDir + "ToolbarInfo.icns", IconTypeImageFile}
+	IconNetwork   = &Icon{sysIconDir + "GenericNetworkIcon.icns", IconTypeImageFile}
+	IconNote      = &Icon{sysIconDir + "AlertNoteIcon.icns", IconTypeImageFile}
+	IconSettings  = &Icon{sysIconDir + "ToolbarAdvanced.icns", IconTypeImageFile}
+	IconSwirl     = &Icon{sysIconDir + "ErasingIcon.icns", IconTypeImageFile}
+	IconSwitch    = &Icon{sysIconDir + "General.icns", IconTypeImageFile}
+	IconSync      = &Icon{sysIconDir + "Sync.icns", IconTypeImageFile}
+	IconTrash     = &Icon{sysIconDir + "TrashIcon.icns", IconTypeImageFile}
+	IconUser      = &Icon{sysIconDir + "UserIcon.icns", IconTypeImageFile}
+	IconWarning   = &Icon{sysIconDir + "AlertCautionIcon.icns", IconTypeImageFile}
+	IconWeb       = &Icon{sysIconDir + "BookmarkIcon.icns", IconTypeImageFile}
 )
 
 // Icon represents the icon for an Item.
@@ -72,7 +73,7 @@ var (
 // Type = IconTypeFileIcon will treat Value as the path to a file or
 // directory and use that file's icon, e.g:
 //
-//    icon := Icon{"/Applications/Mail.app", IconTypeFileIcon}
+//    icon := &Icon{"/Applications/Mail.app", IconTypeFileIcon}
 //
 // will display Mail.app's icon.
 //
@@ -89,41 +90,4 @@ var (
 type Icon struct {
 	Value string   `json:"path"`           // Path or UTI
 	Type  IconType `json:"type,omitempty"` // "fileicon", "filetype" or ""
-}
-
-func systemIcon(filename string) *Icon {
-	icon := &Icon{}
-	var path string
-	path = fmt.Sprintf(
-		"/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/%s.icns", filename)
-	icon.Value = path
-	icon.Type = IconTypeImageFile
-	return icon
-}
-
-func init() {
-	IconWorkflow = &Icon{"icon.png", ""}
-	IconAccount = systemIcon("Accounts")
-	IconBurn = systemIcon("BurningIcon")
-	IconClock = systemIcon("Clock")
-	IconColor = systemIcon("ProfileBackgroundColor")
-	IconColour = systemIcon("ProfileBackgroundColor")
-	IconEject = systemIcon("EjectMediaIcon")
-	IconError = systemIcon("AlertStopIcon")
-	IconFavorite = systemIcon("ToolbarFavoritesIcon")
-	IconFavourite = systemIcon("ToolbarFavoritesIcon")
-	IconGroup = systemIcon("GroupIcon")
-	IconHelp = systemIcon("HelpIcon")
-	IconHome = systemIcon("HomeFolderIcon")
-	IconInfo = systemIcon("ToolbarInfo")
-	IconNetwork = systemIcon("GenericNetworkIcon")
-	IconNote = systemIcon("AlertNoteIcon")
-	IconSettings = systemIcon("ToolbarAdvanced")
-	IconSwirl = systemIcon("ErasingIcon")
-	IconSwitch = systemIcon("General")
-	IconSync = systemIcon("Sync")
-	IconTrash = systemIcon("TrashIcon")
-	IconUser = systemIcon("UserIcon")
-	IconWarning = systemIcon("AlertCautionIcon")
-	IconWeb = systemIcon("BookmarkIcon")
 }

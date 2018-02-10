@@ -19,7 +19,8 @@ import (
 )
 
 // Default bonuses and penalties for fuzzy sorting. To customise
-// sorting behaviour, pass corresponding Options to New() or Sorter.Configure().
+// sorting behaviour, pass corresponding Options to New() or
+// Sorter.Configure().
 const (
 	DefaultAdjacencyBonus          = 5.0  // Bonus for adjacent matches
 	DefaultSeparatorBonus          = 10.0 // Bonus if the match is after a separator
@@ -36,10 +37,12 @@ func init() {
 	stripper = transform.Chain(norm.NFD, transform.RemoveFunc(isMn))
 }
 
-// Interface makes the implementer fuzzy-sortable. It is a superset
-// of sort.Interface (i.e. your struct must also implement sort.Interface).
-type Interface interface {
-	SortKey(i int) string // Return the string that should be compared to the sort query
+// Sortable makes the implementer fuzzy-sortable.
+// It is a superset of sort.Interface (i.e. your struct must also
+// implement sort.Interface).
+type Sortable interface {
+	// Keywords returns the string to compare to the sort query
+	Keywords(i int) string
 	sort.Interface
 }
 
@@ -58,77 +61,9 @@ type Result struct {
 	SortKey string
 }
 
-// Option configures a Sorter. Pass one or more Options to New() or
-// Sorter.Configure(). An Option returns another Option to revert the
-// configuration to the previous state.
-type Option func(s *Sorter) Option
-
-// AdjacencyBonus sets the bonus for adjacent matches.
-func AdjacencyBonus(bonus float64) Option {
-	return func(s *Sorter) Option {
-		prev := s.AdjacencyBonus
-		s.AdjacencyBonus = bonus
-		return AdjacencyBonus(prev)
-	}
-}
-
-// SeparatorBonus sets the bonus for matches directly after a separator.
-func SeparatorBonus(bonus float64) Option {
-	return func(s *Sorter) Option {
-		prev := s.SeparatorBonus
-		s.SeparatorBonus = bonus
-		return SeparatorBonus(prev)
-	}
-}
-
-// CamelBonus sets the bonus applied if match is uppercase and previous character is lowercase.
-func CamelBonus(bonus float64) Option {
-	return func(s *Sorter) Option {
-		prev := s.CamelBonus
-		s.CamelBonus = bonus
-		return CamelBonus(prev)
-	}
-}
-
-// LeadingLetterPenalty sets the penalty applied for every character before the first match.
-func LeadingLetterPenalty(penalty float64) Option {
-	return func(s *Sorter) Option {
-		prev := s.LeadingLetterPenalty
-		s.LeadingLetterPenalty = penalty
-		return LeadingLetterPenalty(prev)
-	}
-}
-
-// MaxLeadingLetterPenalty sets the maximum penalty for character preceding the first match.
-func MaxLeadingLetterPenalty(penalty float64) Option {
-	return func(s *Sorter) Option {
-		prev := s.MaxLeadingLetterPenalty
-		s.MaxLeadingLetterPenalty = penalty
-		return MaxLeadingLetterPenalty(prev)
-	}
-}
-
-// UnmatchedLetterPenalty sets the penalty for characters that do not match.
-func UnmatchedLetterPenalty(penalty float64) Option {
-	return func(s *Sorter) Option {
-		prev := s.UnmatchedLetterPenalty
-		s.UnmatchedLetterPenalty = penalty
-		return UnmatchedLetterPenalty(prev)
-	}
-}
-
-// StripDiacritics sets whether diacritics should be stripped.
-func StripDiacritics(on bool) Option {
-	return func(s *Sorter) Option {
-		prev := s.StripDiacritics
-		s.StripDiacritics = on
-		return StripDiacritics(prev)
-	}
-}
-
 // Sorter sorts Data based on the query passsed to Sorter.Sort().
 type Sorter struct {
-	Data                    Interface // Data to sort
+	Data                    Sortable  // Data to sort
 	AdjacencyBonus          float64   // Bonus for adjacent matches
 	SeparatorBonus          float64   // Bonus if the match is after a separator
 	CamelBonus              float64   // Bonus if match is uppercase and previous is lower
@@ -142,7 +77,7 @@ type Sorter struct {
 }
 
 // New creates a new Sorter for the given data.
-func New(data Interface, opts ...Option) *Sorter {
+func New(data Sortable, opts ...Option) *Sorter {
 	s := &Sorter{
 		Data:                    data,
 		AdjacencyBonus:          DefaultAdjacencyBonus,
@@ -190,19 +125,23 @@ func (s *Sorter) Swap(i, j int) {
 
 // Sort sorts data against query.
 func (s *Sorter) Sort(query string) []*Result {
+
 	s.query = query
+
 	if isASCII(query) && s.StripDiacritics {
 		s.stripDiacritics = true
 	}
 
 	for i := 0; i < s.Data.Len(); i++ {
-		s.results[i] = s.Match(s.Data.SortKey(i))
+		s.results[i] = s.Match(s.Data.Keywords(i))
 	}
+
 	sort.Sort(s)
+
 	return s.results
 }
 
-// Match scores str against query using fuzzy matching and the specified sort options.
+// Match scores str against Sorter's query using fuzzy matching.
 func (s *Sorter) Match(str string) *Result {
 	if s.stripDiacritics {
 		str = stripDiacritics(str)
@@ -348,45 +287,53 @@ func (s *Sorter) Match(str string) *Result {
 		match = true
 	}
 
-	// log.Printf("query=%#v, str=%#v", match=%v, score=%v, query, str, match, score)
+	// log.Printf("query=%#v, str=%#v", match=%v, score=%v,
+	// query, str, match, score)
 	return &Result{match, s.query, score, str}
 }
 
-// Sort sorts data against query. Convenience that creates and
-// uses a Sorter with the default settings.
-func Sort(data Interface, query string) []*Result { return New(data).Sort(query) }
-
-// stringSlice implements sort.Interface for []string.
-// It is a helper for SortStrings.
-type stringSlice struct {
-	data []string
+// Sort sorts data against query using a new default Sorter.
+func Sort(data Sortable, query string) []*Result {
+	return New(data).Sort(query)
 }
+
+// SortStrings fuzzy-sorts a slice of strings.
+func SortStrings(data []string, query string) []*Result {
+	return strSlice(data).Sort(query)
+}
+
+// Match scores str against query using the specified sort options.
+//
+// WARNING: Match creates a new Sorter for every call.
+// Don't use this on large datasets.
+func Match(str, query string, opts ...Option) *Result {
+	return New(strSlice([]string{str}), opts...).Sort(query)[0]
+}
+
+// strSlice implements Sortable for []string.
+// It is a helper for SortStrings.
+type strSlice []string
 
 // Len etc. implement sort.Interface.
-func (s stringSlice) Len() int           { return len(s.data) }
-func (s stringSlice) Less(i, j int) bool { return s.data[i] < s.data[j] }
-func (s stringSlice) Swap(i, j int)      { s.data[i], s.data[j] = s.data[j], s.data[i] }
+func (s strSlice) Len() int           { return len(s) }
+func (s strSlice) Less(i, j int) bool { return s[i] < s[j] }
+func (s strSlice) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 
-// SortKey implements Interface.
-func (s stringSlice) SortKey(i int) string { return s.data[i] }
+// Keywords implements Sortable.
+func (s strSlice) Keywords(i int) string { return s[i] }
 
 // Sort is a convenience method.
-func (s stringSlice) Sort(query string) []*Result { return Sort(s, query) }
-
-// SortStrings is a convenience function for fuzzy-sorting a slice of strings.
-func SortStrings(data []string, query string) []*Result { return stringSlice{data}.Sort(query) }
-
-// Match scores str against query using fuzzy matching and the specified sort options.
-// WARNING: Match creates a new Sorter for every call. Don't use this on
-// large datasets.
-func Match(str, query string, opts ...Option) *Result {
-	return New(stringSlice{[]string{str}}, opts...).Sort(query)[0]
+func (s strSlice) Sort(query string) []*Result {
+	return Sort(s, query)
 }
 
+// isMn returns true if rune is a non-spacing mark
 func isMn(r rune) bool {
 	return unicode.Is(unicode.Mn, r) // Mn: non-spacing mark
 }
 
+// stripDiacritics removes diacritics.
+// Strings are decomposed, then non-ASCII characters are removed.
 func stripDiacritics(s string) string {
 	stripped, _, err := transform.String(stripper, s)
 	if err != nil {
@@ -396,4 +343,5 @@ func stripDiacritics(s string) string {
 	return stripped
 }
 
+// isASCII returns true if string contains only ASCII.
 func isASCII(s string) bool { return stripDiacritics(s) == s }

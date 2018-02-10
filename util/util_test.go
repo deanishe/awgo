@@ -9,111 +9,121 @@
 package util
 
 import (
-	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"testing"
-	"time"
 )
 
-type padTest struct {
-	str      string
-	pad      string
-	n        int
-	expected string
-}
+func inTempDir(fun func(dir string)) error {
 
-var padLeftTests = []padTest{
-	// Simple cases
-	padTest{"wow", "-", 5, "--wow"},
-	padTest{"pow", " ", 4, " pow"},
-	// Input same length as n
-	padTest{"pow", " ", 3, "pow"},
-	// Input longer than n
-	padTest{"powwow", " ", 3, "powwow"},
-}
+	curdir, err := os.Getwd()
+	if err != nil {
+		return err
+	}
 
-var padRightTests = []padTest{
-	// Simple cases
-	padTest{"wow", "-", 5, "wow--"},
-	padTest{"pow", " ", 4, "pow "},
-	// Input same length as n
-	padTest{"pow", " ", 3, "pow"},
-	// Input longer than n
-	padTest{"powwow", " ", 3, "powwow"},
-}
+	dir, err := ioutil.TempDir("", "awgo-util-")
+	if err != nil {
+		return err
+	}
 
-var padTests = []padTest{
-	// Simple cases
-	padTest{"wow", "-", 5, "-wow-"},
-	padTest{"pow", " ", 4, "pow "},
-	// Even-length str
-	padTest{"wow", "-", 10, "---wow----"},
-	// Input same length as n
-	padTest{"pow", " ", 3, "pow"},
-	// Input longer than n
-	padTest{"powwow", " ", 3, "powwow"},
-}
+	dir, err = filepath.EvalSymlinks(dir)
+	if err != nil {
+		return err
+	}
 
-// TestPadLeft tests PadLeft
-func TestPadLeft(t *testing.T) {
-	for _, td := range padLeftTests {
-		if out := PadLeft(td.str, td.pad, td.n); out != td.expected {
-			t.Fatalf("PadLeft output incorrect. Expected=%v, Got=%v", td.expected, out)
+	defer func() {
+		if err := os.RemoveAll(dir); err != nil {
+			panic(err)
 		}
+	}()
+
+	// Change to temporary directory
+	if err := os.Chdir(dir); err != nil {
+		return err
+	}
+
+	// Change back after we're done
+	defer func() {
+		if err := os.Chdir(curdir); err != nil {
+			panic(err)
+		}
+	}()
+
+	fun(dir)
+
+	return nil
+}
+
+func TestMustExist(t *testing.T) {
+
+	err := inTempDir(func(dir string) {
+
+		name := "testdir"
+
+		// Create directory
+		s := MustExist(name)
+		if s != name {
+			t.Errorf("Bad Dirname. Expected=%s, Got=%s", name, s)
+		}
+
+		if _, err := os.Stat(s); err != nil {
+			t.Errorf("Couldn't stat dir %#v: %v", s, err)
+		}
+
+		// Check path is as expected
+		p := filepath.Join(dir, name)
+		p2, err := filepath.Abs(s)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if p != p2 {
+			t.Errorf("Bad Path. Expected=%v, Got=%v", p2, p)
+		}
+
+	})
+
+	if err != nil {
+		t.Fatal(err)
 	}
 }
 
-// TestPadRight tests PadRight
-func TestPadRight(t *testing.T) {
-	for _, td := range padRightTests {
-		if out := PadRight(td.str, td.pad, td.n); out != td.expected {
-			t.Fatalf("PadRight output incorrect. Expected=%v, Got=%v", td.expected, out)
+func TestPathExists(t *testing.T) {
+
+	err := inTempDir(func(dir string) {
+
+		name := "existingdir"
+		path := filepath.Join(dir, name)
+		badName := "nodir"
+		badPath := filepath.Join(dir, badName)
+
+		if err := os.MkdirAll(name, 0700); err != nil {
+			t.Fatal(err)
 		}
-	}
-}
 
-// TestPad tests Pad
-func TestPad(t *testing.T) {
-	for _, td := range padTests {
-		if out := Pad(td.str, td.pad, td.n); out != td.expected {
-			t.Fatalf("Pad output incorrect. Expected=%v, Got=%v", td.expected, out)
+		data := []struct {
+			p string
+			x bool
+		}{
+			{dir, true},
+			{name, true},
+			{path, true},
+			{badName, false},
+			{badPath, false},
 		}
+
+		for _, td := range data {
+			v := PathExists(td.p)
+			if v != td.x {
+				t.Errorf("Bad PathExists for %#v. Expected=%v, Got=%v", td.p, td.x, v)
+			}
+
+		}
+
+	})
+
+	if err != nil {
+		t.Fatal(err)
 	}
-}
-
-func ExamplePadLeft() {
-	fmt.Println(PadLeft("wow", "-", 5))
-	// Output: --wow
-}
-
-func ExamplePadRight() {
-	fmt.Println(PadRight("wow", "-", 5))
-	// Output: wow--
-}
-
-func ExamplePad() {
-	fmt.Println(Pad("wow", "-", 10))
-	// Output: ---wow----
-}
-
-func ExampleReadableDuration() {
-	fmt.Println(HumanDuration(time.Hour * 96))
-	fmt.Println(HumanDuration(time.Hour * 48))
-	fmt.Println(HumanDuration(time.Hour * 12))
-	fmt.Println(HumanDuration(time.Minute * 130))
-	fmt.Println(HumanDuration(time.Minute * 90))
-	fmt.Println(HumanDuration(time.Second * 315))
-	fmt.Println(HumanDuration(time.Second * 70))
-	fmt.Println(HumanDuration(time.Second * 5))
-	fmt.Println(HumanDuration(time.Millisecond * 320))
-	fmt.Println(HumanDuration(time.Millisecond * 50))
-	// Output: 4d
-	// 48h
-	// 12h0m
-	// 2h10m
-	// 90m
-	// 5m15s
-	// 70s
-	// 5.0s
-	// 0.32s
-	// 50ms
 }

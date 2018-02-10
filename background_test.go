@@ -37,8 +37,11 @@ func TestRunInBackground(t *testing.T) {
 	if err == nil {
 		t.Fatal("Starting duplicate 'sleep' job didn't error")
 	}
-	if _, ok := err.(AlreadyRunning); !ok {
-		t.Fatal("RunInBackground didn't return AlreadyRunning")
+	if _, ok := err.(ErrJobExists); !ok {
+		t.Fatal("RunInBackground didn't return ErrAlreadyRunning")
+	}
+	if !IsJobExists(err) {
+		t.Errorf("IsAlreadyRunning didn't identify ErrAlreadyRunning")
 	}
 	// Job killed OK
 	if err := Kill("sleep"); err != nil {
