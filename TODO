@@ -1,6 +1,15 @@
 
 Features:
-	- Use "match" field for fuzzy sorting Items, not "sortkey" @3.5
+	- Add RunScriptFile to util @done(2018-02-11)
+	- Add Alfred struct
+		- NewAlfred(bundleID...)
+		- Search()
+		- Action()
+		- Browse()
+		- RunTrigger()
+		- SetConfig()
+		- RemoveConfig()
+	- Use "match" field for fuzzy sorting Items, not "sortkey" @3.5 @done(2018-02-11)
 		"match" field added in Alfred 3.5
 
 Other:
