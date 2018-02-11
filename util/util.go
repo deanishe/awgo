@@ -46,7 +46,21 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 )
+
+// Timed logs the duration since start & title. Use it with defer.
+//
+//    func doSomething() {
+//        defer Timed(time.Now(), "long running task")
+//        // do thing here
+//        // and another thing
+//    }
+//    // Output: ... long running task
+//
+func Timed(start time.Time, title string) {
+	log.Printf("%s \U000029D7 %s", time.Now().Sub(start), title)
+}
 
 // MustExist takes and returns a directory path, creating the directory
 // if necessary. Any created directories have permission set to 700.
