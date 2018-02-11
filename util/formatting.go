@@ -9,10 +9,8 @@
 package util
 
 import (
-	"fmt"
 	"os"
 	"strings"
-	"time"
 )
 
 // PrettyPath replaces $HOME with ~ in path
@@ -57,37 +55,4 @@ func Pad(str, pad string, n int) string {
 			return str[len(str)-n:]
 		}
 	}
-}
-
-// HumanDuration returns a sensibly-formatted string for non-benchmarking purposes.
-func HumanDuration(d time.Duration) string {
-	if d.Hours() >= 72 { // 3 days
-		return fmt.Sprintf("%dd", int(d.Hours()/24))
-	}
-	if d.Hours() >= 24 { // 1 day
-		return fmt.Sprintf("%dh", int(d.Hours()))
-	}
-	if d.Minutes() > 90 {
-		hrs := int(d.Hours())
-		mins := int(d.Minutes()) % 60
-		return fmt.Sprintf("%dh%dm", hrs, mins)
-	}
-	if d.Minutes() >= 10 {
-		return fmt.Sprintf("%dm", int(d.Minutes()))
-	}
-	if d.Seconds() > 90 {
-		mins := int(d.Minutes())
-		secs := int(d.Seconds()) % 60
-		return fmt.Sprintf("%dm%ds", mins, secs)
-	}
-	if d.Seconds() >= 10 {
-		return fmt.Sprintf("%ds", int(d.Seconds()))
-	}
-	if d.Seconds() > 1 {
-		return fmt.Sprintf("%0.1fs", d.Seconds())
-	}
-	if d.Seconds() >= 0.1 {
-		return fmt.Sprintf("%0.2fs", d.Seconds())
-	}
-	return fmt.Sprintf("%dms", d.Nanoseconds()/1000000)
 }

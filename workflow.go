@@ -120,13 +120,11 @@ type Workflow struct {
 	// It is set to DefaultMagicActions by default.
 	MagicActions MagicActions
 
-	// Set from environment
-	// bundleID    string
-	// name        string
-	// cacheDir    string
-	// dataDir     string
-	// workflowDir string
-	sessionID string
+	dir         string // directory workflow is in
+	cacheDir    string // workflow's cache directory
+	dataDir     string // workflow's data directory
+	sessionName string // name of the variable sessionID is stored in
+	sessionID   string // random session ID
 }
 
 // New creates and initialises a new Workflow, passing any Options to Workflow.Configure().
@@ -141,13 +139,16 @@ func New(opts ...Option) *Workflow {
 	}
 
 	wf := &Workflow{
-		Conf:         c,
+		Conf:       c,
+		LogPrefix:  "\U0001F49C", // Purple heart
+		MaxLogSize: 1048576,      // 1 MiB
+		MaxResults: 0,            // Send all results to Alfred
+
 		Feedback:     &Feedback{},
-		LogPrefix:    "\U0001F49C", // Purple heart
-		MaxLogSize:   1048576,      // 1 MiB
-		MaxResults:   0,            // Send all results to Alfred
 		MagicActions: MagicActions{},
 		SortOptions:  []fuzzy.Option{},
+
+		sessionName: "AW_SESSION_ID",
 	}
 
 	wf.MagicActions.Register(defaultMagicActions...)
@@ -224,10 +225,6 @@ func (wf *Workflow) initializeLogging() {
 // --------------------------------------------------------------------
 // API methods
 
-// Debug returns true if Alfred's debugger is open.
-func Debug() bool                { return wf.Debug() }
-func (wf *Workflow) Debug() bool { return wf.Conf.GetBool(EnvVarDebug) }
-
 // BundleID returns the workflow's bundle ID. This library will not
 // work without a bundle ID, which is set in the workflow's main
 // setup sheet in Alfred Preferences.
@@ -260,16 +257,24 @@ func (wf *Workflow) Version() string { return wf.Conf.Get(EnvVarVersion) }
 // runs a different workflow.
 func SessionID() string { return wf.SessionID() }
 func (wf *Workflow) SessionID() string {
+
 	if wf.sessionID == "" {
-		ev := os.Getenv("AW_SESSION_ID")
+
+		ev := os.Getenv(wf.sessionName)
+
 		if ev != "" {
 			wf.sessionID = ev
 		} else {
 			wf.sessionID = NewSessionID()
 		}
 	}
+
 	return wf.sessionID
 }
+
+// Debug returns true if Alfred's debugger is open.
+func Debug() bool                { return wf.Debug() }
+func (wf *Workflow) Debug() bool { return wf.Conf.GetBool(EnvVarDebug) }
 
 // Args returns command-line arguments passed to the program.
 // It intercepts "magic args" and runs the corresponding actions, terminating
@@ -287,13 +292,12 @@ func (wf *Workflow) Args() []string {
 func Run(fn func()) { wf.Run(fn) }
 func (wf *Workflow) Run(fn func()) {
 
-	var vstr string
+	vstr := wf.Name()
 
 	if wf.Version() != "" {
-		vstr = fmt.Sprintf("%s/%v", wf.Name(), wf.Version())
-	} else {
-		vstr = wf.Name()
+		vstr += "/" + wf.Version()
 	}
+
 	vstr = fmt.Sprintf(" %s (AwGo/%v) ", vstr, AwGoVersion)
 
 	// Print right after Alfred's introductory blurb in the debugger.
@@ -423,8 +427,10 @@ func (wf *Workflow) awCacheDir() string {
 
 // finishLog outputs the workflow duration
 func finishLog(fatal bool) {
+
 	elapsed := time.Now().Sub(startTime)
-	s := util.Pad(fmt.Sprintf(" %s ", util.HumanDuration(elapsed)), "-", 50)
+	s := util.Pad(fmt.Sprintf(" %v ", elapsed), "-", 50)
+
 	if fatal {
 		log.Fatalln(s)
 	} else {

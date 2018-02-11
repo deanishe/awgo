@@ -63,12 +63,12 @@ var (
 
 // Icon represents the icon for an Item.
 //
-// Alfred supports PNG or ICNS files, UTIs (e.g. "public.folder") or
+// Alfred can show icons based on image files, UTIs (e.g. "public.folder") or
 // can use the icon of a specific file (e.g. "/Applications/Safari.app"
 // to use Safari's icon.
 //
-// Type = "" (the default) will treat Value as the path to a PNG or ICNS
-// file.
+// Type = "" (the default) will treat Value as the path to an image file.
+// Alfred supports (at least) PNG, ICNS, JPG, GIF.
 //
 // Type = IconTypeFileIcon will treat Value as the path to a file or
 // directory and use that file's icon, e.g:

@@ -466,12 +466,3 @@ func TestFilterFeedback(t *testing.T) {
 		}
 	}
 }
-
-func ExampleArgVars() {
-	// Set workflow variables from Alfred's Run Script Action
-	av := NewArgVars()
-	av.Arg("baz")        // Set output (i.e. next action's {query}) to "baz"
-	av.Var("foo", "bar") // Set workflow variable "foo" to "bar"
-	av.Send()
-	// Output: {"alfredworkflow":{"arg":"baz","variables":{"foo":"bar"}}}
-}

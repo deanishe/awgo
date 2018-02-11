@@ -157,7 +157,7 @@ func withTestWf(fun func(wf *Workflow)) {
 			wfdir    = filepath.Join(dir, "workflow")
 			datadir  = filepath.Join(dir, "data")
 			cachedir = filepath.Join(dir, "cache")
-			// ipfile   = filepath.Join(wfdir, "info.plist")
+			ipfile   = filepath.Join(wfdir, "info.plist")
 		)
 
 		// Update env to point to cache & data dirs
@@ -170,12 +170,10 @@ func withTestWf(fun func(wf *Workflow)) {
 				panic(err)
 			}
 		}
-		/*
-			// info.plist
-			if err := ioutil.WriteFile(ipfile, []byte(tInfoPlist), os.ModePerm); err != nil {
-				panic(err)
-			}
-		*/
+		// info.plist
+		if err := ioutil.WriteFile(ipfile, []byte(tInfoPlist), os.ModePerm); err != nil {
+			panic(err)
+		}
 
 		// Change to workflow directory and call function from there.
 		if err := os.Chdir(wfdir); err != nil {
@@ -212,7 +210,9 @@ func TestWithTestWf(t *testing.T) {
 		}{
 			{"Workflow.Dir", wd, wf.Dir()},
 			{"Cache.Dir", cd, wf.Cache.Dir},
+			{"CacheDir", cd, wf.CacheDir()},
 			{"Data.Dir", dd, wf.Data.Dir},
+			{"DataDir", dd, wf.DataDir()},
 			{"Name", tName, wf.Name()},
 			{"BundleID", tBundleID, wf.BundleID()},
 

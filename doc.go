@@ -107,61 +107,53 @@ your own structs and customising the fuzzy sort settings.
 
 Generating feedback
 
-Workflows return data to Alfred via STDOUT. Alfred interprets some data
-as JSON and AwGo provides an API for generating this.
+Workflows return data to Alfred via STDOUT. Alfred interprets some data as
+JSON and AwGo provides an API for generating this.
 
-JSON feedback for Script Filters is generated mostly via NewItem(), and
-then sent to Alfred with SendFeedback().
+JSON feedback for Script Filters is generated mostly via NewItem(), and then
+sent to Alfred with SendFeedback().
 
-JSON output to set workflow variables from a Run Script action is
-generated with ArgVars.
-
-WARNING: Only send JSON to Alfred once, and don't write anything else to
-STDOUT. Otherwise the JSON would be invalid. The Feedback sending methods
-ignore subsequent calls, but ArgVars cannot prevent double output.
+JSON output to set workflow variables from a Run Script action is generated
+with ArgVars.
 
 See SendFeedback for more documentation.
 
 
 Logging
 
-AwGo uses the default log package. It is automatically configured to log to
-STDERR (Alfred's debugger) and to a logfile in the workflow's cache directory.
+AwGo automatically configures the default log package to write to STDERR
+(Alfred's debugger) and a log file in the workflow's cache directory.
 
-The log file is rotated when it exceeds 1 MiB in size. One previous log is kept.
+The log file is necessary because background processes aren't connected
+to Alfred, so their output is only visible in the log. It is rotated when
+it exceeds 1 MiB in size. One previous log is kept.
 
-AwGo detects when Alfred's debugger is open (Workflow.Debug() returns true) and
-in this case prepends filename:linenumber: to log messages.
+AwGo detects when Alfred's debugger is open (Workflow.Debug() returns true)
+and in this case prepends filename:linenumber: to log messages.
 
 
-Saving and caching data
+Storing data
 
-Alfred provides data and cache directories for each workflow. The data directory
-is for permanent data and the cache directory for temporary data.  You should
-use the CacheDir() and DataDir() methods to get the paths to these directories,
-as the methods will ensure that the directories exist.
+AwGo provides a basic, but useful, API for loading and saving data.
+In addition to reading/writing bytes and marshalling/unmarshalling to/from
+JSON, the API can auto-refresh expired cache data.
 
-AwGo's Workflow struct has a simple API for saving data to these directories.
-There are basic load/store methods for saving bytes or (un)marshalling structs
-to/from JSON, plus LoadOrStore methods that return cached data if they exist and
-are new enough, or refresh the cache via a provided function, then return the
-data.
+See Cache and Session for the API documentation.
 
-Workflow.Data points to the workflow's data directory, Workflow.Cache is
-configured to point to the workflow's cache directory, and Workflow.Session also
-uses the cache directory, but its cached data expire when the user closes Alfred
-or runs a different workflow.
+Workflow has three caches tied to different directories:
 
-See the Cache and Session structs for the API.
+    Workflow.Data     // Cache pointing to workflow's data directory
+    Workflow.Cache    // Cache pointing to workflow's cache directory
+    Workflow.Session  // Session pointing to cache directory tied to session ID
 
 
 Background jobs
 
 AwGo provides a simple API to start/stop background processes via the
-RunInBackground(), IsRunning() and Kill() functions. This is useful for running
-checks for updates and other jobs that hit the network or take a significant
-amount of time to complete, allowing you to keep your Script Filters extremely
-responsive.
+RunInBackground(), IsRunning() and Kill() functions. This is useful for
+running checks for updates and other jobs that hit the network or take a
+significant amount of time to complete, allowing you to keep your Script
+Filters extremely responsive.
 
 See _examples/update for one possible way to use this API.
 

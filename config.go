@@ -10,7 +10,6 @@ package aw
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"strconv"
@@ -216,7 +215,7 @@ func (c Config) Save(key string, value interface{}, export ...bool) error {
 
 	script := setConfigAS(key, val, bid, exp)
 
-	log.Printf("AppleScript=\n%v", script)
+	// log.Printf("AppleScript=\n%v", script)
 
 	cmd := exec.Command("/usr/bin/osascript", "-l", "AppleScript", "-e", script)
 	if err := cmd.Run(); err != nil {
