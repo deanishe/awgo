@@ -14,7 +14,7 @@ type IconType string
 const (
 	// Indicates that Icon.Value is the path to an image file that should
 	// be used as the Item's icon.
-	IconTypeImageFile IconType = ""
+	IconTypeImage IconType = ""
 	// Icon.Value points to an object whose icon should be show in Alfred,
 	//e.g. combine with "/Applications/Safari.app" to show Safari's icon.
 	IconTypeFileIcon IconType = "fileicon"
@@ -32,33 +32,33 @@ const (
 // http://www.deanishe.net/alfred-workflow/user-manual/icons.html#list-of-icons
 var (
 	// Workflow's own icon
-	IconWorkflow = &Icon{"icon.png", IconTypeImageFile}
+	IconWorkflow = &Icon{"icon.png", IconTypeImage}
 
-	sysIconDir = "/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/"
+	sysIcons = "/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/"
 	// System icons
-	IconAccount   = &Icon{sysIconDir + "Accounts.icns", IconTypeImageFile}
-	IconBurn      = &Icon{sysIconDir + "BurningIcon.icns", IconTypeImageFile}
-	IconClock     = &Icon{sysIconDir + "Clock.icns", IconTypeImageFile}
-	IconColor     = &Icon{sysIconDir + "ProfileBackgroundColor.icns", IconTypeImageFile}
-	IconColour    = &Icon{sysIconDir + "ProfileBackgroundColor.icns", IconTypeImageFile}
-	IconEject     = &Icon{sysIconDir + "EjectMediaIcon.icns", IconTypeImageFile}
-	IconError     = &Icon{sysIconDir + "AlertStopIcon.icns", IconTypeImageFile}
-	IconFavorite  = &Icon{sysIconDir + "ToolbarFavoritesIcon.icns", IconTypeImageFile}
-	IconFavourite = &Icon{sysIconDir + "ToolbarFavoritesIcon.icns", IconTypeImageFile}
-	IconGroup     = &Icon{sysIconDir + "GroupIcon.icns", IconTypeImageFile}
-	IconHelp      = &Icon{sysIconDir + "HelpIcon.icns", IconTypeImageFile}
-	IconHome      = &Icon{sysIconDir + "HomeFolderIcon.icns", IconTypeImageFile}
-	IconInfo      = &Icon{sysIconDir + "ToolbarInfo.icns", IconTypeImageFile}
-	IconNetwork   = &Icon{sysIconDir + "GenericNetworkIcon.icns", IconTypeImageFile}
-	IconNote      = &Icon{sysIconDir + "AlertNoteIcon.icns", IconTypeImageFile}
-	IconSettings  = &Icon{sysIconDir + "ToolbarAdvanced.icns", IconTypeImageFile}
-	IconSwirl     = &Icon{sysIconDir + "ErasingIcon.icns", IconTypeImageFile}
-	IconSwitch    = &Icon{sysIconDir + "General.icns", IconTypeImageFile}
-	IconSync      = &Icon{sysIconDir + "Sync.icns", IconTypeImageFile}
-	IconTrash     = &Icon{sysIconDir + "TrashIcon.icns", IconTypeImageFile}
-	IconUser      = &Icon{sysIconDir + "UserIcon.icns", IconTypeImageFile}
-	IconWarning   = &Icon{sysIconDir + "AlertCautionIcon.icns", IconTypeImageFile}
-	IconWeb       = &Icon{sysIconDir + "BookmarkIcon.icns", IconTypeImageFile}
+	IconAccount   = &Icon{Value: sysIcons + "Accounts.icns"}
+	IconBurn      = &Icon{Value: sysIcons + "BurningIcon.icns"}
+	IconClock     = &Icon{Value: sysIcons + "Clock.icns"}
+	IconColor     = &Icon{Value: sysIcons + "ProfileBackgroundColor.icns"}
+	IconColour    = &Icon{Value: sysIcons + "ProfileBackgroundColor.icns"}
+	IconEject     = &Icon{Value: sysIcons + "EjectMediaIcon.icns"}
+	IconError     = &Icon{Value: sysIcons + "AlertStopIcon.icns"}
+	IconFavorite  = &Icon{Value: sysIcons + "ToolbarFavoritesIcon.icns"}
+	IconFavourite = &Icon{Value: sysIcons + "ToolbarFavoritesIcon.icns"}
+	IconGroup     = &Icon{Value: sysIcons + "GroupIcon.icns"}
+	IconHelp      = &Icon{Value: sysIcons + "HelpIcon.icns"}
+	IconHome      = &Icon{Value: sysIcons + "HomeFolderIcon.icns"}
+	IconInfo      = &Icon{Value: sysIcons + "ToolbarInfo.icns"}
+	IconNetwork   = &Icon{Value: sysIcons + "GenericNetworkIcon.icns"}
+	IconNote      = &Icon{Value: sysIcons + "AlertNoteIcon.icns"}
+	IconSettings  = &Icon{Value: sysIcons + "ToolbarAdvanced.icns"}
+	IconSwirl     = &Icon{Value: sysIcons + "ErasingIcon.icns"}
+	IconSwitch    = &Icon{Value: sysIcons + "General.icns"}
+	IconSync      = &Icon{Value: sysIcons + "Sync.icns"}
+	IconTrash     = &Icon{Value: sysIcons + "TrashIcon.icns"}
+	IconUser      = &Icon{Value: sysIcons + "UserIcon.icns"}
+	IconWarning   = &Icon{Value: sysIcons + "AlertCautionIcon.icns"}
+	IconWeb       = &Icon{Value: sysIcons + "BookmarkIcon.icns"}
 )
 
 // Icon represents the icon for an Item.

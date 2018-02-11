@@ -170,7 +170,7 @@ func Update(updater Updater) Option {
 			panic("can't set Updater as workflow has no version number")
 		}
 		prev := wf.Updater
-		wf.SetUpdater(updater)
+		wf.setUpdater(updater)
 		return Update(prev)
 	}
 }

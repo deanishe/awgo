@@ -345,9 +345,9 @@ func (wf *Workflow) Run(fn func()) {
 // --------------------------------------------------------------------
 // Updating
 
-// SetUpdater sets an updater for the workflow.
-func SetUpdater(u Updater) { wf.SetUpdater(u) }
-func (wf *Workflow) SetUpdater(u Updater) {
+// setUpdater sets an updater for the workflow.
+func setUpdater(u Updater) { wf.setUpdater(u) }
+func (wf *Workflow) setUpdater(u Updater) {
 	wf.Updater = u
 	wf.MagicActions.Register(&updateMA{wf.Updater})
 }
