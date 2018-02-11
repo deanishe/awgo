@@ -19,22 +19,45 @@ import (
 	"github.com/deanishe/awgo/util"
 )
 
-// Environment variables set by Alfred.
+// Environment variables containing workflow and Alfred info.
+//
+// Read the values with os.Getenv(EnvVarName) or via Config:
+//
+//    // Returns a string
+//    Config.Get(EnvVarName)
+//    // Parse string into a bool
+//    Config.GetBool(EnvVarDebug)
+//
 const (
-	EnvVarVersion                  = "alfred_workflow_version"
-	EnvVarName                     = "alfred_workflow_name"
-	EnvVarBundleID                 = "alfred_workflow_bundleid"
-	EnvVarUID                      = "alfred_workflow_uid"
-	EnvVarDebug                    = "alfred_debug"
-	EnvVarAlfredVersion            = "alfred_version"
-	EnvVarAlfredBuild              = "alfred_version_build"
-	EnvVarTheme                    = "alfred_theme"
-	EnvVarThemeBackground          = "alfred_theme_background"
-	EnvVarThemeSelectionBackground = "alfred_theme_selection_background"
-	EnvVarPreferences              = "alfred_preferences"
-	EnvVarLocalhash                = "alfred_preferences_localhash"
-	EnvVarCacheDir                 = "alfred_workflow_cache"
-	EnvVarDataDir                  = "alfred_workflow_data"
+	// Workflow info assigned in Alfred Preferences
+	EnvVarName     = "alfred_workflow_name"     // Name of workflow
+	EnvVarBundleID = "alfred_workflow_bundleid" // Bundle ID
+	EnvVarVersion  = "alfred_workflow_version"  // Workflow version
+
+	EnvVarUID = "alfred_workflow_uid" // Random UID assigned by Alfred
+
+	// Workflow storage directories
+	EnvVarCacheDir = "alfred_workflow_cache" // For temporary data
+	EnvVarDataDir  = "alfred_workflow_data"  // For permanent data
+
+	// Set to 1 when Alfred's debugger is open
+	EnvVarDebug = "alfred_debug"
+
+	// Theme info
+	EnvVarTheme = "alfred_theme" // ID of user's selected theme
+	// Theme's background colour in rgba format, e.g. "rgba(255,255,255,1.0)"
+	EnvVarThemeBG = "alfred_theme_background"
+	// Theme's selection background colour in rgba format
+	EnvVarThemeSelectionBG = "alfred_theme_selection_background"
+
+	// Alfred info
+	EnvVarAlfredVersion = "alfred_version"       // Alfred's version number
+	EnvVarAlfredBuild   = "alfred_version_build" // Alfred's build number
+	// Path to "Alfred.alfredpreferences" file
+	EnvVarPreferences = "alfred_preferences"
+	// Machine-specific hash. Machine preferences are stored in
+	// Alfred.alfredpreferences/local/<hash>
+	EnvVarLocalhash = "alfred_preferences_localhash"
 )
 
 // Env is the datasource for configuration lookups.

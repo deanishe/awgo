@@ -58,6 +58,7 @@ func (wf *Workflow) NewFileItem(path string) *Item {
 // warning icon (exclamation mark on yellow triangle).
 func NewWarningItem(title, subtitle string) *Item { return wf.NewWarningItem(title, subtitle) }
 func (wf *Workflow) NewWarningItem(title, subtitle string) *Item {
+
 	return wf.Feedback.NewItem(title).
 		Subtitle(subtitle).
 		Icon(IconWarning)
@@ -89,10 +90,14 @@ func (wf *Workflow) Fatalf(format string, args ...interface{}) {
 // but you can't send any more results to Alfred.
 func Warn(title, subtitle string) *Workflow { return wf.Warn(title, subtitle) }
 func (wf *Workflow) Warn(title, subtitle string) *Workflow {
+
+	// Remove any existing items
 	wf.Feedback.Clear()
+
 	wf.NewItem(title).
 		Subtitle(subtitle).
 		Icon(IconWarning)
+
 	return wf.SendFeedback()
 }
 
@@ -125,14 +130,18 @@ func (wf *Workflow) Filter(query string) []*fuzzy.Result {
 //
 func SendFeedback() { wf.SendFeedback() }
 func (wf *Workflow) SendFeedback() *Workflow {
+
 	// Set session ID
 	wf.Var("AW_SESSION_ID", wf.SessionID())
+
 	// Truncate Items if MaxResults is set
 	if wf.MaxResults > 0 && len(wf.Feedback.Items) > wf.MaxResults {
 		wf.Feedback.Items = wf.Feedback.Items[0:wf.MaxResults]
 	}
+
 	if err := wf.Feedback.Send(); err != nil {
 		log.Fatalf("Error generating JSON : %v", err)
 	}
+
 	return wf
 }

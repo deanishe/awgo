@@ -16,10 +16,6 @@ import (
 	"strings"
 )
 
-// DefaultMagicPrefix is the default prefix for "magic" arguments.
-// This can be overriden with the MagicPrefix value in Options.
-const DefaultMagicPrefix = "workflow:"
-
 // Magic actions registered by default.
 var (
 	defaultMagicActions = []MagicAction{

@@ -7,7 +7,6 @@
 package aw
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -23,6 +22,17 @@ import (
 
 // AwGoVersion is the semantic version number of this library.
 const AwGoVersion = "0.14.0"
+
+// Default Workflow settings. Can be changed with the corresponding Options.
+//
+// See the Options and Workflow documentation for more information.
+const (
+	DefaultLogPrefix   = "\U0001F37A"    // Beer mug
+	DefaultMaxLogSize  = 1048576         // 1 MiB
+	DefaultMaxResults  = 0               // No limit, i.e. send all results to Alfred
+	DefaultSessionName = "AW_SESSION_ID" // Workflow variable session ID is stored in
+	DefaultMagicPrefix = "workflow:"     // Prefix to call "magic" actions
+)
 
 var (
 	startTime time.Time // Time execution started
@@ -41,29 +51,29 @@ func init() {
 	wf = New()
 }
 
-// Updater can check for and download & install newer versions of the workflow.
-// There is a concrete implementation and documentation in subpackage "update".
-type Updater interface {
-	UpdateInterval(time.Duration) // Set interval between checks
-	UpdateAvailable() bool        // Return true if a newer version is available
-	CheckDue() bool               // Return true if a check for a newer version is due
-	CheckForUpdate() error        // Retrieve available releases, e.g. from a URL
-	Install() error               // Install the latest version
-}
-
-// Workflow provides a simple, consolidated API for building Script
-// Filters and talking to Alfred.
+// Workflow provides a consolidated API for building Script Filters.
 //
-// As a rule, you should create a Workflow in main() and call your main
-// entry-point via Workflow.Run(). Use Workflow.NewItem() to create new
-// feedback Items and Workflow.SendFeedback() to send the results to
-// Alfred.
+// As a rule, you should create a Workflow in init or main and call your main
+// entry-point via Workflow.Run(), which catches panics, and logs & shows the
+// error in Alfred.
 //
-// If you don't need to customise Workflow's behaviour in any way, you
-// can use the package-level functions, which call the corresponding
-// methods on the default Workflow object.
+// If you don't need to customise Workflow's behaviour in any way, you can use
+// the package-level functions, which call the corresponding methods on the
+// default Workflow object.
 //
-// See the examples/ subdirectory for some full examples of workflows.
+//  Script Filter
+//
+// To generate feedback for a Script Filter, use Workflow.NewItem() to create
+// new Items and Workflow.SendFeedback() to send the results to Alfred.
+//
+// Run Script
+//
+// Use the TextErrors option, so any rescued panics are printed as text,
+// not as JSON.
+//
+// Use ArgVars to set workflow variables, not Workflow/Feedback.
+//
+// See the _examples/ subdirectory for some full examples of workflows.
 type Workflow struct {
 	sync.WaitGroup
 	// The response that will be sent to Alfred. Workflow provides
@@ -140,15 +150,15 @@ func New(opts ...Option) *Workflow {
 
 	wf := &Workflow{
 		Conf:       c,
-		LogPrefix:  "\U0001F49C", // Purple heart
-		MaxLogSize: 1048576,      // 1 MiB
-		MaxResults: 0,            // Send all results to Alfred
+		LogPrefix:  DefaultLogPrefix,
+		MaxLogSize: DefaultMaxLogSize,
+		MaxResults: DefaultMaxResults,
 
 		Feedback:     &Feedback{},
 		MagicActions: MagicActions{},
 		SortOptions:  []fuzzy.Option{},
 
-		sessionName: "AW_SESSION_ID",
+		sessionName: DefaultSessionName,
 	}
 
 	wf.MagicActions.Register(defaultMagicActions...)
@@ -340,54 +350,6 @@ func (wf *Workflow) Run(fn func()) {
 
 	wf.Wait()
 	finishLog(false)
-}
-
-// --------------------------------------------------------------------
-// Updating
-
-// setUpdater sets an updater for the workflow.
-func setUpdater(u Updater) { wf.setUpdater(u) }
-func (wf *Workflow) setUpdater(u Updater) {
-	wf.Updater = u
-	wf.MagicActions.Register(&updateMA{wf.Updater})
-}
-
-// UpdateCheckDue returns true if an update is available.
-func UpdateCheckDue() bool { return wf.UpdateCheckDue() }
-func (wf *Workflow) UpdateCheckDue() bool {
-	if wf.Updater == nil {
-		log.Println("No updater configured")
-		return false
-	}
-	return wf.Updater.CheckDue()
-}
-
-// CheckForUpdate retrieves and caches the list of available releases.
-func CheckForUpdate() error { return wf.CheckForUpdate() }
-func (wf *Workflow) CheckForUpdate() error {
-	if wf.Updater == nil {
-		return errors.New("No updater configured")
-	}
-	return wf.Updater.CheckForUpdate()
-}
-
-// UpdateAvailable returns true if a newer version is available to install.
-func UpdateAvailable() bool { return wf.UpdateAvailable() }
-func (wf *Workflow) UpdateAvailable() bool {
-	if wf.Updater == nil {
-		log.Println("No updater configured")
-		return false
-	}
-	return wf.Updater.UpdateAvailable()
-}
-
-// InstallUpdate downloads and installs the latest version of the workflow.
-func InstallUpdate() error { return wf.InstallUpdate() }
-func (wf *Workflow) InstallUpdate() error {
-	if wf.Updater == nil {
-		return errors.New("No updater configured")
-	}
-	return wf.Updater.Install()
 }
 
 // --------------------------------------------------------------------
