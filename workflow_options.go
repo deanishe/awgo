@@ -117,10 +117,28 @@ func TextErrors(on bool) Option {
 //
 // _examples/fuzzy contains an example workflow using fuzzy sort.
 func SortOptions(opts ...fuzzy.Option) Option {
+
 	return func(wf *Workflow) Option {
+
 		prev := wf.SortOptions
 		wf.SortOptions = opts
+
 		return SortOptions(prev...)
+	}
+}
+
+// SessionName changes the name of the variable used to store the session ID.
+//
+// This is useful if you have multiple Script Filters chained together that
+// you don't want to use the same cache.
+func SessionName(name string) Option {
+
+	return func(wf *Workflow) Option {
+
+		prev := wf.sessionName
+		wf.sessionName = name
+
+		return SessionName(prev)
 	}
 }
 
