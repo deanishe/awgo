@@ -16,29 +16,6 @@ import (
 	"testing"
 )
 
-/*
-func TestAppleScriptify(t *testing.T) {
-	data := []struct {
-		in, out string
-	}{
-		{"", ""},
-		{"simple", "simple"},
-		{"with spaces", "with spaces"},
-		{`has "quotes" within`, `has " & quote & "quotes" & quote & " within`},
-		{`"within quotes"`, `" & quote & "within quotes" & quote & "`},
-		{`"`, `" & quote & "`},
-	}
-
-	for _, td := range data {
-		s := AppleScriptify(td.in)
-		if s != td.out {
-			t.Errorf("Bad AppleScript escape. Expected=%v, Got=%v", td.out, s)
-		}
-
-	}
-}
-*/
-
 // Scripts in various language that write $1 to STDOUT.
 var testScripts = []struct {
 	name, script string
@@ -266,4 +243,28 @@ func TestNewScriptRunner(t *testing.T) {
 
 	})
 
+}
+
+// TestQuoteJS verifies QuoteJS quoting.
+func TestQuoteJS(t *testing.T) {
+
+	data := []struct {
+		in  interface{}
+		out string
+	}{
+		{"", `""`},
+		{"onions", `"onions"`},
+		{"", `""`},
+		{[]string{"one", "two", "three"}, `["one","two","three"]`},
+	}
+
+	for _, td := range data {
+
+		s := QuoteJS(td.in)
+
+		if s != td.out {
+			t.Errorf("Bad JS for %#v. Expected=%v, Got=%v", td.in, td.out, s)
+		}
+
+	}
 }

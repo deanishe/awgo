@@ -39,11 +39,13 @@ The main features are:
 	- Fluent API for generating Alfred JSON.
 	- Fuzzy filtering.
 	- Simple, but powerful, API for caching/saving workflow data.
-	- Default icons based on macOS system icons.
+	- Run scripts and script code.
+	- Call Alfred's AppleScript API from Go.
 	- Workflow update API with built-in support for GitHub releases.
 	- Pre-configured logging for easier debugging, with a rotated log file.
 	- Catches panics, logs stack trace and shows user an error message.
 	- "Magic" queries/actions for simplified development and user support.
+	- Some default icons based on macOS system icons.
 
 
 Usage
@@ -146,16 +148,35 @@ Workflow has three caches tied to different directories:
     Workflow.Cache    // Cache pointing to workflow's cache directory
     Workflow.Session  // Session pointing to cache directory tied to session ID
 
+These all share the same API. The difference is in when the data go away.
 
-Background jobs
+Data saved with Session are deleted after the user closes Alfred or starts
+using a different workflow. The Cache directory is in a system cache
+directory, so may be deleted by the system or "System Maintenance" tools.
 
-AwGo provides a simple API to start/stop background processes via the
+The Data directory lives with Alfred's application data and would not
+normally be deleted.
+
+Scripts and background jobs
+
+Subpackage util provides several functions for running script files and
+snippets of AppleScript/JavaScript code. See util for documentation and
+examples.
+
+AwGo offers a simple API to start/stop background processes via the
 RunInBackground(), IsRunning() and Kill() functions. This is useful for
 running checks for updates and other jobs that hit the network or take a
 significant amount of time to complete, allowing you to keep your Script
 Filters extremely responsive.
 
 See _examples/update for one possible way to use this API.
+
+
+Alfred API
+
+The Alfred struct offers methods corresponding to Alfred's AppleScript API
+calls. Amongst other things, you can use it to tell Alfred to open, to search
+for a query, or to browse/action files & directories.
 
 */
 package aw

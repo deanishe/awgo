@@ -297,35 +297,6 @@ func TestStringify(t *testing.T) {
 	}
 }
 
-func TestStoreCommands(t *testing.T) {
-	data := []struct {
-		s, x string
-	}{
-		// Unexportable
-		{setConfigAS("name", "dean", tBundleID, false),
-			`tell application "Alfred 3"
-set configuration "name" to value "dean" in workflow "net.deanishe.awgo" exportable false
-end tell`},
-		// Exportable
-		{setConfigAS("name", "dean", tBundleID, true),
-			`tell application "Alfred 3"
-set configuration "name" to value "dean" in workflow "net.deanishe.awgo" exportable true
-end tell`},
-		// Quotes in value
-		{setConfigAS("name", `"dean"`, tBundleID, false),
-			`tell application "Alfred 3"
-set configuration "name" to value quote & "dean" & quote in workflow "net.deanishe.awgo" exportable false
-end tell`},
-	}
-
-	for _, td := range data {
-		if td.s != td.x {
-			t.Errorf("Bad Store script. Expected=%v, Got=%v", td.x, td.s)
-		}
-
-	}
-}
-
 // Basic usage of Config.Get. Returns an empty string if variable is unset.
 func ExampleConfig_Get() {
 	// Set some test variables

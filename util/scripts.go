@@ -10,6 +10,7 @@ package util
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -189,13 +190,6 @@ func RunCmd(cmd *exec.Cmd) ([]byte, error) {
 	return output, nil
 }
 
-/*
-// AppleScriptify escapes a string for insertion into quotes in AppleScript.
-func AppleScriptify(s string) string {
-	return strings.Replace(s, `"`, `" & quote & "`, -1)
-}
-*/
-
 // QuoteAS quotes a string for insertion into AppleScript code.
 // It wraps the value in quotation marks, so don't insert additional ones.
 func QuoteAS(s string) string {
@@ -230,6 +224,19 @@ func QuoteAS(s string) string {
 	}
 
 	return strings.Join(chars, "")
+}
+
+// QuoteJS quotes a value for insertion into JavaScript.
+// It calls json.Marshal(v), and returns an empty string if an error occurs.
+func QuoteJS(v interface{}) string {
+
+	data, err := json.Marshal(v)
+	if err != nil {
+		log.Printf("couldn't convert %#v to JS: %v", v, err)
+		return ""
+	}
+
+	return string(data)
 }
 
 // ExecRunner implements Runner for executable files.

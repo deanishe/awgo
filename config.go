@@ -11,12 +11,9 @@ package aw
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/deanishe/awgo/util"
 )
 
 // Environment variables containing workflow and Alfred info.
@@ -225,10 +222,13 @@ func (c Config) GetBool(key string, fallback ...bool) bool {
 }
 
 // Save saves a value to the workflow's configuration.
+//
+// This method persists a setting to info.plist, so it preserved for
+// future runs.
 func (c Config) Save(key string, value interface{}, export ...bool) error {
 
 	var (
-		bid = c.Get(EnvVarBundleID)
+		a   = NewAlfred()
 		val = fmt.Sprintf("%v", value)
 		exp bool
 	)
@@ -236,36 +236,7 @@ func (c Config) Save(key string, value interface{}, export ...bool) error {
 		exp = true
 	}
 
-	script := setConfigAS(key, val, bid, exp)
-
-	// log.Printf("AppleScript=\n%v", script)
-
-	cmd := exec.Command("/usr/bin/osascript", "-l", "AppleScript", "-e", script)
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Generate AppleScript to store a configuration variable.
-func setConfigAS(key, value, bundleid string, export bool) string {
-
-	key = util.QuoteAS(key)
-	value = util.QuoteAS(value)
-	bundleid = util.QuoteAS(bundleid)
-
-	suffix := "exportable false"
-
-	if export {
-		suffix = "exportable true"
-	}
-
-	script := `tell application "Alfred 3"
-set configuration %s to value %s in workflow %s %s
-end tell`
-
-	return fmt.Sprintf(script, key, value, bundleid, suffix)
+	return a.SetConfig(key, val, exp)
 }
 
 // Check that minimum required values are set.
