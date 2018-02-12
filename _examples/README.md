@@ -18,7 +18,7 @@ which will symlink the workflow to Alfred's workflow directory.
 
 ## bookmarks ##
 
-Custom implementation of [`fuzzy.Interface`][fuzzy-if].
+Custom implementation of [`fuzzy.Sortable`][fuzzy-if].
 
 Displays and filters a list of your Safari bookmarks.
 
@@ -46,4 +46,4 @@ Shows a list of repos from GitHub tagged `alfred-workflow`.
 
 [caching]: https://godoc.org/github.com/deanishe/awgo#Cache
 [installer]: https://gist.github.com/deanishe/35faae3e7f89f629a94e
-[fuzzy-if]: https://godoc.org/github.com/deanishe/awgo/fuzzy#Interface
+[fuzzy-if]: https://godoc.org/github.com/deanishe/awgo/fuzzy#Sortable

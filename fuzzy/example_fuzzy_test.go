@@ -21,7 +21,7 @@ type Contact struct {
 // Name returns the full name of the Contact.
 func (c *Contact) Name() string { return fmt.Sprintf("%s %s", c.Firstname, c.Lastname) }
 
-// Contacts is a collection of Contact items. This is where fuzzy.Interface
+// Contacts is a collection of Contact items. This is where fuzzy.Sortable
 // must be implemented to enable fuzzy sorting.
 type Contacts []*Contact
 

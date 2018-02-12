@@ -7,14 +7,14 @@
 //
 
 /*
-Workflow bookmarks demonstrates implementing fuzzy.Interface on your own structs.
+Workflow bookmarks demonstrates implementing fuzzy.Sortable.
 
 (This is not strictly necessary, as the Workflow/Feedback structs also
-implement fuzzy.Interface.)
+implement fuzzy.Sortable.)
 
 It loads your Safari bookmarks from ~/Library/Safari/Bookmarks.plist into the
-Bookmarks struct, which implements fuzzy.Interface and a Filter() method,
-which returns another Bookmarks struct containing all bookmarks that match
+Bookmarks slice, which implements fuzzy.Sortable and a Filter() method,
+which returns another Bookmarks slice containing all bookmarks that match
 the given query.
 
 See bookmarks.go for the implementation.
@@ -36,13 +36,14 @@ var (
 	helpURL    = "http://www.deanishe.net"
 	maxResults = 200
 	wf         *aw.Workflow
-	icon       = &aw.Icon{ // Icon for bookmark filetype
+
+	// Icon for bookmark filetype
+	icon = &aw.Icon{
 		Value: "com.apple.safari.bookmark",
 		Type:  aw.IconTypeFileType,
 	}
-)
 
-var (
+	// docopt usage message
 	usage = `bookmarks [options] [<query>]
 
 Usage:
@@ -62,6 +63,7 @@ func init() {
 func run() {
 	var query string
 
+	// ----------------------------------------------------------------
 	// Parse command-line arguments
 	args, err := docopt.Parse(usage, wf.Args(), true, wf.Version(), false)
 	if err != nil {
@@ -73,20 +75,25 @@ func run() {
 	}
 	log.Printf("[main] query=%s", query)
 
+	// ----------------------------------------------------------------
 	// Load bookmarks
 	bookmarks, err := loadBookmarks()
 	if err != nil {
 		wf.FatalError(err)
 	}
+
 	log.Printf("%d total bookmark(s)", len(bookmarks))
 
+	// ----------------------------------------------------------------
 	// Filter bookmarks based on user query
 	if query != "" {
 		bookmarks = bookmarks.Filter(query)
 	}
 
+	// ----------------------------------------------------------------
 	// Generate results for Alfred
 	for _, b := range bookmarks {
+
 		wf.NewItem(b.Title).
 			Subtitle(b.URL).
 			Arg(b.URL).
@@ -95,6 +102,7 @@ func run() {
 			Valid(true)
 	}
 
+	// Send results
 	wf.WarnEmpty("No matching bookmarks", "Try a different query?")
 	wf.SendFeedback()
 }

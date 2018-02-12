@@ -128,16 +128,16 @@ Demonstrates basic usage of fuzzy filtering using the API built into Workflow.</
 		<key>7C574F95-18F7-4AA2-B8EF-812745DB293D</key>
 		<dict>
 			<key>xpos</key>
-			<integer>300</integer>
+			<integer>310</integer>
 			<key>ypos</key>
-			<integer>40</integer>
+			<integer>50</integer>
 		</dict>
 		<key>921C896B-DC08-4B14-9424-B5CEF32C5C37</key>
 		<dict>
 			<key>xpos</key>
-			<integer>300</integer>
+			<integer>310</integer>
 			<key>ypos</key>
-			<integer>180</integer>
+			<integer>190</integer>
 		</dict>
 		<key>D61073F1-262D-482D-800D-A788FD7B9F69</key>
 		<dict>
@@ -146,9 +146,9 @@ Demonstrates basic usage of fuzzy filtering using the API built into Workflow.</
 
 The alternate actions are configured in the Script Filter code/output (which is why you can't see the alternate subtitle text in the connection configuration).</string>
 			<key>xpos</key>
-			<integer>50</integer>
+			<integer>60</integer>
 			<key>ypos</key>
-			<integer>40</integer>
+			<integer>50</integer>
 		</dict>
 	</dict>
 	<key>version</key>

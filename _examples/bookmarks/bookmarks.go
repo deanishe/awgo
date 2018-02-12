@@ -23,7 +23,7 @@ var (
 	bookmarksPath = os.ExpandEnv("$HOME/Library/Safari/Bookmarks.plist")
 )
 
-// Bookmarks is a slice of Bookmark structs that implements fuzzy.Interface.
+// Bookmarks is a slice of Bookmark structs that implements fuzzy.Sortable.
 type Bookmarks []*Bookmark
 
 // Implement sort.Interface.
@@ -31,7 +31,7 @@ func (b Bookmarks) Len() int           { return len(b) }
 func (b Bookmarks) Swap(i, j int)      { b[i], b[j] = b[j], b[i] }
 func (b Bookmarks) Less(i, j int) bool { return b[i].Title < b[j].Title }
 
-// Keywords implements fuzzy.Interface. It sets the search keywords to the
+// Keywords implements fuzzy.Sortable. It sets the search keywords to the
 // title of the bookmark plus the URL domain.
 func (b Bookmarks) Keywords(i int) string {
 	return fmt.Sprintf("%s %s", b[i].Title, b[i].Domain)

@@ -113,9 +113,9 @@ Filtering is always performed against cached data (rather than querying the API)
 			<key>note</key>
 			<string>Open actioned repo's webpage in your browser.</string>
 			<key>xpos</key>
-			<integer>240</integer>
+			<integer>270</integer>
 			<key>ypos</key>
-			<integer>40</integer>
+			<integer>60</integer>
 		</dict>
 		<key>D61073F1-262D-482D-800D-A788FD7B9F69</key>
 		<dict>
@@ -124,9 +124,9 @@ Filtering is always performed against cached data (rather than querying the API)
 
 Data are downloaded in the background and search is performed on the cached data.</string>
 			<key>xpos</key>
-			<integer>40</integer>
+			<integer>70</integer>
 			<key>ypos</key>
-			<integer>40</integer>
+			<integer>60</integer>
 		</dict>
 	</dict>
 	<key>version</key>

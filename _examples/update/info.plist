@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>bundleid</key>
-	<string>net.deanishe.awgo-example-update</string>
+	<string>net.deanishe.awgo.demo-update</string>
 	<key>connections</key>
 	<dict>
 		<key>F3DFD0D4-B306-48DD-A915-34D3CF427B73</key>
@@ -111,18 +111,18 @@ The check for a new version is performed in the background, and a notification i
 		<key>09D5F8E4-239F-449C-955E-C52F9C6F1DF0</key>
 		<dict>
 			<key>xpos</key>
-			<integer>230</integer>
+			<integer>260</integer>
 			<key>ypos</key>
-			<integer>30</integer>
+			<integer>50</integer>
 		</dict>
 		<key>F3DFD0D4-B306-48DD-A915-34D3CF427B73</key>
 		<dict>
 			<key>note</key>
 			<string>Checks for updates in background, and shows an "Update available" message when a newer version is available.</string>
 			<key>xpos</key>
-			<integer>30</integer>
+			<integer>60</integer>
 			<key>ypos</key>
-			<integer>30</integer>
+			<integer>50</integer>
 		</dict>
 	</dict>
 	<key>version</key>
