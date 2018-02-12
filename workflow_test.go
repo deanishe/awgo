@@ -8,37 +8,10 @@ package aw
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"testing"
 )
-
-// Dummy magic action
-type testMA struct {
-	keyCalled, descCalled, runTextCalled, runCalled bool
-	returnError                                     bool
-}
-
-func (a testMA) Keyword() string {
-	a.keyCalled = true
-	return "test"
-}
-func (a testMA) Description() string {
-	a.descCalled = true
-	return "Just a test"
-}
-func (a testMA) RunText() string {
-	a.runTextCalled = true
-	return "Performing test…"
-}
-func (a testMA) Run() error {
-	a.runCalled = true
-	if a.returnError {
-		return errors.New("requested error")
-	}
-	return nil
-}
 
 // TestWorkflowValues tests workflow name, bundle ID etc.
 func TestWorkflowValues(t *testing.T) {
@@ -83,6 +56,10 @@ func TestOptions(t *testing.T) {
 			func(wf *Workflow) bool { return wf.SortOptions == nil },
 			"Set SortOptions"},
 		{
+			SuppressUIDs(true),
+			func(wf *Workflow) bool { return wf.Feedback.NoUIDs == true },
+			"Set SuppressUIDs"},
+		{
 			MagicPrefix("aw:"),
 			func(wf *Workflow) bool { return wf.magicPrefix == "aw:" },
 			"Set MagicPrefix"},
@@ -95,7 +72,7 @@ func TestOptions(t *testing.T) {
 			func(wf *Workflow) bool { return wf.TextErrors == true },
 			"Set TextErrors"},
 		{
-			AddMagic(testMA{}),
+			AddMagic(&testMA{}),
 			func(wf *Workflow) bool { return wf.MagicActions["test"] != nil },
 			"Add Magic"},
 		{
@@ -112,6 +89,24 @@ func TestOptions(t *testing.T) {
 			t.Errorf("option %s failed", td.desc)
 		}
 	}
+}
+
+func TestWorkflowRun(t *testing.T) {
+
+	withTestWf(func(wf *Workflow) {
+
+		var called bool
+
+		run := func() {
+			called = true
+		}
+
+		wf.Run(run)
+
+		if !called {
+			t.Errorf("run wasn't called")
+		}
+	})
 }
 
 // TestWorkflowDir verifies that AwGo finds the right directory.

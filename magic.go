@@ -125,25 +125,53 @@ func (ma MagicActions) Unregister(actions ...MagicAction) {
 //
 // If not magic actions are found, it returns args.
 func (ma MagicActions) Args(args []string, prefix string) []string {
+
+	args, handled := ma.handleArgs(args, prefix)
+
+	if handled {
+		finishLog(false)
+		os.Exit(0)
+	}
+
+	return args
+
+}
+
+// handleArgs checks args for the magic prefix. Returns args and true if
+// it found and handled a magic argument.
+func (ma MagicActions) handleArgs(args []string, prefix string) ([]string, bool) {
+
+	var handled bool
+
 	for _, arg := range args {
+
 		arg = strings.TrimSpace(arg)
+
 		if strings.HasPrefix(arg, prefix) {
+
 			query := arg[len(prefix):]
 			action := ma[query]
+
 			if action != nil {
+
 				log.Printf(action.RunText())
+
 				NewItem(action.RunText()).
 					Icon(IconInfo).
 					Valid(false)
+
 				SendFeedback()
+
 				if err := action.Run(); err != nil {
 					log.Printf("Error running magic arg `%s`: %s", action.Description(), err)
 					finishLog(true)
 				}
-				finishLog(false)
-				os.Exit(0)
+
+				handled = true
+
 			} else {
 				for kw, action := range ma {
+
 					NewItem(action.Keyword()).
 						Subtitle(action.Description()).
 						Valid(false).
@@ -152,14 +180,17 @@ func (ma MagicActions) Args(args []string, prefix string) []string {
 						Autocomplete(prefix + kw).
 						Match(fmt.Sprintf("%s %s", action.Keyword(), action.Description()))
 				}
+
 				Filter(query)
 				WarnEmpty("No matching action", "Try another query?")
 				SendFeedback()
-				os.Exit(0)
+
+				handled = true
 			}
 		}
 	}
-	return args
+
+	return args, handled
 }
 
 // Opens workflow's log file.

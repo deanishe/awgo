@@ -54,7 +54,7 @@ run-tests.sh [options] [<module>...]
 Run unit tests in a workflow-like environment.
 
 Usage:
-    run-tests.sh [-v] [-c] [-i] [-H]
+    run-tests.sh [-v|-V] [-c] [-i] [-H]
     run-tests.sh -h
 
 Options:
@@ -63,28 +63,34 @@ Options:
     -H      Open HTML coverage report
     -h      Show this help message and exit
     -v      Be verbose
+    -V      Be even more verbose
 EOF
 }
 
-while getopts ":Hchiv" opt; do
+while getopts ":HchivV" opt; do
   case $opt in
+    c)
+      cover=true
+      ;;
     H)
       opencover=true
       cover=true
       ;;
-    c)
-      cover=true
-      ;;
-    h)
-      usage
-      exit 0;;
     i)
       mkip=true
       ;;
-    v)
+    V)
       gopts+=(-v)
       verbose=true
       vopt='-v'
+      ;;
+    V)
+      gopts+=(-v)
+      verbose=true
+      ;;
+    h)
+      usage
+      exit 0
       ;;
     \?)
       fail "invalid option: -$OPTARG";;

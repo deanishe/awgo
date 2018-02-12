@@ -9,89 +9,166 @@
 package aw
 
 import (
-	"fmt"
-	"io/ioutil"
-	"os"
-	"os/exec"
-	"strings"
+	"errors"
 	"testing"
 )
 
-var testArgs = []struct{ in, out []string }{
-	{[]string{"a", "b", "c"}, []string{"a", "b", "c"}},
+// Mock magic action
+type testMA struct {
+	keyCalled, descCalled, runTextCalled, runCalled bool
+	returnError                                     bool
 }
 
-var testMagic = []struct{ in, out []string }{
-	{[]string{"workflow:invalid", "b", "c"}, []string{"b", "c"}},
-	{[]string{"workflow:log", "b", "c"}, []string{"b", "c"}},
+func (a *testMA) Keyword() string {
+	a.keyCalled = true
+	return "test"
+}
+func (a *testMA) Description() string {
+	a.descCalled = true
+	return "Just a test"
+}
+func (a *testMA) RunText() string {
+	a.runTextCalled = true
+	return "Performing test…"
+}
+func (a *testMA) Run() error {
+	a.runCalled = true
+	if a.returnError {
+		return errors.New("requested error")
+	}
+	return nil
+}
+
+// Returns an error if the MA wasn't "shown".
+// That means MagicActions didn't show a list of actions.
+func (a *testMA) ValidateShown() error {
+
+	if !a.keyCalled {
+		return errors.New("Keyword() not called")
+	}
+
+	if !a.descCalled {
+		return errors.New("Description() not called")
+	}
+
+	if a.runCalled {
+		return errors.New("Run() called")
+	}
+
+	if a.runTextCalled {
+		return errors.New("RunText() called")
+	}
+
+	return nil
+}
+
+// Returns an error if the MA wasn't run.
+func (a *testMA) ValidateRun() error {
+
+	if !a.keyCalled {
+		return errors.New("Keyword() not called")
+	}
+
+	if a.descCalled {
+		return errors.New("Description() called")
+	}
+
+	if !a.runCalled {
+		return errors.New("Run() not called")
+	}
+
+	if !a.runTextCalled {
+		return errors.New("RunText() not called")
+	}
+
+	return nil
 }
 
 // ssEq tests if 2 string slices are equal.
 func ssEq(a, b []string) bool {
+
 	if a == nil && b == nil {
 		return true
 	}
+
 	if a == nil || b == nil {
 		return false
 	}
+
 	if len(a) != len(b) {
 		return false
 	}
+
 	for i := range a {
 		if a[i] != b[i] {
 			return false
 		}
 	}
+
 	return true
 }
 
 // TestNonMagicArgs tests that normal arguments aren't ignored
 func TestNonMagicArgs(t *testing.T) {
-	for _, td := range testArgs {
+
+	data := []struct {
+		in, out []string
+	}{
+		{[]string{"a", "b", "c"}, []string{"a", "b", "c"}},
+	}
+
+	for _, td := range data {
+
 		ma := MagicActions{}
 		ma.Register(defaultMagicActions...)
-		args := ma.Args(td.in, DefaultMagicPrefix)
+
+		args, handled := ma.handleArgs(td.in, DefaultMagicPrefix)
+
+		if handled {
+			t.Error("handled")
+		}
+
 		if !ssEq(args, td.out) {
 			t.Errorf("not equal. Expected=%v, Got=%v", td.out, args)
 		}
 	}
+
 }
 
-// TestMagicArgs tests that normal arguments aren't ignored
-func TestMagicArgs(t *testing.T) {
-	if os.Getenv("MAGIC") != "" {
-		args := strings.Split(os.Getenv("ARGS"), ":")
-		ma := MagicActions{}
-		ma.Register(defaultMagicActions...)
-		ma.Args(args, DefaultMagicPrefix)
-		return
+func TestMagicActions(t *testing.T) {
+
+	ma := MagicActions{}
+	ta := &testMA{}
+
+	ma.Register(ta)
+	// Incomplete keyword = search query
+	_, v := ma.handleArgs([]string{"workflow:tes"}, DefaultMagicPrefix)
+	if v != true {
+		t.Errorf("Bad handled. Expected=%v, Got=%v", true, v)
 	}
 
-	for _, td := range testMagic {
-		cmd := exec.Command(os.Args[0], "-test.run=TestMagicArgs")
-		args := "ARGS=" + strings.Join(td.in, ":")
-		cmd.Env = append(os.Environ(), "MAGIC=1", args)
-		stdout, err := cmd.StdoutPipe()
-		if err != nil {
-			t.Errorf("couldn't get STDOUT of command (%v): %v", cmd, err)
-		}
+	if err := ta.ValidateShown(); err != nil {
+		t.Errorf("Bad MagicAction: %v", err)
+	}
 
-		err = cmd.Start()
-		if err != nil {
-			t.Errorf("couldn't run magic args \"%v\": %v", td.in, err)
-		}
-		out, err := ioutil.ReadAll(stdout)
-		if err != nil {
-			t.Errorf("couldn't read workflow JSON: %v", err)
-		}
+	// Test unregister
+	ma.Unregister(ta)
 
-		s := fmt.Sprintf("%s", out)
-		if !strings.HasPrefix(s, "PASS") {
-			t.Errorf("magic command failed %v: %v", td.in, s)
-		}
-		err = cmd.Wait()
-		if err != nil {
-			t.Errorf("error running test command: %v", err)
-		}
+	if len(ma) != 0 {
+		t.Errorf("Bad MagicActions length. Expected=%v, Got=%v", 0, len(ma))
+	}
+
+	// Register a new action
+	ta = &testMA{}
+	ma.Register(ta)
+
+	// Keyword of test MA
+	_, v = ma.handleArgs([]string{"workflow:test"}, DefaultMagicPrefix)
+	if v != true {
+		t.Errorf("Bad handled. Expected=%v, Got=%v", true, v)
+	}
+
+	if err := ta.ValidateRun(); err != nil {
+		t.Errorf("Bad MagicAction: %v", err)
 	}
 }
