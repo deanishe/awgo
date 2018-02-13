@@ -46,8 +46,7 @@ type Cache struct {
 }
 
 // NewCache creates a new Cache using given directory.
-// Directory dir is created if it doesn't exist. The function will panic
-// if directory can't be created.
+// Directory is created if it doesn't exist. Panics if directory can't be created.
 func NewCache(dir string) *Cache {
 	util.MustExist(dir)
 	return &Cache{dir}
