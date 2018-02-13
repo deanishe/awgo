@@ -236,7 +236,7 @@ func (c Config) Save(key string, value interface{}, export ...bool) error {
 		exp = true
 	}
 
-	return a.SetConfig(key, val, exp)
+	return a.SetConfig(key, val, exp).Do()
 }
 
 // Check that minimum required values are set.

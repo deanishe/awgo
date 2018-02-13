@@ -12,64 +12,135 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/deanishe/awgo/util"
 )
 
-// Alfred is a wrapper for Alfred's AppleScript API.
-//
-// The methods open Alfred in various states, with various input,
-// and also allow you to manipulate persistent workflow variables,
+// Alfred is a wrapper for Alfred's AppleScript API. With the API, you can
+// open Alfred in various modes and manipulate persistent workflow variables,
 // i.e. the values saved in info.plist.
 //
-// The BundleID is used as a default for methods that require a
-// bundleID (e.g. RunTrigger).
+// Because calling Alfred is slow, the API uses a "Doer" interface, where
+// commands are collected and all sent together when Alfred.Do() is called:
+//
+//     // Open Alfred
+//     a := NewAlfred()
+//     if err := a.Search("").Do(); err != nil {
+//         // handle error
+//     }
+//
+//     // Browse /Applications
+//     a = NewAlfred()
+//     if err := a.Browse("/Applications").Do(); err != nil {
+//         // handle error
+//     }
+//
+//     // Set multiple configuration values
+//     a = NewAlfred()
+//
+//     a.SetConfig("USERNAME", "dave")
+//     a.SetConfig("CLEARANCE", "highest")
+//     a.SetConfig("PASSWORD", "hunter2")
+//
+//     if err := a.Do(); err != nil {
+//         // handle error
+//     }
+//
+// The BundleID is used as a default for methods that require a bundleID (e.g.
+// RunTrigger).
 type Alfred struct {
 	// Default bundle ID for methods that require one
 	BundleID string
+	scripts  []string
+	err      error
 }
 
 // NewAlfred creates a new Alfred using the bundle ID from the environment.
-func NewAlfred() Alfred { return Alfred{BundleID()} }
+func NewAlfred() *Alfred { return &Alfred{BundleID(), []string{}, nil} }
 
-// Search runs Alfred with the given query. Use an empty query to just open Alfred.
-func (a Alfred) Search(query string) error { return a.runScript(scriptSearch, query) }
+// Do calls Alfred and runs the accumulated actions.
+//
+// If an error was encountered while preparing any commands, it will be
+// returned here. It also returns an error if there are no commands to run,
+// or if the call to Alfred fails.
+//
+// Succeed or fail, any accumulated scripts and errors are cleared when Do()
+// is called.
+func (a *Alfred) Do() error {
 
-// Browse tells Alfred to open path in navigation mode.
-func (a Alfred) Browse(path string) error {
+	var err error
 
-	path, err := filepath.Abs(path)
-	if err != nil {
+	if a.err != nil {
+		// reset
+		err, a.err = a.err, nil
+		a.scripts = []string{}
+
 		return err
 	}
 
-	return a.runScript(scriptBrowse, path)
+	if len(a.scripts) == 0 {
+		return errors.New("no commands to run")
+	}
+
+	script := strings.Join(a.scripts, "\n")
+	// reset
+	a.scripts = []string{}
+
+	// log.Printf("-----------\n%s\n------------", script)
+
+	_, err = util.RunJS(script)
+
+	return err
+}
+
+// Search runs Alfred with the given query. Use an empty query to just open Alfred.
+func (a *Alfred) Search(query string) *Alfred {
+	return a.addScript(scriptSearch, query)
+}
+
+// Browse tells Alfred to open path in navigation mode.
+func (a *Alfred) Browse(path string) *Alfred {
+
+	path, err := filepath.Abs(path)
+	if err != nil {
+		a.err = err
+		return a
+	}
+
+	return a.addScript(scriptBrowse, path)
 }
 
 // SetTheme tells Alfred to use the specified theme.
-func (a Alfred) SetTheme(name string) error { return a.runScript(scriptSetTheme, name) }
+func (a *Alfred) SetTheme(name string) *Alfred {
+	return a.addScript(scriptSetTheme, name)
+}
 
 // Action tells Alfred to show File Actions for path(s).
-func (a Alfred) Action(path ...string) error {
+func (a *Alfred) Action(path ...string) *Alfred {
 
 	if len(path) == 0 {
-		return errors.New("Action requires at least one path")
+		return a
 	}
 
 	var paths []string
+
 	for _, p := range path {
+
 		p, err := filepath.Abs(p)
 		if err != nil {
-			return fmt.Errorf("couldn't make path absolute (%s): %v", p, err)
+			a.err = fmt.Errorf("[action] couldn't make path absolute (%s): %v", p, err)
+			continue
 		}
+
 		paths = append(paths, p)
 	}
 
 	script := fmt.Sprintf(scriptAction, util.QuoteJS(paths))
 
-	_, err := util.RunJS(script)
+	a.scripts = append(a.scripts, script)
 
-	return err
+	return a
 }
 
 // RunTrigger runs an External Trigger in the given workflow. Query may be empty.
@@ -78,7 +149,7 @@ func (a Alfred) Action(path ...string) error {
 // workflow whose trigger should be run.
 // If not specified, the ID defaults to Alfred.BundleID or the bundle ID
 // from the environment.
-func (a Alfred) RunTrigger(name, query string, bundleID ...string) error {
+func (a *Alfred) RunTrigger(name, query string, bundleID ...string) *Alfred {
 
 	bid := a.getBundleID(bundleID...)
 	opts := map[string]interface{}{
@@ -89,7 +160,7 @@ func (a Alfred) RunTrigger(name, query string, bundleID ...string) error {
 		opts["withArgument"] = query
 	}
 
-	return a.runScriptOpts(scriptTrigger, name, opts)
+	return a.addScriptOpts(scriptTrigger, name, opts)
 }
 
 // SetConfig saves a workflow variable to info.plist.
@@ -98,7 +169,7 @@ func (a Alfred) RunTrigger(name, query string, bundleID ...string) error {
 // workflow whose configuration should be changed.
 // If not specified, the ID defaults to Alfred.BundleID or the bundle ID
 // from the environment.
-func (a Alfred) SetConfig(key, value string, export bool, bundleID ...string) error {
+func (a *Alfred) SetConfig(key, value string, export bool, bundleID ...string) *Alfred {
 
 	bid := a.getBundleID(bundleID...)
 	opts := map[string]interface{}{
@@ -107,7 +178,7 @@ func (a Alfred) SetConfig(key, value string, export bool, bundleID ...string) er
 		"exportable": export,
 	}
 
-	return a.runScriptOpts(scriptSetConfig, key, opts)
+	return a.addScriptOpts(scriptSetConfig, key, opts)
 }
 
 // RemoveConfig removes a workflow variable from info.plist.
@@ -116,38 +187,36 @@ func (a Alfred) SetConfig(key, value string, export bool, bundleID ...string) er
 // workflow whose configuration should be changed.
 // If not specified, the ID defaults to Alfred.BundleID or the bundle ID
 // from the environment.
-func (a Alfred) RemoveConfig(key string, bundleID ...string) error {
+func (a *Alfred) RemoveConfig(key string, bundleID ...string) *Alfred {
 
 	bid := a.getBundleID(bundleID...)
 	opts := map[string]interface{}{
 		"inWorkflow": bid,
 	}
 
-	return a.runScriptOpts(scriptRmConfig, key, opts)
+	return a.addScriptOpts(scriptRmConfig, key, opts)
 }
 
-// Run a JavaScript that takes a single argument.
-func (a Alfred) runScript(script, arg string) error {
+// Add a JavaScript that takes a single argument.
+func (a *Alfred) addScript(script, arg string) *Alfred {
 
 	script = fmt.Sprintf(script, util.QuoteJS(arg))
+	a.scripts = append(a.scripts, script)
 
-	_, err := util.RunJS(script)
-
-	return err
+	return a
 }
 
 // Run a JavaScript that takes two arguments, a string and an object.
-func (a Alfred) runScriptOpts(script, name string, opts map[string]interface{}) error {
+func (a *Alfred) addScriptOpts(script, name string, opts map[string]interface{}) *Alfred {
 
 	script = fmt.Sprintf(script, util.QuoteJS(name), util.QuoteJS(opts))
+	a.scripts = append(a.scripts, script)
 
-	_, err := util.RunJS(script)
-
-	return err
+	return a
 }
 
 // Extract bundle ID from argument, Alfred.BundleID or environment (via BundleID()).
-func (a Alfred) getBundleID(bundleID ...string) string {
+func (a *Alfred) getBundleID(bundleID ...string) string {
 
 	if len(bundleID) > 0 {
 		return bundleID[0]
