@@ -216,17 +216,17 @@ func TestWithTestWf(t *testing.T) {
 			{"Name", tName, wf.Name()},
 			{"BundleID", tBundleID, wf.BundleID()},
 
-			{"Ctx.UID", tUID, wf.Conf.Get(EnvVarUID)},
-			{"Ctx.AlfredVersion", tAlfredVersion, wf.Conf.Get(EnvVarAlfredVersion)},
-			{"Ctx.AlfredBuild", tAlfredBuild, wf.Conf.Get(EnvVarAlfredBuild)},
-			{"Ctx.Theme", tTheme, wf.Conf.Get(EnvVarTheme)},
-			{"Ctx.ThemeBackground", tThemeBackground, wf.Conf.Get(EnvVarThemeBG)},
+			{"Ctx.UID", tUID, wf.Alfred.Get(EnvVarUID)},
+			{"Ctx.AlfredVersion", tAlfredVersion, wf.Alfred.Get(EnvVarAlfredVersion)},
+			{"Ctx.AlfredBuild", tAlfredBuild, wf.Alfred.Get(EnvVarAlfredBuild)},
+			{"Ctx.Theme", tTheme, wf.Alfred.Get(EnvVarTheme)},
+			{"Ctx.ThemeBackground", tThemeBackground, wf.Alfred.Get(EnvVarThemeBG)},
 			{"Ctx.ThemeSelectionBackground", tThemeSelectionBackground,
-				wf.Conf.Get(EnvVarThemeSelectionBG)},
-			{"Ctx.Preferences", tPreferences, wf.Conf.Get(EnvVarPreferences)},
-			{"Ctx.Localhash", tLocalhash, wf.Conf.Get(EnvVarLocalhash)},
-			{"Ctx.CacheDir", cd, wf.Conf.Get(EnvVarCacheDir)},
-			{"Ctx.DataDir", dd, wf.Conf.Get(EnvVarDataDir)},
+				wf.Alfred.Get(EnvVarThemeSelectionBG)},
+			{"Ctx.Preferences", tPreferences, wf.Alfred.Get(EnvVarPreferences)},
+			{"Ctx.Localhash", tLocalhash, wf.Alfred.Get(EnvVarLocalhash)},
+			{"Ctx.CacheDir", cd, wf.Alfred.Get(EnvVarCacheDir)},
+			{"Ctx.DataDir", dd, wf.Alfred.Get(EnvVarDataDir)},
 		}
 
 		if wf.Debug() != tDebug {
@@ -240,4 +240,57 @@ func TestWithTestWf(t *testing.T) {
 		}
 
 	})
+}
+
+// slicesEqual tests if 2 string slices are equal.
+func slicesEqual(a, b []string) bool {
+
+	if a == nil && b == nil {
+		return true
+	}
+
+	if a == nil || b == nil {
+		return false
+	}
+
+	if len(a) != len(b) {
+		return false
+	}
+
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+
+	return true
+}
+
+// tests whether two maps have the same contents.
+func verifyMapsEqual(a, b map[string]string) error {
+
+	if a == nil && b == nil {
+		return nil
+	}
+
+	if a == nil || b == nil {
+		return fmt.Errorf("nil map. a=%v, b=%v", a, b)
+	}
+
+	if len(a) != len(b) {
+		return fmt.Errorf("different lengths (%d != %d)", len(a), len(b))
+	}
+
+	for k, v := range a {
+
+		v2, ok := b[k]
+		if !ok {
+			return fmt.Errorf("key %v missing in b", k)
+
+		} else if v2 != v {
+			return fmt.Errorf("%s is different: %#v != %#v", k, v, v2)
+		}
+	}
+
+	return nil
 }

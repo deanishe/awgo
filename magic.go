@@ -121,9 +121,10 @@ func (ma MagicActions) Unregister(actions ...MagicAction) {
 
 // Args runs a magic action or returns command-line arguments.
 // It parses args for magic actions. If it finds one, it takes
-// control of your workflow and runs the action.
+// control of your workflow and runs the action. Control is
+// not returned to your code.
 //
-// If not magic actions are found, it returns args.
+// If no magic actions are found, it returns args.
 func (ma MagicActions) Args(args []string, prefix string) []string {
 
 	args, handled := ma.handleArgs(args, prefix)

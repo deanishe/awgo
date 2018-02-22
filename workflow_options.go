@@ -57,7 +57,7 @@ func HelpURL(URL string) Option {
 // on its own line.
 // It is only sent to Alfred's debugger, not the log file.
 //
-// Default: Purple Heart (\U0001F49C)
+// Default: Beer Mug (\U0001F37A)
 func LogPrefix(prefix string) Option {
 	return func(wf *Workflow) Option {
 		prev := wf.LogPrefix
@@ -204,8 +204,8 @@ func withEnv(e Env) Option {
 
 	return func(wf *Workflow) Option {
 
-		prev := wf.Conf
-		wf.Conf = NewConfig(e)
+		prev := wf.Alfred
+		wf.Alfred = NewAlfred(e)
 
 		return withEnv(prev)
 	}

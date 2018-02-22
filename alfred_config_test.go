@@ -15,8 +15,8 @@ import (
 	"time"
 )
 
-// TestConfigEnv verifies that Config holds the expected values.
-func TestConfigEnv(t *testing.T) {
+// TestAlfredEnv verifies that Alfred holds the expected values.
+func TestAlfredEnv(t *testing.T) {
 
 	data := []struct {
 		name, x, key string
@@ -36,7 +36,7 @@ func TestConfigEnv(t *testing.T) {
 		{"CacheDir", tDataDir, EnvVarDataDir},
 	}
 
-	ctx := NewConfig(testEnv)
+	ctx := NewAlfred(testEnv)
 
 	v := ctx.GetBool(EnvVarDebug)
 	if v != tDebug {
@@ -76,7 +76,7 @@ func TestGet(t *testing.T) {
 		{"key3", []string{"bob"}, "bob"},
 	}
 
-	e := NewConfig(env)
+	e := NewAlfred(env)
 
 	// Verify env is the same
 	for k, x := range env {
@@ -130,7 +130,7 @@ func TestGetInt(t *testing.T) {
 		{"float", []int{5}, 3},
 	}
 
-	e := NewConfig(env)
+	e := NewAlfred(env)
 	// Test GetInt
 	for _, td := range data {
 		v := e.GetInt(td.key, td.fb...)
@@ -171,7 +171,7 @@ func TestGetFloat(t *testing.T) {
 		{"word", []float64{5.0}, 5.0},
 	}
 
-	e := NewConfig(env)
+	e := NewAlfred(env)
 	// Test GetFloat
 	for _, td := range data {
 		v := e.GetFloat(td.key, td.fb...)
@@ -213,7 +213,7 @@ func TestGetDuration(t *testing.T) {
 		{"word", []time.Duration{time.Second * 5}, time.Second * 5},
 	}
 
-	e := NewConfig(env)
+	e := NewAlfred(env)
 
 	// Test GetDuration
 	for _, td := range data {
@@ -260,7 +260,7 @@ func TestGetBool(t *testing.T) {
 		{"word", []bool{true}, true},
 	}
 
-	e := NewConfig(env)
+	e := NewAlfred(env)
 
 	// Test GetBool
 	for _, td := range data {
@@ -297,21 +297,21 @@ func TestStringify(t *testing.T) {
 	}
 }
 
-// Basic usage of Config.Get. Returns an empty string if variable is unset.
-func ExampleConfig_Get() {
+// Basic usage of Alfred.Get. Returns an empty string if variable is unset.
+func ExampleAlfred_Get() {
 	// Set some test variables
 	os.Setenv("TEST_NAME", "Bob Smith")
 	os.Setenv("TEST_ADDRESS", "7, Dreary Lane")
 
-	// New Config from environment
-	c := NewConfig()
+	// New Alfred from environment
+	a := NewAlfred()
 
-	fmt.Println(c.Get("TEST_NAME"))
-	fmt.Println(c.Get("TEST_ADDRESS"))
-	fmt.Println(c.Get("TEST_NONEXISTENT")) // unset variable
+	fmt.Println(a.Get("TEST_NAME"))
+	fmt.Println(a.Get("TEST_ADDRESS"))
+	fmt.Println(a.Get("TEST_NONEXISTENT")) // unset variable
 
 	// GetString is a synonym
-	fmt.Println(c.GetString("TEST_NAME"))
+	fmt.Println(a.GetString("TEST_NAME"))
 
 	// Output:
 	// Bob Smith
@@ -323,19 +323,19 @@ func ExampleConfig_Get() {
 }
 
 // The fallback value is returned if the variable is unset.
-func ExampleConfig_Get_fallback() {
+func ExampleAlfred_Get_fallback() {
 	// Set some test variables
 	os.Setenv("TEST_NAME", "Bob Smith")
 	os.Setenv("TEST_ADDRESS", "7, Dreary Lane")
 	os.Setenv("TEST_EMAIL", "")
 
-	// New Config from environment
-	c := NewConfig()
+	// New Alfred from environment
+	a := NewAlfred()
 
-	fmt.Println(c.Get("TEST_NAME", "default name"))       // fallback ignored
-	fmt.Println(c.Get("TEST_ADDRESS", "default address")) // fallback ignored
-	fmt.Println(c.Get("TEST_EMAIL", "test@example.com"))  // fallback ignored (var is empty, not unset)
-	fmt.Println(c.Get("TEST_NONEXISTENT", "hi there!"))   // unset variable
+	fmt.Println(a.Get("TEST_NAME", "default name"))       // fallback ignored
+	fmt.Println(a.Get("TEST_ADDRESS", "default address")) // fallback ignored
+	fmt.Println(a.Get("TEST_EMAIL", "test@example.com"))  // fallback ignored (var is empty, not unset)
+	fmt.Println(a.Get("TEST_NONEXISTENT", "hi there!"))   // unset variable
 
 	// Output:
 	// Bob Smith
@@ -347,18 +347,18 @@ func ExampleConfig_Get_fallback() {
 }
 
 // Getting int values with and without fallbacks.
-func ExampleConfig_GetInt() {
+func ExampleAlfred_GetInt() {
 	// Set some test variables
 	os.Setenv("PORT", "3000")
 	os.Setenv("PING_INTERVAL", "")
 
-	// New Config from environment
-	c := NewConfig()
+	// New Alfred from environment
+	a := NewAlfred()
 
-	fmt.Println(c.GetInt("PORT"))
-	fmt.Println(c.GetInt("PORT", 5000))        // fallback is ignored
-	fmt.Println(c.GetInt("PING_INTERVAL"))     // returns zero value
-	fmt.Println(c.GetInt("PING_INTERVAL", 60)) // returns fallback
+	fmt.Println(a.GetInt("PORT"))
+	fmt.Println(a.GetInt("PORT", 5000))        // fallback is ignored
+	fmt.Println(a.GetInt("PING_INTERVAL"))     // returns zero value
+	fmt.Println(a.GetInt("PING_INTERVAL", 60)) // returns fallback
 	// Output:
 	// 3000
 	// 3000
@@ -369,17 +369,17 @@ func ExampleConfig_GetInt() {
 }
 
 // Strings are parsed to floats using strconv.ParseFloat().
-func ExampleConfig_GetFloat() {
+func ExampleAlfred_GetFloat() {
 	// Set some test variables
 	os.Setenv("TOTAL_SCORE", "172.3")
 	os.Setenv("AVERAGE_SCORE", "7.54")
 
-	// New Config from environment
-	c := NewConfig()
+	// New Alfred from environment
+	a := NewAlfred()
 
-	fmt.Printf("%0.2f\n", c.GetFloat("TOTAL_SCORE"))
-	fmt.Printf("%0.1f\n", c.GetFloat("AVERAGE_SCORE"))
-	fmt.Println(c.GetFloat("NON_EXISTENT_SCORE", 120.5))
+	fmt.Printf("%0.2f\n", a.GetFloat("TOTAL_SCORE"))
+	fmt.Printf("%0.1f\n", a.GetFloat("AVERAGE_SCORE"))
+	fmt.Println(a.GetFloat("NON_EXISTENT_SCORE", 120.5))
 	// Output:
 	// 172.30
 	// 7.5
@@ -389,24 +389,24 @@ func ExampleConfig_GetFloat() {
 }
 
 // Durations are parsed using time.ParseDuration.
-func ExampleConfig_GetDuration() {
+func ExampleAlfred_GetDuration() {
 	// Set some test variables
 	os.Setenv("DURATION_NAP", "20m")
 	os.Setenv("DURATION_EGG", "5m")
 	os.Setenv("DURATION_BIG_EGG", "")
 	os.Setenv("DURATION_MATCH", "1.5h")
 
-	// New Config from environment
-	c := NewConfig()
+	// New Alfred from environment
+	a := NewAlfred()
 
 	// returns time.Duration
-	fmt.Println(c.GetDuration("DURATION_NAP"))
-	fmt.Println(c.GetDuration("DURATION_EGG") * 2)
+	fmt.Println(a.GetDuration("DURATION_NAP"))
+	fmt.Println(a.GetDuration("DURATION_EGG") * 2)
 	// fallback with unset variable
-	fmt.Println(c.GetDuration("DURATION_POWERNAP", time.Minute*45))
+	fmt.Println(a.GetDuration("DURATION_POWERNAP", time.Minute*45))
 	// or an empty one
-	fmt.Println(c.GetDuration("DURATION_BIG_EGG", time.Minute*10))
-	fmt.Println(c.GetDuration("DURATION_MATCH").Minutes())
+	fmt.Println(a.GetDuration("DURATION_BIG_EGG", time.Minute*10))
+	fmt.Println(a.GetDuration("DURATION_MATCH").Minutes())
 
 	// Output:
 	// 20m0s
@@ -424,7 +424,7 @@ func ExampleConfig_GetDuration() {
 }
 
 // Strings are parsed using strconv.ParseBool().
-func ExampleConfig_GetBool() {
+func ExampleAlfred_GetBool() {
 
 	// Set some test variables
 	os.Setenv("LIKE_PEAS", "t")
@@ -435,20 +435,20 @@ func ExampleConfig_GetBool() {
 	os.Setenv("LIKE_BVB", "false")
 	os.Setenv("LIKE_BAYERN", "FALSE")
 
-	// New Config from environment
-	c := NewConfig()
+	// New Alfred from environment
+	a := NewAlfred()
 
 	// strconv.ParseBool() supports many formats
-	fmt.Println(c.GetBool("LIKE_PEAS"))
-	fmt.Println(c.GetBool("LIKE_CARROTS"))
-	fmt.Println(c.GetBool("LIKE_BEANS"))
-	fmt.Println(c.GetBool("LIKE_LIVER"))
-	fmt.Println(c.GetBool("LIKE_TOMATOES"))
-	fmt.Println(c.GetBool("LIKE_BVB"))
-	fmt.Println(c.GetBool("LIKE_BAYERN"))
+	fmt.Println(a.GetBool("LIKE_PEAS"))
+	fmt.Println(a.GetBool("LIKE_CARROTS"))
+	fmt.Println(a.GetBool("LIKE_BEANS"))
+	fmt.Println(a.GetBool("LIKE_LIVER"))
+	fmt.Println(a.GetBool("LIKE_TOMATOES"))
+	fmt.Println(a.GetBool("LIKE_BVB"))
+	fmt.Println(a.GetBool("LIKE_BAYERN"))
 
 	// Fallback
-	fmt.Println(c.GetBool("LIKE_BEER", true))
+	fmt.Println(a.GetBool("LIKE_BEER", true))
 
 	// Output:
 	// true

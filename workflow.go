@@ -81,10 +81,10 @@ type Workflow struct {
 	// interact with this directly.
 	Feedback *Feedback
 
-	// Workflow configuration.
+	// Interface to Alfred.
 	// Access workflow variables by type and save settings to info.plist.
-	// See Config for documentation.
-	Conf *Config
+	// See Alfred for documentation.
+	Alfred *Alfred
 
 	// HelpURL is a link to your issues page/forum thread where users can
 	// report bugs. It is shown in the debugger if the workflow crashes.
@@ -143,13 +143,13 @@ type Workflow struct {
 // following functions.
 func New(opts ...Option) *Workflow {
 
-	c := NewConfig()
-	if err := validateConfig(c); err != nil {
+	a := NewAlfred()
+	if err := validateAlfred(a); err != nil {
 		panic(err)
 	}
 
 	wf := &Workflow{
-		Conf:       c,
+		Alfred:     a,
 		LogPrefix:  DefaultLogPrefix,
 		MaxLogSize: DefaultMaxLogSize,
 		MaxResults: DefaultMaxResults,
@@ -241,7 +241,7 @@ func (wf *Workflow) initializeLogging() {
 func BundleID() string { return wf.BundleID() }
 func (wf *Workflow) BundleID() string {
 
-	s := wf.Conf.Get(EnvVarBundleID)
+	s := wf.Alfred.Get(EnvVarBundleID)
 	if s == "" {
 		wf.Fatal("No bundle ID set. You *must* set a bundle ID to use AwGo.")
 	}
@@ -251,12 +251,12 @@ func (wf *Workflow) BundleID() string {
 // Name returns the workflow's name as specified in the workflow's main
 // setup sheet in Alfred Preferences.
 func Name() string                { return wf.Name() }
-func (wf *Workflow) Name() string { return wf.Conf.Get(EnvVarName) }
+func (wf *Workflow) Name() string { return wf.Alfred.Get(EnvVarName) }
 
 // Version returns the workflow's version set in the workflow's configuration
 // sheet in Alfred Preferences.
 func Version() string                { return wf.Version() }
-func (wf *Workflow) Version() string { return wf.Conf.Get(EnvVarVersion) }
+func (wf *Workflow) Version() string { return wf.Alfred.Get(EnvVarVersion) }
 
 // SessionID returns the session ID for this run of the workflow.
 // This is used internally for session-scoped caching.
@@ -284,7 +284,7 @@ func (wf *Workflow) SessionID() string {
 
 // Debug returns true if Alfred's debugger is open.
 func Debug() bool                { return wf.Debug() }
-func (wf *Workflow) Debug() bool { return wf.Conf.GetBool(EnvVarDebug) }
+func (wf *Workflow) Debug() bool { return wf.Alfred.GetBool(EnvVarDebug) }
 
 // Args returns command-line arguments passed to the program.
 // It intercepts "magic args" and runs the corresponding actions, terminating

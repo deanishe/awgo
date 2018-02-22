@@ -16,50 +16,9 @@ import (
 	"time"
 )
 
-// Environment variables containing workflow and Alfred info.
-//
-// Read the values with os.Getenv(EnvVarName) or via Config:
-//
-//    // Returns a string
-//    Config.Get(EnvVarName)
-//    // Parse string into a bool
-//    Config.GetBool(EnvVarDebug)
-//
-const (
-	// Workflow info assigned in Alfred Preferences
-	EnvVarName     = "alfred_workflow_name"     // Name of workflow
-	EnvVarBundleID = "alfred_workflow_bundleid" // Bundle ID
-	EnvVarVersion  = "alfred_workflow_version"  // Workflow version
-
-	EnvVarUID = "alfred_workflow_uid" // Random UID assigned by Alfred
-
-	// Workflow storage directories
-	EnvVarCacheDir = "alfred_workflow_cache" // For temporary data
-	EnvVarDataDir  = "alfred_workflow_data"  // For permanent data
-
-	// Set to 1 when Alfred's debugger is open
-	EnvVarDebug = "alfred_debug"
-
-	// Theme info
-	EnvVarTheme = "alfred_theme" // ID of user's selected theme
-	// Theme's background colour in rgba format, e.g. "rgba(255,255,255,1.0)"
-	EnvVarThemeBG = "alfred_theme_background"
-	// Theme's selection background colour in rgba format
-	EnvVarThemeSelectionBG = "alfred_theme_selection_background"
-
-	// Alfred info
-	EnvVarAlfredVersion = "alfred_version"       // Alfred's version number
-	EnvVarAlfredBuild   = "alfred_version_build" // Alfred's build number
-	// Path to "Alfred.alfredpreferences" file
-	EnvVarPreferences = "alfred_preferences"
-	// Machine-specific hash. Machine preferences are stored in
-	// Alfred.alfredpreferences/local/<hash>
-	EnvVarLocalhash = "alfred_preferences_localhash"
-)
-
 // Env is the datasource for configuration lookups.
-// It is an optional parameter to NewConfig(). By specifying a custom Env,
-// it's possible to populate the Config from an alternative source.
+// It is an optional parameter to NewAlfred(). By specifying a custom Env,
+// it's possible to populate the Alfred from an alternative source.
 type Env interface {
 	// Lookup retrieves the value of the variable named by key.
 	//
@@ -70,44 +29,19 @@ type Env interface {
 	Lookup(key string) (string, bool)
 }
 
-// Config contains Alfred and workflow settings from environment variables.
-type Config struct {
-	Env
-}
-
-// NewConfig creates a new Config from environment variables.
-// It accepts one optional Env argument. If an Env is passed, Config
-// is initialised from that instead of the system environment.
-func NewConfig(env ...Env) *Config {
-
-	var (
-		c *Config
-		e Env
-	)
-
-	if len(env) > 0 {
-		e = env[0]
-	} else {
-		e = sysEnv{}
-	}
-
-	c = &Config{e}
-	return c
-}
-
 // Get returns the value for envvar "key".
 // It accepts one optional "fallback" argument. If no envvar is set, returns
 // fallback or an empty string.
 //
 // If a variable is set, but empty, its value is used.
-func (c Config) Get(key string, fallback ...string) string {
+func (a *Alfred) Get(key string, fallback ...string) string {
 
 	var fb string
 
 	if len(fallback) > 0 {
 		fb = fallback[0]
 	}
-	s, ok := c.Lookup(key)
+	s, ok := a.Lookup(key)
 	if !ok {
 		return fb
 	}
@@ -115,8 +49,8 @@ func (c Config) Get(key string, fallback ...string) string {
 }
 
 // GetString is a synonym for Get.
-func (c Config) GetString(key string, fallback ...string) string {
-	return c.Get(key, fallback...)
+func (a *Alfred) GetString(key string, fallback ...string) string {
+	return a.Get(key, fallback...)
 }
 
 // GetInt returns the value for envvar "key" as an int.
@@ -126,14 +60,14 @@ func (c Config) GetString(key string, fallback ...string) string {
 // Values are parsed with strconv.ParseInt(). If strconv.ParseInt() fails,
 // tries to parse the number with strconv.ParseFloat() and truncate it to an
 // int.
-func (c Config) GetInt(key string, fallback ...int) int {
+func (a *Alfred) GetInt(key string, fallback ...int) int {
 
 	var fb int
 
 	if len(fallback) > 0 {
 		fb = fallback[0]
 	}
-	s, ok := c.Lookup(key)
+	s, ok := a.Lookup(key)
 	if !ok {
 		return fb
 	}
@@ -151,14 +85,14 @@ func (c Config) GetInt(key string, fallback ...int) int {
 // fallback or 0.0.
 //
 // Values are parsed with strconv.ParseFloat().
-func (c Config) GetFloat(key string, fallback ...float64) float64 {
+func (a *Alfred) GetFloat(key string, fallback ...float64) float64 {
 
 	var fb float64
 
 	if len(fallback) > 0 {
 		fb = fallback[0]
 	}
-	s, ok := c.Lookup(key)
+	s, ok := a.Lookup(key)
 	if !ok {
 		return fb
 	}
@@ -176,14 +110,14 @@ func (c Config) GetFloat(key string, fallback ...float64) float64 {
 // fallback or 0.
 //
 // Values are parsed with time.ParseDuration().
-func (c Config) GetDuration(key string, fallback ...time.Duration) time.Duration {
+func (a *Alfred) GetDuration(key string, fallback ...time.Duration) time.Duration {
 
 	var fb time.Duration
 
 	if len(fallback) > 0 {
 		fb = fallback[0]
 	}
-	s, ok := c.Lookup(key)
+	s, ok := a.Lookup(key)
 	if !ok {
 		return fb
 	}
@@ -201,14 +135,14 @@ func (c Config) GetDuration(key string, fallback ...time.Duration) time.Duration
 // fallback or false.
 //
 // Values are parsed with strconv.ParseBool().
-func (c Config) GetBool(key string, fallback ...bool) bool {
+func (a *Alfred) GetBool(key string, fallback ...bool) bool {
 
 	var fb bool
 
 	if len(fallback) > 0 {
 		fb = fallback[0]
 	}
-	s, ok := c.Lookup(key)
+	s, ok := a.Lookup(key)
 	if !ok {
 		return fb
 	}
@@ -221,33 +155,15 @@ func (c Config) GetBool(key string, fallback ...bool) bool {
 	return b
 }
 
-// Save saves a value to the workflow's configuration.
-//
-// This method persists a setting to info.plist, so it preserved for
-// future runs.
-func (c Config) Save(key string, value interface{}, export ...bool) error {
-
-	var (
-		a   = NewAlfred()
-		val = fmt.Sprintf("%v", value)
-		exp bool
-	)
-	if len(export) > 0 && export[0] {
-		exp = true
-	}
-
-	return a.SetConfig(key, val, exp).Do()
-}
-
 // Check that minimum required values are set.
-func validateConfig(c *Config) error {
+func validateAlfred(a *Alfred) error {
 
 	var (
 		issues   []string
 		required = map[string]string{
-			EnvVarBundleID: c.Get(EnvVarBundleID),
-			EnvVarCacheDir: c.Get(EnvVarCacheDir),
-			EnvVarDataDir:  c.Get(EnvVarDataDir),
+			EnvVarBundleID: a.Get(EnvVarBundleID),
+			EnvVarCacheDir: a.Get(EnvVarCacheDir),
+			EnvVarDataDir:  a.Get(EnvVarDataDir),
 		}
 	)
 

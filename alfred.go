@@ -17,47 +17,117 @@ import (
 	"github.com/deanishe/awgo/util"
 )
 
-// Alfred is a wrapper for Alfred's AppleScript API. With the API, you can
-// open Alfred in various modes and manipulate persistent workflow variables,
-// i.e. the values saved in info.plist.
+// Environment variables containing workflow and Alfred info.
 //
-// Because calling Alfred is slow, the API uses a "Doer" interface, where
-// commands are collected and all sent together when Alfred.Do() is called:
+// Read the values with os.Getenv(EnvVarName) or via Alfred:
 //
-//     // Open Alfred
-//     a := NewAlfred()
-//     if err := a.Search("").Do(); err != nil {
-//         // handle error
-//     }
+//    // Returns a string
+//    Alfred.Get(EnvVarName)
+//    // Parse string into a bool
+//    Alfred.GetBool(EnvVarDebug)
 //
-//     // Browse /Applications
-//     a = NewAlfred()
-//     if err := a.Browse("/Applications").Do(); err != nil {
-//         // handle error
-//     }
-//
-//     // Set multiple configuration values
-//     a = NewAlfred()
-//
-//     a.SetConfig("USERNAME", "dave")
-//     a.SetConfig("CLEARANCE", "highest")
-//     a.SetConfig("PASSWORD", "hunter2")
-//
-//     if err := a.Do(); err != nil {
-//         // handle error
-//     }
-//
-// The BundleID is used as a default for methods that require a bundleID (e.g.
-// RunTrigger).
+const (
+	// Workflow info assigned in Alfred Preferences
+	EnvVarName     = "alfred_workflow_name"     // Name of workflow
+	EnvVarBundleID = "alfred_workflow_bundleid" // Bundle ID
+	EnvVarVersion  = "alfred_workflow_version"  // Workflow version
+
+	EnvVarUID = "alfred_workflow_uid" // Random UID assigned by Alfred
+
+	// Workflow storage directories
+	EnvVarCacheDir = "alfred_workflow_cache" // For temporary data
+	EnvVarDataDir  = "alfred_workflow_data"  // For permanent data
+
+	// Set to 1 when Alfred's debugger is open
+	EnvVarDebug = "alfred_debug"
+
+	// Theme info
+	EnvVarTheme = "alfred_theme" // ID of user's selected theme
+	// Theme's background colour in rgba format, e.g. "rgba(255,255,255,1.0)"
+	EnvVarThemeBG = "alfred_theme_background"
+	// Theme's selection background colour in rgba format
+	EnvVarThemeSelectionBG = "alfred_theme_selection_background"
+
+	// Alfred info
+	EnvVarAlfredVersion = "alfred_version"       // Alfred's version number
+	EnvVarAlfredBuild   = "alfred_version_build" // Alfred's build number
+	// Path to "Alfred.alfredpreferences" file
+	EnvVarPreferences = "alfred_preferences"
+	// Machine-specific hash. Machine preferences are stored in
+	// Alfred.alfredpreferences/local/<hash>
+	EnvVarLocalhash = "alfred_preferences_localhash"
+)
+
+/*
+Alfred is a wrapper for Alfred's AppleScript API. With the API, you can
+open Alfred in various modes and manipulate persistent workflow variables,
+i.e. the values saved in info.plist.
+
+Because calling Alfred is slow, the API uses a "Doer" interface, where
+commands are collected and all sent together when Alfred.Do() is called:
+
+	// Open Alfred
+	a := NewAlfred()
+	if err := a.Search("").Do(); err != nil {
+		// handle error
+	}
+
+	// Browse /Applications
+	a = NewAlfred()
+	if err := a.Browse("/Applications").Do(); err != nil {
+		// handle error
+	}
+
+	// Set multiple configuration values
+	a = NewAlfred()
+
+	a.SetConfig("USERNAME", "dave")
+	a.SetConfig("CLEARANCE", "highest")
+	a.SetConfig("PASSWORD", "hunter2")
+
+	if err := a.Do(); err != nil {
+		// handle error
+	}
+
+*/
 type Alfred struct {
-	// Default bundle ID for methods that require one
-	BundleID string
+	Env
+	bundleID string
 	scripts  []string
 	err      error
 }
 
-// NewAlfred creates a new Alfred using the bundle ID from the environment.
-func NewAlfred() *Alfred { return &Alfred{BundleID(), []string{}, nil} }
+// NewAlfred creates a new Alfred from the environment.
+//
+// It accepts one optional Env argument. If an Env is passed, Alfred
+// is initialised from that instead of the system environment.
+func NewAlfred(env ...Env) *Alfred {
+
+	var (
+		a   *Alfred
+		bid string
+		e   Env
+	)
+
+	if len(env) > 0 {
+		e = env[0]
+	} else {
+		e = sysEnv{}
+	}
+
+	if s, ok := e.Lookup("alfred_workflow_bundleid"); ok {
+		bid = s
+	}
+
+	a = &Alfred{
+		Env:      e,
+		bundleID: bid,
+		scripts:  []string{},
+		err:      nil,
+	}
+
+	return a
+}
 
 // Do calls Alfred and runs the accumulated actions.
 //
@@ -147,8 +217,7 @@ func (a *Alfred) Action(path ...string) *Alfred {
 //
 // It accepts one optional bundleID argument, which is the bundle ID of the
 // workflow whose trigger should be run.
-// If not specified, the ID defaults to Alfred.BundleID or the bundle ID
-// from the environment.
+// If not specified, it defaults to the current workflow's.
 func (a *Alfred) RunTrigger(name, query string, bundleID ...string) *Alfred {
 
 	bid := a.getBundleID(bundleID...)
@@ -167,8 +236,7 @@ func (a *Alfred) RunTrigger(name, query string, bundleID ...string) *Alfred {
 //
 // It accepts one optional bundleID argument, which is the bundle ID of the
 // workflow whose configuration should be changed.
-// If not specified, the ID defaults to Alfred.BundleID or the bundle ID
-// from the environment.
+// If not specified, it defaults to the current workflow's.
 func (a *Alfred) SetConfig(key, value string, export bool, bundleID ...string) *Alfred {
 
 	bid := a.getBundleID(bundleID...)
@@ -181,12 +249,22 @@ func (a *Alfred) SetConfig(key, value string, export bool, bundleID ...string) *
 	return a.addScriptOpts(scriptSetConfig, key, opts)
 }
 
+// setMulti is an internal wrapper around SetConfig and do. It implements
+// the internal bindDest interface to make testing easier.
+func (a *Alfred) setMulti(variables map[string]string, export bool) error {
+
+	for k, v := range variables {
+		a.SetConfig(k, v, export)
+	}
+
+	return a.Do()
+}
+
 // RemoveConfig removes a workflow variable from info.plist.
 //
 // It accepts one optional bundleID argument, which is the bundle ID of the
 // workflow whose configuration should be changed.
-// If not specified, the ID defaults to Alfred.BundleID or the bundle ID
-// from the environment.
+// If not specified, it defaults to the current workflow's.
 func (a *Alfred) RemoveConfig(key string, bundleID ...string) *Alfred {
 
 	bid := a.getBundleID(bundleID...)
@@ -222,11 +300,7 @@ func (a *Alfred) getBundleID(bundleID ...string) string {
 		return bundleID[0]
 	}
 
-	if a.BundleID != "" {
-		return a.BundleID
-	}
-
-	return BundleID()
+	return a.bundleID
 }
 
 // JXA scripts to call Alfred

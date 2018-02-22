@@ -36,7 +36,7 @@ func CacheDir() string { return wf.CacheDir() }
 func (wf *Workflow) CacheDir() string {
 
 	if wf.cacheDir == "" {
-		wf.cacheDir = wf.Conf.Get(EnvVarCacheDir)
+		wf.cacheDir = wf.Alfred.Get(EnvVarCacheDir)
 	}
 
 	return wf.cacheDir
@@ -60,7 +60,7 @@ func DataDir() string { return wf.DataDir() }
 func (wf *Workflow) DataDir() string {
 
 	if wf.dataDir == "" {
-		wf.dataDir = wf.Conf.Get(EnvVarDataDir)
+		wf.dataDir = wf.Alfred.Get(EnvVarDataDir)
 	}
 
 	return wf.dataDir

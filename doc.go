@@ -54,20 +54,12 @@ Typically, you'd call your program's main entry point via Run(). This way, the
 library will rescue any panic, log the stack trace and show an error message to
 the user in Alfred.
 
-	# script_filter.go
+	// script_filter.go
 
 	package main
 
 	// Import name is "aw"
 	import "github.com/deanishe/awgo"
-
-	// Your workflow starts here
-	func run() {
-		// Add a "Script Filter" result
-		aw.NewItem("First result!")
-		// Send results to Alfred
-		aw.SendFeedback()
-	}
 
 	func main() {
 		// Wrap your entry point with Run() to catch and log panics and
@@ -75,10 +67,66 @@ the user in Alfred.
 		aw.Run(run)
 	}
 
-In the Script Filter's Script box (Language = "/bin/bash" with "input as argv"):
+	func run() {
+		// Create a new item
+		aw.NewItem("Hello World!")
+		// And send the results to Alfred
+		aw.SendFeedback()
+	}
 
-	./script_filter "$1"
 
+In the Script box (Language = "/bin/bash"):
+
+	./script_filter
+
+
+Script Filters
+
+To generate results for Alfred to show in a Script Filter, use the feedback
+API of Workflow:
+
+	// Create new items
+	NewItem()
+	NewFileItem()
+	NewWarningItem()
+		Item
+		Modifier
+
+	// Sorting/filtering results
+	Filter()
+
+	// Send feedback to Alfred
+	SendFeedback()
+	// Warning/error calls that drop all other Items on the floor
+	// and send feedback immediately
+	Warn()
+	WarnEmpty()
+	Fatal()      // exits program
+	Fatalf()     // exits program
+	FatalError() // exits program
+
+You can set workflow variables (via feedback) with Workflow.Var, Item.Var
+and Modifier.Var.
+
+See SendFeedback for more documentation.
+
+
+Run Script actions
+
+Alfred requires a different JSON format if you wish to set workflow variables.
+
+Use the ArgVars (named for its equivalent element in Alfred) struct to
+generate output from Run Script actions.
+
+Be sure to set TextErrors to true to prevent Workflow from generating
+Alfred JSON if it catches a panic:
+
+	wf.Configure(TextErrors(true))
+
+See ArgVars for more information.
+
+
+Configuration
 
 Most package-level functions call the methods of the same name on the default
 Workflow struct. If you want to use custom options, you can create a new
@@ -107,20 +155,6 @@ See _examples/bookmarks for a demonstration of implementing fuzzy.Sortable on
 your own structs and customising the fuzzy sort settings.
 
 
-Generating feedback
-
-Workflows return data to Alfred via STDOUT. Alfred interprets some data as
-JSON and AwGo provides an API for generating this.
-
-JSON feedback for Script Filters is generated mostly via NewItem(), and then
-sent to Alfred with SendFeedback().
-
-JSON output to set workflow variables from a Run Script action is generated
-with ArgVars.
-
-See SendFeedback for more documentation.
-
-
 Logging
 
 AwGo automatically configures the default log package to write to STDERR
@@ -132,6 +166,61 @@ it exceeds 1 MiB in size. One previous log is kept.
 
 AwGo detects when Alfred's debugger is open (Workflow.Debug() returns true)
 and in this case prepends filename:linenumber: to log messages.
+
+
+Workflow settings
+
+The Alfred struct provides an interface to the workflow's settings from
+the Workflow Environment Variables panel.
+https://www.alfredapp.com/help/workflows/advanced/variables/#environment
+
+Alfred exports these settings as environment variables, and you can read them
+ad-hoc with the Alfred.Get*() methods, and save values back to Alfred with
+Alfred.SetConfig().
+
+Using Alfred.To() and Alfred.From(), you can "bind" your own structs to the
+settings in Alfred:
+
+	// Config will be populated
+	type Config struct {
+		Server   string `env:"HOSTNAME"`
+		Port     int    // use default: PORT
+		User     string `env:"USERNAME"`
+		Password string `env:"-"` // ignore
+	}
+
+	a := NewAlfred()
+	c := &Config{}
+
+	// Populate Config's fields from the corresponding environment variables.
+	if err := a.To(c); err != nil {
+		// handle error
+	}
+
+And to save a struct's fields to the workflow's settings in Alfred:
+
+	// Defaults
+	c = &Config{
+		Server:   "localhost",
+		Port:     6000,
+	}
+
+	// Save Config to Alfred
+	if err := a.From(c); err != nil {
+		// handle error
+	}
+
+See the documentation for Alfred.To and Alfred.From for more information,
+and _examples/settings for a demo workflow based on the API.
+
+
+Alfred actions
+
+The Alfred struct also provides methods for the rest of Alfred's AppleScript
+API. Amongst other things, you can use it to tell Alfred to open, to search
+for a query, or to browse/action files & directories.
+
+See documentation of the Alfred struct for more information.
 
 
 Storing data
@@ -170,13 +259,6 @@ significant amount of time to complete, allowing you to keep your Script
 Filters extremely responsive.
 
 See _examples/update for one possible way to use this API.
-
-
-Alfred API
-
-The Alfred struct offers methods corresponding to Alfred's AppleScript API
-calls. Amongst other things, you can use it to tell Alfred to open, to search
-for a query, or to browse/action files & directories.
 
 */
 package aw

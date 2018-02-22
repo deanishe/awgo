@@ -84,30 +84,6 @@ func (a *testMA) ValidateRun() error {
 	return nil
 }
 
-// ssEq tests if 2 string slices are equal.
-func ssEq(a, b []string) bool {
-
-	if a == nil && b == nil {
-		return true
-	}
-
-	if a == nil || b == nil {
-		return false
-	}
-
-	if len(a) != len(b) {
-		return false
-	}
-
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-
-	return true
-}
-
 // TestNonMagicArgs tests that normal arguments aren't ignored
 func TestNonMagicArgs(t *testing.T) {
 
@@ -128,7 +104,7 @@ func TestNonMagicArgs(t *testing.T) {
 			t.Error("handled")
 		}
 
-		if !ssEq(args, td.out) {
+		if !slicesEqual(args, td.out) {
 			t.Errorf("not equal. Expected=%v, Got=%v", td.out, args)
 		}
 	}
