@@ -1,5 +1,7 @@
 
 Refactor:
+	- Embed Alfred, Feedback, MagicActions (...) into Workflow?
+		- Filter API is different
 	- Add FieldNum to binding (save all the iteration) @done(2018-02-13)
 	- Update API: Dodgy?
 	- Fuzzy API: Dodgy?
