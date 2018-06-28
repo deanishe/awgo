@@ -202,7 +202,7 @@ func (wf *Workflow) initializeLogging() {
 
 			new := wf.LogFile() + ".1"
 			if err := os.Rename(wf.LogFile(), new); err != nil {
-				fmt.Fprintf(os.Stderr, "Error rotating log: %v", err)
+				fmt.Fprintf(os.Stderr, "Error rotating log: %v\n", err)
 			}
 
 			fmt.Fprintln(os.Stderr, "Rotated log")

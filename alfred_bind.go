@@ -377,11 +377,10 @@ func isZeroString(s string, kind reflect.Kind) bool {
 		}
 		return v == 0.0
 
-	case reflect.Int64: // special-case in64: may also be duration
+	case reflect.Int64: // special-case int64: may also be duration
 
 		// Try to parse as int64 first
-		v, err := strconv.ParseInt(s, 10, 64)
-		if err == nil {
+		if v, err := strconv.ParseInt(s, 10, 64); err == nil {
 			return v == 0
 		}
 
