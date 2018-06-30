@@ -79,14 +79,6 @@ func TestOptions(t *testing.T) {
 			RemoveMagic(logMA{}),
 			func(wf *Workflow) bool { return wf.MagicActions.actions["log"] == nil },
 			"Remove Magic"},
-		{
-			customEnv(mapEnv{
-				"alfred_workflow_bundleid": "fakeid",
-				"alfred_workflow_cache":    os.Getenv("alfred_workflow_cache"),
-				"alfred_workflow_data":     os.Getenv("alfred_workflow_data"),
-			}),
-			func(wf *Workflow) bool { return wf.BundleID() == "fakeid" },
-			"CustomEnv"},
 	}
 
 	for _, td := range data {

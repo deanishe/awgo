@@ -71,13 +71,11 @@ func init() {
 // See the _examples/ subdirectory for some full examples of workflows.
 type Workflow struct {
 	sync.WaitGroup
-	// The response that will be sent to Alfred. Workflow provides
-	// convenience wrapper methods, so you don't normally have to
-	// interact with this directly.
-	Feedback *Feedback
+	// Interface to workflow's settings.
+	// Reads workflow variables by type and saves new values to info.plist.
+	Config *Config
 
-	// Interface to Alfred.
-	// Access workflow variables by type and save settings to info.plist.
+	// Call Alfred's AppleScript functions.
 	Alfred *Alfred
 
 	// Cache is a Cache pointing to the workflow's cache directory.
@@ -87,6 +85,11 @@ type Workflow struct {
 	// Session is a cache that stores session-scoped data. These data
 	// persist until the user closes Alfred or runs a different workflow.
 	Session *Session
+
+	// The response that will be sent to Alfred. Workflow provides
+	// convenience wrapper methods, so you don't normally have to
+	// interact with this directly.
+	Feedback *Feedback
 
 	// Updater fetches updates for the workflow.
 	Updater Updater
@@ -135,7 +138,12 @@ func NewFromEnv(env Env, opts ...Option) *Workflow {
 		env = sysEnv{}
 	}
 
+	if err := validateEnv(env); err != nil {
+		panic(err)
+	}
+
 	wf := &Workflow{
+		Config:      NewConfig(env),
 		Alfred:      NewAlfred(env),
 		Feedback:    &Feedback{},
 		logPrefix:   DefaultLogPrefix,
@@ -148,9 +156,6 @@ func NewFromEnv(env Env, opts ...Option) *Workflow {
 	wf.MagicActions = defaultMagicActions(wf)
 
 	wf.Configure(opts...)
-	if err := validateAlfred(wf.Alfred); err != nil {
-		panic(err)
-	}
 
 	wf.Cache = NewCache(wf.CacheDir())
 	wf.Data = NewCache(wf.DataDir())
@@ -226,7 +231,7 @@ func (wf *Workflow) initializeLogging() {
 // setup sheet in Alfred Preferences.
 func (wf *Workflow) BundleID() string {
 
-	s := wf.Alfred.Get(EnvVarBundleID)
+	s := wf.Config.Get(EnvVarBundleID)
 	if s == "" {
 		wf.Fatal("No bundle ID set. You *must* set a bundle ID to use AwGo.")
 	}
@@ -235,11 +240,11 @@ func (wf *Workflow) BundleID() string {
 
 // Name returns the workflow's name as specified in the workflow's main
 // setup sheet in Alfred Preferences.
-func (wf *Workflow) Name() string { return wf.Alfred.Get(EnvVarName) }
+func (wf *Workflow) Name() string { return wf.Config.Get(EnvVarName) }
 
 // Version returns the workflow's version set in the workflow's configuration
 // sheet in Alfred Preferences.
-func (wf *Workflow) Version() string { return wf.Alfred.Get(EnvVarVersion) }
+func (wf *Workflow) Version() string { return wf.Config.Get(EnvVarVersion) }
 
 // SessionID returns the session ID for this run of the workflow.
 // This is used internally for session-scoped caching.
@@ -265,7 +270,7 @@ func (wf *Workflow) SessionID() string {
 }
 
 // Debug returns true if Alfred's debugger is open.
-func (wf *Workflow) Debug() bool { return wf.Alfred.GetBool(EnvVarDebug) }
+func (wf *Workflow) Debug() bool { return wf.Config.GetBool(EnvVarDebug) }
 
 // Args returns command-line arguments passed to the program.
 // It intercepts "magic args" and runs the corresponding actions, terminating

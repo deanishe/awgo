@@ -12,13 +12,13 @@ Workflow settings demonstrates binding a struct to Alfred's settings.
 The workflow's settings are stored in info.plist/the workflow's
 configuration sheet in Alfred Preferences.
 
-These are imported into the Server struct using Alfred.To().
+These are imported into the Server struct using Config.To().
 
 The Script Filter displays these settings, and you can select one
 to change its value.
 
 If you enter a new value, this is saved to info.plist/the configuration
-sheet via Alfred.SetConfig(), and the workflow is run again by calling
+sheet via Config.Set(), and the workflow is run again by calling
 its "settings" External Trigger via Alfred.RunTrigger().
 */
 package main
@@ -60,7 +60,7 @@ func runSet(key, value string) {
 
 	log.Printf("saving %#v to %s ...", value, key)
 
-	if err := wf.Alfred.SetConfig(key, value, false).Do(); err != nil {
+	if err := wf.Config.Set(key, value, false).Do(); err != nil {
 		wf.FatalError(err)
 	}
 
@@ -118,7 +118,7 @@ func run() {
 	}
 
 	// Update config from environment variables
-	if err := wf.Alfred.To(srv); err != nil {
+	if err := wf.Config.To(srv); err != nil {
 		panic(err)
 	}
 

@@ -16,14 +16,6 @@ import (
 	"testing"
 )
 
-// mapEnv is a string: string mapping that implements Env.
-type mapEnv map[string]string
-
-func (env mapEnv) Lookup(key string) (string, bool) {
-	s, ok := env[key]
-	return s, ok
-}
-
 var (
 	tVersion                  = "0.14"
 	tName                     = "AwGo"
@@ -40,7 +32,7 @@ var (
 	tCacheDir                 = os.ExpandEnv("$HOME/Library/Caches/com.runningwithcrayons.Alfred-3/Workflow Data/net.deanishe.awgo")
 	tDataDir                  = os.ExpandEnv("$HOME/Library/Application Support/Alfred 3/Workflow Data/net.deanishe.awgo")
 
-	testEnv = mapEnv{
+	testEnv = MapEnv{
 		EnvVarVersion:          tVersion,
 		EnvVarName:             tName,
 		EnvVarBundleID:         tBundleID,
@@ -100,8 +92,8 @@ var (
 )
 
 // Call function with a test environment.
-func withTestEnv(fun func(e mapEnv)) {
-	e := mapEnv{
+func withTestEnv(fun func(e MapEnv)) {
+	e := MapEnv{
 		EnvVarVersion:          tVersion,
 		EnvVarName:             tName,
 		EnvVarBundleID:         tBundleID,
@@ -124,7 +116,7 @@ func withTestEnv(fun func(e mapEnv)) {
 // Call function in a test workflow environment.
 func withTestWf(fun func(wf *Workflow)) {
 
-	withTestEnv(func(e mapEnv) {
+	withTestEnv(func(e MapEnv) {
 
 		var (
 			curdir, dir string
@@ -216,17 +208,17 @@ func TestWithTestWf(t *testing.T) {
 			{"Name", tName, wf.Name()},
 			{"BundleID", tBundleID, wf.BundleID()},
 
-			{"Ctx.UID", tUID, wf.Alfred.Get(EnvVarUID)},
-			{"Ctx.AlfredVersion", tAlfredVersion, wf.Alfred.Get(EnvVarAlfredVersion)},
-			{"Ctx.AlfredBuild", tAlfredBuild, wf.Alfred.Get(EnvVarAlfredBuild)},
-			{"Ctx.Theme", tTheme, wf.Alfred.Get(EnvVarTheme)},
-			{"Ctx.ThemeBackground", tThemeBackground, wf.Alfred.Get(EnvVarThemeBG)},
-			{"Ctx.ThemeSelectionBackground", tThemeSelectionBackground,
-				wf.Alfred.Get(EnvVarThemeSelectionBG)},
-			{"Ctx.Preferences", tPreferences, wf.Alfred.Get(EnvVarPreferences)},
-			{"Ctx.Localhash", tLocalhash, wf.Alfred.Get(EnvVarLocalhash)},
-			{"Ctx.CacheDir", cd, wf.Alfred.Get(EnvVarCacheDir)},
-			{"Ctx.DataDir", dd, wf.Alfred.Get(EnvVarDataDir)},
+			{"Config.UID", tUID, wf.Config.Get(EnvVarUID)},
+			{"Config.AlfredVersion", tAlfredVersion, wf.Config.Get(EnvVarAlfredVersion)},
+			{"Config.AlfredBuild", tAlfredBuild, wf.Config.Get(EnvVarAlfredBuild)},
+			{"Config.Theme", tTheme, wf.Config.Get(EnvVarTheme)},
+			{"Config.ThemeBackground", tThemeBackground, wf.Config.Get(EnvVarThemeBG)},
+			{"Config.ThemeSelectionBackground", tThemeSelectionBackground,
+				wf.Config.Get(EnvVarThemeSelectionBG)},
+			{"Config.Preferences", tPreferences, wf.Config.Get(EnvVarPreferences)},
+			{"Config.Localhash", tLocalhash, wf.Config.Get(EnvVarLocalhash)},
+			{"Config.CacheDir", cd, wf.Config.Get(EnvVarCacheDir)},
+			{"Config.DataDir", dd, wf.Config.Get(EnvVarDataDir)},
 		}
 
 		if wf.Debug() != tDebug {

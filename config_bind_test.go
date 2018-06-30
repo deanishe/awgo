@@ -3,7 +3,7 @@
 //
 // MIT Licence. See http://opensource.org/licenses/MIT
 //
-// Created on 2018-02-12
+// Created on 2018-06-30
 //
 
 package aw
@@ -11,6 +11,7 @@ package aw
 import (
 	"fmt"
 	"log"
+	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -43,7 +44,7 @@ var (
 
 // Test bindDest implementation that captures saves.
 type testDest struct {
-	Alf   *Alfred
+	Cfg   *Config
 	Saves map[string]string
 }
 
@@ -56,7 +57,7 @@ func (dst *testDest) setMulti(variables map[string]string, export bool) error {
 	return nil
 }
 func (dst *testDest) GetString(key string, fallback ...string) string {
-	return dst.Alf.GetString(key, fallback...)
+	return dst.Cfg.GetString(key, fallback...)
 }
 
 // Verify checks that dst.Saves has the same content as saves.
@@ -90,9 +91,9 @@ func (dst *testDest) Verify(saves map[string]string) error {
 }
 
 // Returns a test implementation of Env
-func bindTestEnv() mapEnv {
+func bindTestEnv() MapEnv {
 
-	return mapEnv{
+	return MapEnv{
 		"ID":           "not empty",
 		"HOST":         testHostname,
 		"ONLINE":       fmt.Sprintf("%v", testOnline),
@@ -107,7 +108,7 @@ func bindTestEnv() mapEnv {
 // TestExtract verifies extraction of struct fields and tags.
 func TestExtract(t *testing.T) {
 
-	a := NewAlfred()
+	cfg := NewConfig()
 	th := &testHost{}
 	data := map[string]string{
 		"Hostname":     "HOST",
@@ -154,20 +155,20 @@ func TestExtract(t *testing.T) {
 	}
 	// Fail to load fields
 	for _, bind := range binds {
-		if err := bind.Import(a); err == nil {
+		if err := bind.Import(cfg); err == nil {
 			t.Errorf("Accepted bad binding (%s)", bind.Name)
 		}
 	}
 }
 
-// TestAlfredTo verifies that a struct is correctly populated from an Alfred.
-func TestAlfredTo(t *testing.T) {
+// TestConfigTo verifies that a struct is correctly populated from a Config.
+func TestConfigTo(t *testing.T) {
 
 	h := &testHost{}
 	e := bindTestEnv()
-	a := NewAlfred(e)
+	cfg := NewConfig(e)
 
-	if err := a.To(h); err != nil {
+	if err := cfg.To(h); err != nil {
 		t.Fatal(err)
 	}
 
@@ -205,10 +206,10 @@ func TestAlfredTo(t *testing.T) {
 
 }
 
-// TestAlfredFrom verifies that a bindDest is correctly populated from a (tagged) struct.
-func TestAlfredFrom(t *testing.T) {
+// TestConfigFrom verifies that a bindDest is correctly populated from a (tagged) struct.
+func TestConfigFrom(t *testing.T) {
 
-	e := mapEnv{
+	e := MapEnv{
 		"ID":           "",
 		"HOST":         "",
 		"ONLINE":       "true", // must be set: "" is the same as false
@@ -219,12 +220,12 @@ func TestAlfredFrom(t *testing.T) {
 		"PING_AVERAGE": "0.0", // zero value
 	}
 
-	a := NewAlfred(e)
+	cfg := NewConfig(e)
 	th := &testHost{}
 
-	// Check Alfred is set up correctly
+	// Check Config is set up correctly
 	for k, v := range e {
-		s := a.Get(k)
+		s := cfg.Get(k)
 		if s != v {
 			t.Errorf("Bad %s. Expected=%v, Got=%v", k, v, s)
 		}
@@ -258,9 +259,9 @@ func TestAlfredFrom(t *testing.T) {
 	// Exports v into a testDest and verifies it against x.
 	testBind := func(v interface{}, x map[string]string) {
 
-		dst := &testDest{a, map[string]string{}}
+		dst := &testDest{cfg, map[string]string{}}
 
-		variables, err := a.bindVars(v)
+		variables, err := cfg.bindVars(v)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -324,6 +325,54 @@ func TestVarName(t *testing.T) {
 				td.in, td.out, v)
 		}
 	}
+}
+
+// Populate a struct from workflow/environment variables. See EnvVarForField
+// for information on how fields are mapped to environment variables if
+// no variable name is specified using an `env:"name"` tag.
+func ExampleConfig_To() {
+
+	// Set some test values
+	os.Setenv("USERNAME", "dave")
+	os.Setenv("API_KEY", "hunter2")
+	os.Setenv("INTERVAL", "5m")
+	os.Setenv("FORCE", "1")
+
+	// Program settings to load from env
+	type Settings struct {
+		Username       string
+		APIKey         string
+		UpdateInterval time.Duration `env:"INTERVAL"`
+		Force          bool
+	}
+
+	var (
+		s   = &Settings{}
+		cfg = NewConfig()
+	)
+
+	// Populate Settings from workflow/environment variables
+	if err := cfg.To(s); err != nil {
+		panic(err)
+	}
+
+	fmt.Println(s.Username)
+	fmt.Println(s.APIKey)
+	fmt.Println(s.UpdateInterval)
+	fmt.Println(s.Force)
+
+	// Output:
+	// dave
+	// hunter2
+	// 5m0s
+	// true
+
+	unsetEnv(
+		"USERNAME",
+		"API_KEY",
+		"INTERVAL",
+		"FORCE",
+	)
 }
 
 // Rules for generating an environment variable name from a struct field name.

@@ -14,8 +14,9 @@ https://www.alfredapp.com/
 It provides APIs for interacting with Alfred (e.g. Script Filter feedback) and
 the workflow environment (variables, caches, settings).
 
-NOTE: AwGo is currently in development. The API *will* change as I learn to
-write idiomatic Go, and should not be considered stable until v1.0.
+NOTE: AwGo is currently in development. The API *will* change and should
+not be considered stable until v1.0. Until then, vendoring AwGo (e.g.
+with dep or vgo) is strongly recommended.
 
 
 Links
@@ -27,6 +28,10 @@ Source:   https://github.com/deanishe/awgo
 Issues:   https://github.com/deanishe/awgo/issues
 
 Licence:  https://github.com/deanishe/awgo/blob/master/LICENCE
+
+Be sure to also check out the _examples/ subdirectory, which contains
+some simple, but complete, workflows that demonstrate the features
+of AwGo and useful workflow idioms.
 
 
 Features
@@ -41,6 +46,7 @@ The main features are:
 	- Simple, but powerful, API for caching/saving workflow data.
 	- Run scripts and script code.
 	- Call Alfred's AppleScript API from Go.
+	- Read and write workflow settings from info.plist.
 	- Workflow update API with built-in support for GitHub releases.
 	- Pre-configured logging for easier debugging, with a rotated log file.
 	- Catches panics, logs stack trace and shows user an error message.

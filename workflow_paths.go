@@ -34,7 +34,7 @@ func (wf *Workflow) Dir() string {
 func (wf *Workflow) CacheDir() string {
 
 	if wf.cacheDir == "" {
-		wf.cacheDir = wf.Alfred.Get(EnvVarCacheDir)
+		wf.cacheDir = wf.Config.Get(EnvVarCacheDir)
 	}
 
 	return wf.cacheDir
@@ -54,7 +54,7 @@ func (wf *Workflow) ClearCache() error {
 func (wf *Workflow) DataDir() string {
 
 	if wf.dataDir == "" {
-		wf.dataDir = wf.Alfred.Get(EnvVarDataDir)
+		wf.dataDir = wf.Config.Get(EnvVarDataDir)
 	}
 
 	return wf.dataDir

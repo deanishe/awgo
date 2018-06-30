@@ -196,18 +196,3 @@ func RemoveMagic(actions ...MagicAction) Option {
 		return AddMagic(actions...)
 	}
 }
-
-// customEnv provides an alternative Env to load settings from.
-//
-// It should be passed to New() as the first option, as Workflow
-// is initialised based on the settings provided by the Env.
-func customEnv(e Env) Option {
-
-	return func(wf *Workflow) Option {
-
-		prev := wf.Alfred
-		wf.Alfred = NewAlfred(e)
-
-		return customEnv(prev)
-	}
-}

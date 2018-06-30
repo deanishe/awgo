@@ -8,7 +8,11 @@
 
 package aw
 
-import "os"
+import (
+	"fmt"
+	"os"
+	"strings"
+)
 
 // Env is the datasource for configuration lookups.
 //
@@ -32,8 +36,44 @@ type Env interface {
 	Lookup(key string) (string, bool)
 }
 
+// MapEnv is a testing helper that makes it simple to convert a map[string]string
+// to an Env.
+type MapEnv map[string]string
+
+// Lookup implements Env. It returns values from the map.
+func (env MapEnv) Lookup(key string) (string, bool) {
+	s, ok := env[key]
+	return s, ok
+}
+
 // sysEnv implements Env based on the real environment.
 type sysEnv struct{}
 
 // Lookup wraps os.LookupEnv().
 func (e sysEnv) Lookup(key string) (string, bool) { return os.LookupEnv(key) }
+
+// Check that minimum required values are set.
+func validateEnv(env Env) error {
+
+	var (
+		issues   []string
+		required = []string{
+			EnvVarBundleID,
+			EnvVarCacheDir,
+			EnvVarDataDir,
+		}
+	)
+
+	for _, k := range required {
+		v, ok := env.Lookup(k)
+		if !ok || v == "" {
+			issues = append(issues, k+" is not set")
+		}
+	}
+
+	if issues != nil {
+		return fmt.Errorf("Invalid Workflow environment: %s", strings.Join(issues, ", "))
+	}
+
+	return nil
+}

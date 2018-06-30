@@ -3,7 +3,7 @@
 //
 // MIT Licence. See http://opensource.org/licenses/MIT
 //
-// Created on 2018-02-12
+// Created on 2018-06-30
 //
 
 package aw
@@ -19,7 +19,7 @@ import (
 )
 
 // To populates (tagged) struct v with values from the environment.
-func (a *Alfred) To(v interface{}) error {
+func (cfg *Config) To(v interface{}) error {
 
 	binds, err := extract(v)
 	if err != nil {
@@ -27,7 +27,7 @@ func (a *Alfred) To(v interface{}) error {
 	}
 
 	for _, bind := range binds {
-		if err := bind.Import(a); err != nil {
+		if err := bind.Import(cfg); err != nil {
 			return err
 		}
 	}
@@ -39,18 +39,18 @@ func (a *Alfred) To(v interface{}) error {
 //
 // All supported and unignored fields are saved, although empty variables
 // (i.e. "") are not overwritten with Go zero values, e.g. "0" or "false".
-func (a *Alfred) From(v interface{}) error {
+func (cfg *Config) From(v interface{}) error {
 
-	variables, err := a.bindVars(v)
+	variables, err := cfg.bindVars(v)
 	if err != nil {
 		return err
 	}
 
-	return a.setMulti(variables, false)
+	return cfg.setMulti(variables, false)
 }
 
 // extract binding values as {ENVVAR: value} map.
-func (a *Alfred) bindVars(v interface{}) (map[string]string, error) {
+func (cfg *Config) bindVars(v interface{}) (map[string]string, error) {
 
 	variables := map[string]string{}
 
@@ -60,12 +60,22 @@ func (a *Alfred) bindVars(v interface{}) (map[string]string, error) {
 	}
 
 	for _, bind := range binds {
-		if k, v, ok := bind.GetVar(a); ok {
+		if k, v, ok := bind.GetVar(cfg); ok {
 			variables[k] = v
 		}
 	}
 
 	return variables, nil
+}
+
+// setMulti batches the saving of multiple variables.
+func (cfg *Config) setMulti(variables map[string]string, export bool) error {
+
+	for k, v := range variables {
+		cfg.Set(k, v, export)
+	}
+
+	return cfg.Do()
 }
 
 // binding links an environment variable to the field of a struct.
@@ -86,7 +96,7 @@ type bindSource interface {
 
 type bindDest interface {
 	GetString(key string, fallback ...string) string
-	// SetConfig(key, value string, export bool, bundleID ...string) *Alfred
+	// SetConfig(key, value string, export bool, bundleID ...string) *Config
 	setMulti(variables map[string]string, export bool) error
 }
 
@@ -139,38 +149,6 @@ func (bind *binding) GetVar(dst bindDest) (key, value string, ok bool) {
 
 	return
 }
-
-/*
-// Export populates dst from target struct.
-func (bind *binding) Export(dst bindDest) error {
-
-	rv := reflect.Indirect(reflect.ValueOf(bind.Target))
-
-	if bind.FieldNum > rv.NumField() {
-		return fmt.Errorf("invalid FieldNum (%d) for %s (%v)", bind.FieldNum, bind.Name, rv)
-	}
-
-	var (
-		value   = rv.Field(bind.FieldNum)
-		s       = fmt.Sprintf("%v", value)
-		cur     = dst.GetString(bind.EnvVar)
-		curZero = isZeroString(cur, value.Kind())
-		newZero = isZeroValue(value)
-	)
-
-	// Don't pull zero-value fields into empty variables.
-	if curZero && newZero {
-		// log.Printf("[bind] %s: both empty", field.Name)
-		return nil
-	}
-
-	if err := dst.SetConfig(bind.EnvVar, s, false).Do(); err != nil {
-		return err
-	}
-
-	return nil
-}
-*/
 
 func (bind *binding) setValue(rv *reflect.Value, src bindSource) error {
 
