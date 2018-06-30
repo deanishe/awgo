@@ -41,19 +41,19 @@ func TestStoreAndLoad(t *testing.T) {
 			t.Errorf("cache file already exists: %s", p)
 		}
 
-		// Delete non-existant store
+		// Delete non-existent store
 		if err := c.Store(n, nil); err != nil {
 			t.Errorf("unexpected error clearing cache: %v", err)
 		}
 
-		// Non-existant cache exists
+		// Non-existent cache exists
 		if c.Exists(n) {
-			t.Errorf("non-existant cache exists")
+			t.Errorf("non-existent cache exists")
 		}
 
-		// Non-existant cache has expired
+		// Non-existent cache has expired
 		if !c.Expired(n, 0) {
-			t.Errorf("non-existant cache hasn't expired")
+			t.Errorf("non-existent cache hasn't expired")
 		}
 
 		// Store data
@@ -94,15 +94,15 @@ func TestStoreAndLoad(t *testing.T) {
 
 		age, err = c.Age(n)
 		if err == nil {
-			t.Errorf("no error getting age of non-existant cache %s: %v", n, err)
+			t.Errorf("no error getting age of non-existent cache %s: %v", n, err)
 		}
 		if !os.IsNotExist(err) {
 			t.Errorf("deleted cache exists %s: %v", n, err)
 		}
 
-		// Load non-existant cache
+		// Load non-existent cache
 		if _, err := c.Load(n); err == nil {
-			t.Errorf("no error loading non-existant cache")
+			t.Errorf("no error loading non-existent cache")
 		}
 	})
 }
@@ -213,7 +213,7 @@ func TestStoreJSON(t *testing.T) {
 		c := NewCache(dir)
 		p := c.path(n)
 
-		// Delete non-existant store
+		// Delete non-existent store
 		if err := c.StoreJSON(n, nil); err != nil {
 			t.Errorf("unexpected error clearing cache: %v", err)
 		}
@@ -245,10 +245,10 @@ func TestStoreJSON(t *testing.T) {
 			t.Errorf("couldn't delete cache %s", p)
 		}
 
-		// Try to load non-existant cache
+		// Try to load non-existent cache
 		b = &TestData{}
 		if err := c.LoadJSON(n, b); err == nil {
-			t.Errorf("no error loading non-existant cache")
+			t.Errorf("no error loading non-existent cache")
 		}
 	})
 }
@@ -382,14 +382,14 @@ func TestSession(t *testing.T) {
 			t.Errorf("cache file already exists: %s", p)
 		}
 
-		// Delete non-existant store
+		// Delete non-existent store
 		if err := s.Store(n, nil); err != nil {
 			t.Errorf("unexpected error clearing cache: %v", err)
 		}
 
-		// Non-existant cache exists
+		// Non-existent cache exists
 		if s.Exists(n) {
-			t.Errorf("non-existant cache exists")
+			t.Errorf("non-existent cache exists")
 		}
 
 		// Store data
@@ -424,9 +424,9 @@ func TestSession(t *testing.T) {
 			t.Errorf("cache file exists: %s", p)
 		}
 
-		// Load non-existant cache
+		// Load non-existent cache
 		if _, err := s.Load(n); err == nil {
-			t.Errorf("no error loading non-existant cache")
+			t.Errorf("no error loading non-existent cache")
 		}
 
 		// Clear old sessions
