@@ -19,17 +19,15 @@ the given query.
 
 See bookmarks.go for the implementation.
 
-Alfred also allows you to search your Safari bookmarks, but not with fuzzy
-search.
+Alfred natively allows you to search your Safari bookmarks, but not with
+fuzzy search.
 */
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/deanishe/awgo"
-	"github.com/docopt/docopt-go"
 )
 
 var (
@@ -42,18 +40,6 @@ var (
 		Value: "com.apple.safari.bookmark",
 		Type:  aw.IconTypeFileType,
 	}
-
-	// docopt usage message
-	usage = `bookmarks [options] [<query>]
-
-Usage:
-    bookmarks <query>
-    bookmarks -h|--version
-
-Options:
-    -h, --help  Show this message and exit
-    --version   Show version number and exit
-`
 )
 
 func init() {
@@ -63,16 +49,11 @@ func init() {
 func run() {
 	var query string
 
-	// ----------------------------------------------------------------
-	// Parse command-line arguments
-	args, err := docopt.Parse(usage, wf.Args(), true, wf.Version(), false)
-	if err != nil {
-		wf.Fatal(fmt.Sprintf("couldn't parse CLI flags: %v", err))
+	// Use wf.Args() to enable Magic Actions
+	if args := wf.Args(); len(args) > 0 {
+		query = args[0]
 	}
 
-	if s, ok := args["<query>"].(string); ok {
-		query = s
-	}
 	log.Printf("[main] query=%s", query)
 
 	// ----------------------------------------------------------------

@@ -356,7 +356,7 @@ variables={allvars}
 		<key>API_KEY</key>
 		<string></string>
 		<key>HOSTNAME</key>
-		<string></string>
+		<string>localhost</string>
 		<key>PORT</key>
 		<string></string>
 		<key>USERNAME</key>

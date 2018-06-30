@@ -6,7 +6,21 @@
 // Created on 2018-02-12
 //
 
-// Workflow settings demonstrates binding a struct to Alfred's settings.
+/*
+Workflow settings demonstrates binding a struct to Alfred's settings.
+
+The workflow's settings are stored in info.plist/the workflow's
+configuration sheet in Alfred Preferences.
+
+These are imported into the Server struct using Alfred.To().
+
+The Script Filter displays these settings, and you can select one
+to change its value.
+
+If you enter a new value, this is saved to info.plist/the configuration
+sheet via Alfred.SetConfig(), and the workflow is run again by calling
+its "settings" External Trigger via Alfred.RunTrigger().
+*/
 package main
 
 import (
@@ -17,6 +31,8 @@ import (
 	aw "github.com/deanishe/awgo"
 )
 
+// Server contains the configuration loaded from the workflow's settings
+// in the configuration sheet.
 type Server struct {
 	Hostname   string
 	PortNumber int `env:"PORT"`
@@ -45,11 +61,11 @@ func runSet(key, value string) {
 	log.Printf("saving %#v to %s ...", value, key)
 
 	if err := wf.Alfred.SetConfig(key, value, false).Do(); err != nil {
-		panic(err)
+		wf.FatalError(err)
 	}
 
 	if err := wf.Alfred.RunTrigger("settings", "").Do(); err != nil {
-		panic(err)
+		wf.FatalError(err)
 	}
 
 	log.Printf("saved %#v to %s", value, key)

@@ -56,10 +56,7 @@ func readDir(dirpath string) []string {
 // run executes the Script Filter.
 func run() {
 
-	var (
-		query       string
-		args, paths []string
-	)
+	var query string
 
 	// ----------------------------------------------------------------
 	// Handle CLI arguments
@@ -69,9 +66,7 @@ func run() {
 	// same as os.Args[1:], but the arguments are first parsed for AwGo's
 	// magic actions (i.e. `workflow:*` to allow the user to easily open
 	// the log or data/cache directory).
-	args = wf.Args()
-
-	if len(args) > 0 {
+	if args := wf.Args(); len(args) > 0 {
 		// If you're using "{query}" or "$1" (with quotes) in your
 		// Script Filter, $1 will always be set, even if to an empty
 		// string.
@@ -84,9 +79,7 @@ func run() {
 	// Load data and create Alfred items
 	// ----------------------------------------------------------------
 
-	paths = readDir(startDir)
-
-	for _, path := range paths {
+	for _, path := range readDir(startDir) {
 
 		// Convenience method. Sets Item title to filename, subtitle
 		// to shortened path, arg to full path, and icon to file icon.

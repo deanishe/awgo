@@ -23,6 +23,13 @@ var (
 	bookmarksPath = os.ExpandEnv("$HOME/Library/Safari/Bookmarks.plist")
 )
 
+// Bookmark is a Safari bookmark.
+type Bookmark struct {
+	Title  string // Bookmark title
+	Domain string // Domain of URL
+	URL    string // Bookmark URL
+}
+
 // Bookmarks is a slice of Bookmark structs that implements fuzzy.Sortable.
 type Bookmarks []*Bookmark
 
@@ -49,13 +56,6 @@ func (b Bookmarks) Filter(query string) Bookmarks {
 		hits = append(hits, b[i])
 	}
 	return hits
-}
-
-// Bookmark is a Safari bookmark.
-type Bookmark struct {
-	Title  string // Bookmark title
-	Domain string // Domain of URL
-	URL    string // Bookmark URL
 }
 
 // entry is a node in Safari's Bookmarks.plist file. This struct matches all
