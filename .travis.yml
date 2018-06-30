@@ -17,5 +17,8 @@ go:
 # script:
 #   - $GOPATH/bin/goveralls -service=travis-ci
 
+before_install:
+  - sudo apt-get install zsh
+
 script: ./run-tests.sh -i
 
