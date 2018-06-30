@@ -4,7 +4,7 @@
 root="$( cd "$( dirname "$0" )"; pwd )"
 testdir="${root}/testenv"
 iplist="${root}/info.plist"
-covfile="${root}/cover.out"
+covfile="${root}/coverage.out"
 
 verbose=false
 opencover=false

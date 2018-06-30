@@ -19,6 +19,9 @@ go:
 
 before_install:
   - sudo apt-get install zsh
+  - go get github.com/mattn/goveralls
 
-script: ./run-tests.sh -i
+script:
+  - ./run-tests.sh -ic
+  - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
 

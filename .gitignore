@@ -16,7 +16,7 @@
 *.o
 *.a
 *.so
-cover.out
+coverage.out
 
 # Folders
 _obj
