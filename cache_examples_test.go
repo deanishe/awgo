@@ -120,7 +120,7 @@ func ExampleCache_LoadOrStore() {
 	fmt.Println(string(out) == string(data))
 
 	// Wait for cache to expire, then try again
-	time.Sleep(maxAge - time.Now().Sub(start))
+	time.Sleep(time.Millisecond + maxAge - time.Now().Sub(start))
 
 	// reload is called again
 	out, err = c.LoadOrStore(name, maxAge, reload)
