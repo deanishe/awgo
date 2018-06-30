@@ -54,11 +54,8 @@ func RunInBackground(jobName string, cmd *exec.Cmd) error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-	pid := cmd.Process.Pid
-	if err := savePid(jobName, pid); err != nil {
-		return err
-	}
-	return nil
+
+	return savePid(jobName, cmd.Process.Pid)
 }
 
 // Kill stops a background job.
@@ -94,10 +91,7 @@ func IsRunning(jobName string) bool {
 // Save PID a job-specific file.
 func savePid(jobName string, pid int) error {
 	p := pidFile(jobName)
-	if err := ioutil.WriteFile(p, []byte(fmt.Sprintf("%d", pid)), 0600); err != nil {
-		return err
-	}
-	return nil
+	return ioutil.WriteFile(p, []byte(strconv.Itoa(pid)), 0600)
 }
 
 // Return PID for job.

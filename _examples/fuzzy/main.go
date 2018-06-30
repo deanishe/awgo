@@ -74,7 +74,7 @@ func run() {
 	if len(args) > 0 {
 		// If you're using "{query}" or "$1" (with quotes) in your
 		// Script Filter, $1 will always be set, even if to an empty
-		//
+		// string.
 		// This guard serves mostly to prevent errors when run on
 		// the command line.
 		query = args[0]

@@ -206,11 +206,7 @@ func (u *Updater) Install() error {
 	if err := download(r.URL, p); err != nil {
 		return err
 	}
-	cmd := exec.Command("open", "-a", "Alfred 3", p)
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-	return nil
+	return exec.Command("open", "-a", "Alfred 3", p).Run()
 }
 
 // cachePath returns a filepath within AwGo's update cache directory.

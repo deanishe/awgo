@@ -92,7 +92,7 @@ func TestStoreAndLoad(t *testing.T) {
 			t.Errorf("couldn't delete cache %s: %v", p, err)
 		}
 
-		age, err = c.Age(n)
+		_, err = c.Age(n)
 		if err == nil {
 			t.Errorf("no error getting age of non-existent cache %s: %v", n, err)
 		}
