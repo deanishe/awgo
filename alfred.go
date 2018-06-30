@@ -41,18 +41,15 @@ const (
 	// Set to 1 when Alfred's debugger is open
 	EnvVarDebug = "alfred_debug"
 
-	// Theme info
-	EnvVarTheme = "alfred_theme" // ID of user's selected theme
-	// Theme's background colour in rgba format, e.g. "rgba(255,255,255,1.0)"
-	EnvVarThemeBG = "alfred_theme_background"
-	// Theme's selection background colour in rgba format
-	EnvVarThemeSelectionBG = "alfred_theme_selection_background"
+	// Theme info. Colours are in rgba format, e.g. "rgba(255,255,255,1.0)"
+	EnvVarTheme            = "alfred_theme"                      // ID of user's selected theme
+	EnvVarThemeBG          = "alfred_theme_background"           // Background colour
+	EnvVarThemeSelectionBG = "alfred_theme_selection_background" // BG colour of selected item
 
 	// Alfred info
 	EnvVarAlfredVersion = "alfred_version"       // Alfred's version number
 	EnvVarAlfredBuild   = "alfred_version_build" // Alfred's build number
-	// Path to "Alfred.alfredpreferences" file
-	EnvVarPreferences = "alfred_preferences"
+	EnvVarPreferences   = "alfred_preferences"   // Path to "Alfred.alfredpreferences" file
 	// Machine-specific hash. Machine preferences are stored in
 	// Alfred.alfredpreferences/local/<hash>
 	EnvVarLocalhash = "alfred_preferences_localhash"

@@ -17,8 +17,17 @@ import (
 )
 
 // Env is the datasource for configuration lookups.
-// It is an optional parameter to NewAlfred(). By specifying a custom Env,
-// it's possible to populate the Alfred from an alternative source.
+//
+// Pass a custom implementation to NewFromEnv() to provide a custom
+// source for the required workflow configuration settings.
+//
+// As an absolute minimum, the following variables must be set:
+//
+//     alfred_workflow_bundleid
+//     alfred_workflow_cache
+//     alfred_workflow_data
+//
+// See EnvVar* consts for all variables set by Alfred.
 type Env interface {
 	// Lookup retrieves the value of the variable named by key.
 	//

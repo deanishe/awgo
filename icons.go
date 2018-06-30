@@ -29,7 +29,7 @@ const (
 //
 // The icons are the same as found in the Alfred-Workflow library
 // for Python. Preview them here:
-// http://www.deanishe.net/alfred-workflow/user-manual/icons.html#list-of-icons
+// http://www.deanishe.net/alfred-workflow/guide/icons.html#list-of-icons
 var (
 	// Workflow's own icon
 	IconWorkflow = &Icon{"icon.png", IconTypeImage}

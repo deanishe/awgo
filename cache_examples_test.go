@@ -34,7 +34,7 @@ func ExampleCache() {
 	c := NewCache(dir)
 
 	// Cache doesn't exist yet
-	fmt.Println(c.Exists(name))
+	fmt.Println(c.Exists(name)) // -> false
 
 	// The API uses bytes
 	data, _ := value.MarshalText()
@@ -44,7 +44,7 @@ func ExampleCache() {
 	}
 
 	// Cache now exists
-	fmt.Println(c.Exists(name))
+	fmt.Println(c.Exists(name)) // -> true
 
 	// Load data from cache
 	data, err = c.Load(name)
@@ -56,7 +56,7 @@ func ExampleCache() {
 	v2.UnmarshalText(data)
 
 	// Values are equal
-	fmt.Println(value.Equal(v2))
+	fmt.Println(value.Equal(v2)) // -> true
 
 	// Output:
 	// false
@@ -97,7 +97,7 @@ func ExampleCache_LoadOrStore() {
 	}
 
 	// Cache is empty
-	fmt.Println(c.Exists(name))
+	fmt.Println(c.Exists(name)) // -> false
 
 	out, err := c.LoadOrStore(name, maxAge, reload)
 	if err != nil {
@@ -105,10 +105,10 @@ func ExampleCache_LoadOrStore() {
 	}
 
 	// Reload was called and cache exists
-	fmt.Println(c.Exists(name))
+	fmt.Println(c.Exists(name)) // -> true
 
 	// Value is the same
-	fmt.Println(string(out) == string(data))
+	fmt.Println(string(out) == string(data)) // -> true
 
 	// Load again, this time from cache, not reload
 	out, err = c.LoadOrStore(name, maxAge, reload)
@@ -117,7 +117,7 @@ func ExampleCache_LoadOrStore() {
 	}
 
 	// Value is the same
-	fmt.Println(string(out) == string(data))
+	fmt.Println(string(out) == string(data)) // -> true
 
 	// Wait for cache to expire, then try again
 	time.Sleep(time.Millisecond + maxAge - time.Now().Sub(start))
@@ -129,7 +129,7 @@ func ExampleCache_LoadOrStore() {
 	}
 
 	// Value is the same
-	fmt.Println(string(out) == string(data))
+	fmt.Println(string(out) == string(data)) // -> true
 
 	// Output:
 	// false
@@ -179,7 +179,7 @@ func ExampleCache_LoadOrStoreJSON() {
 	c := NewCache(dir)
 
 	// Cache is empty
-	fmt.Println(c.Exists(name))
+	fmt.Println(c.Exists(name)) // -> false
 
 	// Populate new host from cache/reload
 	h := &host{}
