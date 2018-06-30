@@ -439,9 +439,7 @@ func splitCamelCase(name string) string {
 
 		if idx := re.FindStringSubmatchIndex(rest); idx != nil {
 			i = idx[2]
-			s := rest[idx[2]:idx[3]]
-
-			s = rest[:i]
+			s := rest[:i]
 			rest = rest[i:]
 			words = append(words, s)
 		} else {
