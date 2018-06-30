@@ -38,7 +38,7 @@ var (
 	startTime time.Time // Time execution started
 
 	// The workflow object operated on by top-level functions.
-	wf *Workflow
+	// wf *Workflow
 
 	// Flag, as we only want to set up logging once
 	// TODO: Better, more pluggable logging
@@ -48,7 +48,6 @@ var (
 // init creates the default Workflow.
 func init() {
 	startTime = time.Now()
-	wf = New()
 }
 
 // Workflow provides a consolidated API for building Script Filters.
@@ -57,11 +56,7 @@ func init() {
 // entry-point via Workflow.Run(), which catches panics, and logs & shows the
 // error in Alfred.
 //
-// If you don't need to customise Workflow's behaviour in any way, you can use
-// the package-level functions, which call the corresponding methods on the
-// default Workflow object.
-//
-//  Script Filter
+// Script Filter
 //
 // To generate feedback for a Script Filter, use Workflow.NewItem() to create
 // new Items and Workflow.SendFeedback() to send the results to Alfred.
@@ -83,35 +78,7 @@ type Workflow struct {
 
 	// Interface to Alfred.
 	// Access workflow variables by type and save settings to info.plist.
-	// See Alfred for documentation.
 	Alfred *Alfred
-
-	// HelpURL is a link to your issues page/forum thread where users can
-	// report bugs. It is shown in the debugger if the workflow crashes.
-	HelpURL string
-
-	// LogPrefix is the character printed to the log at the start of each run.
-	// Its purpose is to ensure the first real log message starts on its own
-	// line, instead of sharing a line with Alfred's blurb in the debugger.
-	// This is only printed to STDERR (i.e. Alfred's debugger), not written to
-	// the log file. Default: Purple Heart (\U0001F49C)
-	LogPrefix string
-
-	// MaxLogSize is the size (in bytes) at which the workflow log is rotated.
-	// Default: 1 MiB
-	MaxLogSize int
-
-	// MaxResults is the maximum number of results to send to Alfred.
-	// 0 means send all results.
-	// Default: 0
-	MaxResults int
-
-	// SortOptions are options for fuzzy sorting.
-	SortOptions []fuzzy.Option
-
-	// TextErrors tells Workflow to print errors as text, not JSON
-	// Set to true if output goes to a Notification.
-	TextErrors bool
 
 	// Cache is a Cache pointing to the workflow's cache directory.
 	Cache *Cache
@@ -124,46 +91,66 @@ type Workflow struct {
 	// Updater fetches updates for the workflow.
 	Updater Updater
 
-	magicPrefix string // Overrides DefaultMagicPrefix for magic actions.
-
 	// MagicActions contains the magic actions registered for this workflow.
 	// It is set to DefaultMagicActions by default.
-	MagicActions MagicActions
+	MagicActions *MagicActions
 
-	dir         string // directory workflow is in
-	cacheDir    string // workflow's cache directory
-	dataDir     string // workflow's data directory
-	sessionName string // name of the variable sessionID is stored in
-	sessionID   string // random session ID
+	logPrefix   string         // Written to debugger to force a newline
+	maxLogSize  int            // Maximum size of log file in bytes
+	magicPrefix string         // Overrides DefaultMagicPrefix for magic actions.
+	maxResults  int            // max. results to send to Alfred. 0 means send all.
+	sortOptions []fuzzy.Option // Options for fuzzy filtering
+	textErrors  bool           // Show errors as plaintext, not Alfred JSON
+	helpURL     string         // URL to help page (shown if there's an error)
+	dir         string         // Directory workflow is in
+	cacheDir    string         // Workflow's cache directory
+	dataDir     string         // Workflow's data directory
+	sessionName string         // Name of the variable sessionID is stored in
+	sessionID   string         // Random session ID
 }
 
-// New creates and initialises a new Workflow, passing any Options to Workflow.Configure().
+// New creates and initialises a new Workflow, passing any Options to
+// Workflow.Configure().
 //
 // For available options, see the documentation for the Option type and the
 // following functions.
-func New(opts ...Option) *Workflow {
+//
+// IMPORTANT: In order to be able to initialise the Workflow correctly,
+// New must be run within a valid Alfred environment; specifically
+// *at least* the following environment variables must be set:
+//
+//     alfred_workflow_bundleid
+//     alfred_workflow_cache
+//     alfred_workflow_data
+//
+// If you aren't running from Alfred, or would like to specify a
+// custom environment, use NewFromEnv().
+func New(opts ...Option) *Workflow { return NewFromEnv(nil, opts...) }
 
-	a := NewAlfred()
-	if err := validateAlfred(a); err != nil {
-		panic(err)
+// NewFromEnv creates a new Workflows from a custom Env, instead of
+// reading its configuration from Alfred's environment variables.
+func NewFromEnv(env Env, opts ...Option) *Workflow {
+
+	if env == nil {
+		env = sysEnv{}
 	}
 
 	wf := &Workflow{
-		Alfred:     a,
-		LogPrefix:  DefaultLogPrefix,
-		MaxLogSize: DefaultMaxLogSize,
-		MaxResults: DefaultMaxResults,
-
-		Feedback:     &Feedback{},
-		MagicActions: MagicActions{},
-		SortOptions:  []fuzzy.Option{},
-
+		Alfred:      NewAlfred(env),
+		Feedback:    &Feedback{},
+		logPrefix:   DefaultLogPrefix,
+		maxLogSize:  DefaultMaxLogSize,
+		maxResults:  DefaultMaxResults,
 		sessionName: DefaultSessionName,
+		sortOptions: []fuzzy.Option{},
 	}
 
-	wf.MagicActions.Register(defaultMagicActions...)
+	wf.MagicActions = defaultMagicActions(wf)
 
 	wf.Configure(opts...)
+	if err := validateAlfred(wf.Alfred); err != nil {
+		panic(err)
+	}
 
 	wf.Cache = NewCache(wf.CacheDir())
 	wf.Data = NewCache(wf.DataDir())
@@ -177,7 +164,6 @@ func New(opts ...Option) *Workflow {
 
 // Configure applies one or more Options to Workflow. The returned Option reverts
 // all Options passed to Configure.
-func Configure(opts ...Option) (previous Option) { return wf.Configure(opts...) }
 func (wf *Workflow) Configure(opts ...Option) (previous Option) {
 	prev := make(options, len(opts))
 	for i, opt := range opts {
@@ -198,7 +184,7 @@ func (wf *Workflow) initializeLogging() {
 	fi, err := os.Stat(wf.LogFile())
 	if err == nil {
 
-		if fi.Size() >= int64(wf.MaxLogSize) {
+		if fi.Size() >= int64(wf.maxLogSize) {
 
 			new := wf.LogFile() + ".1"
 			if err := os.Rename(wf.LogFile(), new); err != nil {
@@ -238,7 +224,6 @@ func (wf *Workflow) initializeLogging() {
 // BundleID returns the workflow's bundle ID. This library will not
 // work without a bundle ID, which is set in the workflow's main
 // setup sheet in Alfred Preferences.
-func BundleID() string { return wf.BundleID() }
 func (wf *Workflow) BundleID() string {
 
 	s := wf.Alfred.Get(EnvVarBundleID)
@@ -250,12 +235,10 @@ func (wf *Workflow) BundleID() string {
 
 // Name returns the workflow's name as specified in the workflow's main
 // setup sheet in Alfred Preferences.
-func Name() string                { return wf.Name() }
 func (wf *Workflow) Name() string { return wf.Alfred.Get(EnvVarName) }
 
 // Version returns the workflow's version set in the workflow's configuration
 // sheet in Alfred Preferences.
-func Version() string                { return wf.Version() }
 func (wf *Workflow) Version() string { return wf.Alfred.Get(EnvVarVersion) }
 
 // SessionID returns the session ID for this run of the workflow.
@@ -265,7 +248,6 @@ func (wf *Workflow) Version() string { return wf.Alfred.Get(EnvVarVersion) }
 // persist as long as the user is using the workflow in Alfred. That
 // means that the session expires as soon as Alfred closes or the user
 // runs a different workflow.
-func SessionID() string { return wf.SessionID() }
 func (wf *Workflow) SessionID() string {
 
 	if wf.sessionID == "" {
@@ -283,7 +265,6 @@ func (wf *Workflow) SessionID() string {
 }
 
 // Debug returns true if Alfred's debugger is open.
-func Debug() bool                { return wf.Debug() }
 func (wf *Workflow) Debug() bool { return wf.Alfred.GetBool(EnvVarDebug) }
 
 // Args returns command-line arguments passed to the program.
@@ -299,7 +280,6 @@ func (wf *Workflow) Args() []string {
 
 // Run runs your workflow function, catching any errors.
 // If the workflow panics, Run rescues and displays an error message in Alfred.
-func Run(fn func()) { wf.Run(fn) }
 func (wf *Workflow) Run(fn func()) {
 
 	vstr := wf.Name()
@@ -312,8 +292,8 @@ func (wf *Workflow) Run(fn func()) {
 
 	// Print right after Alfred's introductory blurb in the debugger.
 	// Alfred strips whitespace.
-	if wf.LogPrefix != "" {
-		fmt.Fprintln(os.Stderr, wf.LogPrefix)
+	if wf.logPrefix != "" {
+		fmt.Fprintln(os.Stderr, wf.logPrefix)
 	}
 
 	log.Println(util.Pad(vstr, "-", 50))
@@ -357,7 +337,7 @@ func (wf *Workflow) Run(fn func()) {
 
 // outputErrorMsg prints and logs error, then exits process.
 func (wf *Workflow) outputErrorMsg(msg string) {
-	if wf.TextErrors {
+	if wf.textErrors {
 		fmt.Print(msg)
 	} else {
 		wf.Feedback.Clear()
@@ -366,20 +346,18 @@ func (wf *Workflow) outputErrorMsg(msg string) {
 	}
 	log.Printf("[ERROR] %s", msg)
 	// Show help URL or website URL
-	if wf.HelpURL != "" {
-		log.Printf("Get help at %s", wf.HelpURL)
+	if wf.helpURL != "" {
+		log.Printf("Get help at %s", wf.helpURL)
 	}
 	finishLog(true)
 }
 
 // awDataDir is the directory for AwGo's own data.
-func awDataDir() string { return wf.awDataDir() }
 func (wf *Workflow) awDataDir() string {
 	return util.MustExist(filepath.Join(wf.DataDir(), "_aw"))
 }
 
 // awCacheDir is the directory for AwGo's own cache.
-func awCacheDir() string { return wf.awCacheDir() }
 func (wf *Workflow) awCacheDir() string {
 	return util.MustExist(filepath.Join(wf.CacheDir(), "_aw"))
 }

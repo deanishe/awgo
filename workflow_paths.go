@@ -21,7 +21,6 @@ import (
 )
 
 // Dir returns the path to the workflow's root directory.
-func Dir() string { return wf.Dir() }
 func (wf *Workflow) Dir() string {
 
 	if wf.dir == "" {
@@ -32,7 +31,6 @@ func (wf *Workflow) Dir() string {
 }
 
 // CacheDir returns the path to the workflow's cache directory.
-func CacheDir() string { return wf.CacheDir() }
 func (wf *Workflow) CacheDir() string {
 
 	if wf.cacheDir == "" {
@@ -43,20 +41,16 @@ func (wf *Workflow) CacheDir() string {
 }
 
 // OpenCache opens the workflow's cache directory in the default application (usually Finder).
-func OpenCache() error { return wf.OpenCache() }
 func (wf *Workflow) OpenCache() error {
-	cmd := exec.Command("open", wf.CacheDir())
-	return cmd.Run()
+	return exec.Command("open", wf.CacheDir()).Run()
 }
 
 // ClearCache deletes all files from the workflow's cache directory.
-func ClearCache() error { return wf.ClearCache() }
 func (wf *Workflow) ClearCache() error {
 	return util.ClearDirectory(wf.CacheDir())
 }
 
 // DataDir returns the path to the workflow's data directory.
-func DataDir() string { return wf.DataDir() }
 func (wf *Workflow) DataDir() string {
 
 	if wf.dataDir == "" {
@@ -67,20 +61,16 @@ func (wf *Workflow) DataDir() string {
 }
 
 // OpenData opens the workflow's data directory in the default application (usually Finder).
-func OpenData() error { return wf.OpenData() }
 func (wf *Workflow) OpenData() error {
-	cmd := exec.Command("open", wf.DataDir())
-	return cmd.Run()
+	return exec.Command("open", wf.DataDir()).Run()
 }
 
 // ClearData deletes all files from the workflow's cache directory.
-func ClearData() error { return wf.ClearData() }
 func (wf *Workflow) ClearData() error {
 	return util.ClearDirectory(wf.DataDir())
 }
 
 // Reset deletes all workflow data (cache and data directories).
-func Reset() error { return wf.Reset() }
 func (wf *Workflow) Reset() error {
 	errs := []error{}
 	if err := wf.ClearCache(); err != nil {
@@ -96,28 +86,24 @@ func (wf *Workflow) Reset() error {
 }
 
 // LogFile returns the path to the workflow's log file.
-func LogFile() string { return wf.LogFile() }
 func (wf *Workflow) LogFile() string {
 	return filepath.Join(wf.CacheDir(), fmt.Sprintf("%s.log", wf.BundleID()))
 }
 
 // OpenLog opens the workflow's logfile in the default application (usually Console.app).
-func OpenLog() error { return wf.OpenLog() }
 func (wf *Workflow) OpenLog() error {
 	if !util.PathExists(wf.LogFile()) {
 		log.Println("Creating log file...")
 	}
-	cmd := exec.Command("open", wf.LogFile())
-	return cmd.Run()
+	return exec.Command("open", wf.LogFile()).Run()
 }
 
-func OpenHelp() error { return wf.OpenHelp() }
+// OpenHelp opens the workflow's help URL (if set) in the default browser.
 func (wf *Workflow) OpenHelp() error {
-	if wf.HelpURL == "" {
+	if wf.helpURL == "" {
 		return errors.New("Help URL is not set")
 	}
-	cmd := exec.Command("open", wf.HelpURL)
-	return cmd.Run()
+	return exec.Command("open", wf.helpURL).Run()
 }
 
 // Try to find workflow root based on presence of info.plist.

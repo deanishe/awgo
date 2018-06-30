@@ -40,14 +40,14 @@ func (opts options) apply(wf *Workflow) Option {
 // ask for help.
 func HelpURL(URL string) Option {
 	return func(wf *Workflow) Option {
-		prev := wf.HelpURL
+		prev := wf.helpURL
 		ma := &helpMA{URL}
 		if URL != "" {
 			wf.MagicActions.Register(ma)
 		} else {
 			wf.MagicActions.Unregister(ma)
 		}
-		wf.HelpURL = URL
+		wf.helpURL = URL
 		return HelpURL(prev)
 	}
 }
@@ -60,8 +60,8 @@ func HelpURL(URL string) Option {
 // Default: Beer Mug (\U0001F37A)
 func LogPrefix(prefix string) Option {
 	return func(wf *Workflow) Option {
-		prev := wf.LogPrefix
-		wf.LogPrefix = prefix
+		prev := wf.logPrefix
+		wf.logPrefix = prefix
 		return LogPrefix(prev)
 	}
 }
@@ -83,8 +83,8 @@ func MagicPrefix(prefix string) Option {
 // Default: 1 MiB
 func MaxLogSize(bytes int) Option {
 	return func(wf *Workflow) Option {
-		prev := wf.MaxLogSize
-		wf.MaxLogSize = bytes
+		prev := wf.maxLogSize
+		wf.maxLogSize = bytes
 		return MaxLogSize(prev)
 	}
 }
@@ -94,8 +94,8 @@ func MaxLogSize(bytes int) Option {
 // Default: 0
 func MaxResults(num int) Option {
 	return func(wf *Workflow) Option {
-		prev := wf.MaxResults
-		wf.MaxResults = num
+		prev := wf.maxResults
+		wf.maxResults = num
 		return MaxResults(prev)
 	}
 }
@@ -105,8 +105,8 @@ func MaxResults(num int) Option {
 // should be captured by Alfred, e.g. if output goes to a Notification.
 func TextErrors(on bool) Option {
 	return func(wf *Workflow) Option {
-		prev := wf.TextErrors
-		wf.TextErrors = on
+		prev := wf.textErrors
+		wf.textErrors = on
 		return TextErrors(prev)
 	}
 }
@@ -120,8 +120,8 @@ func SortOptions(opts ...fuzzy.Option) Option {
 
 	return func(wf *Workflow) Option {
 
-		prev := wf.SortOptions
-		wf.SortOptions = opts
+		prev := wf.sortOptions
+		wf.sortOptions = opts
 
 		return SortOptions(prev...)
 	}
@@ -192,21 +192,22 @@ func AddMagic(actions ...MagicAction) Option {
 // See the MagicAction interface for more information.
 func RemoveMagic(actions ...MagicAction) Option {
 	return func(wf *Workflow) Option {
-		for _, action := range actions {
-			delete(wf.MagicActions, action.Keyword())
-		}
+		wf.MagicActions.Unregister(actions...)
 		return AddMagic(actions...)
 	}
 }
 
-// withEnv provides an alternative Env to load settings from.
-func withEnv(e Env) Option {
+// customEnv provides an alternative Env to load settings from.
+//
+// It should be passed to New() as the first option, as Workflow
+// is initialised based on the settings provided by the Env.
+func customEnv(e Env) Option {
 
 	return func(wf *Workflow) Option {
 
 		prev := wf.Alfred
 		wf.Alfred = NewAlfred(e)
 
-		return withEnv(prev)
+		return customEnv(prev)
 	}
 }

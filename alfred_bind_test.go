@@ -205,8 +205,8 @@ func TestAlfredTo(t *testing.T) {
 
 }
 
-// TestFrom verifies that a bindDest is correctly populated from a (tagged) struct.
-func TestFrom(t *testing.T) {
+// TestAlfredFrom verifies that a bindDest is correctly populated from a (tagged) struct.
+func TestAlfredFrom(t *testing.T) {
 
 	e := mapEnv{
 		"ID":           "",

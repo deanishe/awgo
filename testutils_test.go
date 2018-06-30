@@ -187,7 +187,7 @@ func withTestWf(fun func(wf *Workflow)) {
 		}()
 
 		// Create workflow for current environment and pass it to function.
-		var wf = New(withEnv(e))
+		var wf = NewFromEnv(e)
 		fun(wf)
 	})
 

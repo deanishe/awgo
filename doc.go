@@ -61,17 +61,27 @@ the user in Alfred.
 	// Import name is "aw"
 	import "github.com/deanishe/awgo"
 
+	// aw.Workflow is the main API
+	var wf *aw.Workflow
+
+	func init() {
+		// Create a new *Workflow using default configuration
+		// (workflow settings are read from the environment variables
+		// set by Alfred)
+		wf = aw.New()
+	}
+
 	func main() {
 		// Wrap your entry point with Run() to catch and log panics and
 		// show an error in Alfred instead of silently dying
-		aw.Run(run)
+		wf.Run(run)
 	}
 
 	func run() {
 		// Create a new item
-		aw.NewItem("Hello World!")
+		wf.NewItem("Hello World!")
 		// And send the results to Alfred
-		aw.SendFeedback()
+		wf.SendFeedback()
 	}
 
 
@@ -89,14 +99,13 @@ API of Workflow:
 	NewItem()
 	NewFileItem()
 	NewWarningItem()
-		Item
-		Modifier
 
 	// Sorting/filtering results
 	Filter()
 
 	// Send feedback to Alfred
 	SendFeedback()
+
 	// Warning/error calls that drop all other Items on the floor
 	// and send feedback immediately
 	Warn()
@@ -108,7 +117,7 @@ API of Workflow:
 You can set workflow variables (via feedback) with Workflow.Var, Item.Var
 and Modifier.Var.
 
-See SendFeedback for more documentation.
+See Workflow.SendFeedback for more documentation.
 
 
 Run Script actions
@@ -128,10 +137,15 @@ See ArgVars for more information.
 
 Configuration
 
-Most package-level functions call the methods of the same name on the default
-Workflow struct. If you want to use custom options, you can create a new
-Workflow with New(), or reconfigure the default Workflow via the package-level
-Configure() function.
+New() creates a *Workflow using the default values and workflow settings
+read from environment variables set by Alfred.
+
+You can change defaults by passing one or more Options to New(). If
+you do not want to use Alfred's environment variables, or they aren't set
+(i.e. you're not running the code in Alfred), you must pass an Env as
+the first Option to New() using CustomEnv().
+
+A Workflow can be re-configured later using its Configure() method.
 
 Check out the _examples/ subdirectory for some simple, but complete, workflows
 which you can copy to get started.
@@ -144,8 +158,8 @@ Fuzzy filtering
 AwGo can filter Script Filter feedback using a Sublime Text-like fuzzy
 matching algorithm.
 
-Filter() sorts feedback Items against the provided query, removing those that
-do not match.
+Workflow.Filter() sorts feedback Items against the provided query, removing
+those that do not match.
 
 Sorting is performed by subpackage fuzzy via the fuzzy.Sortable interface.
 
@@ -252,8 +266,8 @@ Subpackage util provides several functions for running script files and
 snippets of AppleScript/JavaScript code. See util for documentation and
 examples.
 
-AwGo offers a simple API to start/stop background processes via the
-RunInBackground(), IsRunning() and Kill() functions. This is useful for
+AwGo offers a simple API to start/stop background processes via Workflow's
+RunInBackground(), IsRunning() and Kill() methods. This is useful for
 running checks for updates and other jobs that hit the network or take a
 significant amount of time to complete, allowing you to keep your Script
 Filters extremely responsive.

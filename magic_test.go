@@ -95,8 +95,8 @@ func TestNonMagicArgs(t *testing.T) {
 
 	for _, td := range data {
 
-		ma := MagicActions{}
-		ma.Register(defaultMagicActions...)
+		wf := New()
+		ma := wf.MagicActions
 
 		args, handled := ma.handleArgs(td.in, DefaultMagicPrefix)
 
@@ -111,15 +111,27 @@ func TestNonMagicArgs(t *testing.T) {
 
 }
 
+func TestMagicDefaults(t *testing.T) {
+	wf := New()
+	ma := wf.MagicActions
+
+	x := 6
+	v := len(ma.actions)
+	if v != x {
+		t.Errorf("Bad MagicAction count. Expected=%d, Got=%d", x, v)
+	}
+}
+
 func TestMagicActions(t *testing.T) {
 
-	ma := MagicActions{}
+	wf := New()
+	ma := wf.MagicActions
 	ta := &testMA{}
 
 	ma.Register(ta)
 	// Incomplete keyword = search query
 	_, v := ma.handleArgs([]string{"workflow:tes"}, DefaultMagicPrefix)
-	if v != true {
+	if !v {
 		t.Errorf("Bad handled. Expected=%v, Got=%v", true, v)
 	}
 
@@ -130,8 +142,10 @@ func TestMagicActions(t *testing.T) {
 	// Test unregister
 	ma.Unregister(ta)
 
-	if len(ma) != 0 {
-		t.Errorf("Bad MagicActions length. Expected=%v, Got=%v", 0, len(ma))
+	n := len(ma.actions)
+	x := 6
+	if n != x {
+		t.Errorf("Bad MagicActions length. Expected=%v, Got=%v", x, n)
 	}
 
 	// Register a new action
@@ -140,7 +154,7 @@ func TestMagicActions(t *testing.T) {
 
 	// Keyword of test MA
 	_, v = ma.handleArgs([]string{"workflow:test"}, DefaultMagicPrefix)
-	if v != true {
+	if !v {
 		t.Errorf("Bad handled. Expected=%v, Got=%v", true, v)
 	}
 

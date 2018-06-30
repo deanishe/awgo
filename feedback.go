@@ -163,7 +163,7 @@ func (it *Item) Var(k, v string) *Item {
 func (it *Item) NewModifier(key ModKey) *Modifier {
 	m, err := newModifier(key)
 	if err != nil {
-		wf.FatalError(err)
+		panic(err)
 	}
 
 	// Add Item variables to Modifier

@@ -16,17 +16,23 @@ import (
 	"strings"
 )
 
-// Magic actions registered by default.
-var (
-	defaultMagicActions = []MagicAction{
-		logMA{},        // Opens log file
-		cacheMA{},      // Opens cache directory
-		clearCacheMA{}, // Clears cache directory
-		dataMA{},       // Opens data directory
-		clearDataMA{},  // Clears data directory
-		resetMA{},      // Clears cache and data directories
+// defaultMagicActions creates a MagicActions with the default actions
+// already registered.
+func defaultMagicActions(wf *Workflow) *MagicActions {
+	ma := &MagicActions{
+		actions: map[string]MagicAction{},
+		wf:      wf,
 	}
-)
+	ma.Register(
+		logMA{wf},
+		cacheMA{wf},
+		clearCacheMA{wf},
+		dataMA{wf},
+		clearDataMA{wf},
+		resetMA{wf},
+	)
+	return ma
+}
 
 /*
 MagicAction is a command that is called directly by AwGo (i.e.  your workflow
@@ -103,19 +109,22 @@ type MagicAction interface {
 
 // MagicActions contains the registered magic actions. See the MagicAction
 // interface for full documentation.
-type MagicActions map[string]MagicAction
+type MagicActions struct {
+	actions map[string]MagicAction
+	wf      *Workflow
+}
 
 // Register adds a MagicAction to the mapping. Previous entries are overwritten.
-func (ma MagicActions) Register(actions ...MagicAction) {
+func (ma *MagicActions) Register(actions ...MagicAction) {
 	for _, action := range actions {
-		ma[action.Keyword()] = action
+		ma.actions[action.Keyword()] = action
 	}
 }
 
 // Unregister removes a MagicAction from the mapping (based on its keyword).
-func (ma MagicActions) Unregister(actions ...MagicAction) {
+func (ma *MagicActions) Unregister(actions ...MagicAction) {
 	for _, action := range actions {
-		delete(ma, action.Keyword())
+		delete(ma.actions, action.Keyword())
 	}
 }
 
@@ -125,7 +134,7 @@ func (ma MagicActions) Unregister(actions ...MagicAction) {
 // not returned to your code.
 //
 // If no magic actions are found, it returns args.
-func (ma MagicActions) Args(args []string, prefix string) []string {
+func (ma *MagicActions) Args(args []string, prefix string) []string {
 
 	args, handled := ma.handleArgs(args, prefix)
 
@@ -140,7 +149,7 @@ func (ma MagicActions) Args(args []string, prefix string) []string {
 
 // handleArgs checks args for the magic prefix. Returns args and true if
 // it found and handled a magic argument.
-func (ma MagicActions) handleArgs(args []string, prefix string) ([]string, bool) {
+func (ma *MagicActions) handleArgs(args []string, prefix string) ([]string, bool) {
 
 	var handled bool
 
@@ -151,17 +160,17 @@ func (ma MagicActions) handleArgs(args []string, prefix string) ([]string, bool)
 		if strings.HasPrefix(arg, prefix) {
 
 			query := arg[len(prefix):]
-			action := ma[query]
+			action := ma.actions[query]
 
 			if action != nil {
 
 				log.Printf(action.RunText())
 
-				NewItem(action.RunText()).
+				ma.wf.NewItem(action.RunText()).
 					Icon(IconInfo).
 					Valid(false)
 
-				SendFeedback()
+				ma.wf.SendFeedback()
 
 				if err := action.Run(); err != nil {
 					log.Printf("Error running magic arg `%s`: %s", action.Description(), err)
@@ -171,9 +180,9 @@ func (ma MagicActions) handleArgs(args []string, prefix string) ([]string, bool)
 				handled = true
 
 			} else {
-				for kw, action := range ma {
+				for kw, action := range ma.actions {
 
-					NewItem(action.Keyword()).
+					ma.wf.NewItem(action.Keyword()).
 						Subtitle(action.Description()).
 						Valid(false).
 						Icon(IconInfo).
@@ -182,9 +191,9 @@ func (ma MagicActions) handleArgs(args []string, prefix string) ([]string, bool)
 						Match(fmt.Sprintf("%s %s", action.Keyword(), action.Description()))
 				}
 
-				Filter(query)
-				WarnEmpty("No matching action", "Try another query?")
-				SendFeedback()
+				ma.wf.Filter(query)
+				ma.wf.WarnEmpty("No matching action", "Try another query?")
+				ma.wf.SendFeedback()
 
 				handled = true
 			}
@@ -195,52 +204,64 @@ func (ma MagicActions) handleArgs(args []string, prefix string) ([]string, bool)
 }
 
 // Opens workflow's log file.
-type logMA struct{}
+type logMA struct {
+	wf *Workflow
+}
 
 func (a logMA) Keyword() string     { return "log" }
 func (a logMA) Description() string { return "Open workflow's log file" }
 func (a logMA) RunText() string     { return "Opening log file…" }
-func (a logMA) Run() error          { return OpenLog() }
+func (a logMA) Run() error          { return a.wf.OpenLog() }
 
 // Opens workflow's data directory.
-type dataMA struct{}
+type dataMA struct {
+	wf *Workflow
+}
 
 func (a dataMA) Keyword() string     { return "data" }
 func (a dataMA) Description() string { return "Open workflow's data directory" }
 func (a dataMA) RunText() string     { return "Opening data directory…" }
-func (a dataMA) Run() error          { return OpenData() }
+func (a dataMA) Run() error          { return a.wf.OpenData() }
 
 // Opens workflow's cache directory.
-type cacheMA struct{}
+type cacheMA struct {
+	wf *Workflow
+}
 
 func (a cacheMA) Keyword() string     { return "cache" }
 func (a cacheMA) Description() string { return "Open workflow's cache directory" }
 func (a cacheMA) RunText() string     { return "Opening cache directory…" }
-func (a cacheMA) Run() error          { return OpenCache() }
+func (a cacheMA) Run() error          { return a.wf.OpenCache() }
 
 // Deletes the contents of the workflow's cache directory.
-type clearCacheMA struct{}
+type clearCacheMA struct {
+	wf *Workflow
+}
 
 func (a clearCacheMA) Keyword() string     { return "delcache" }
 func (a clearCacheMA) Description() string { return "Delete workflow's cached data" }
 func (a clearCacheMA) RunText() string     { return "Deleted workflow's cached data" }
-func (a clearCacheMA) Run() error          { return ClearCache() }
+func (a clearCacheMA) Run() error          { return a.wf.ClearCache() }
 
 // Deletes the contents of the workflow's data directory.
-type clearDataMA struct{}
+type clearDataMA struct {
+	wf *Workflow
+}
 
 func (a clearDataMA) Keyword() string     { return "deldata" }
 func (a clearDataMA) Description() string { return "Delete workflow's saved data" }
 func (a clearDataMA) RunText() string     { return "Deleted workflow's saved data" }
-func (a clearDataMA) Run() error          { return ClearData() }
+func (a clearDataMA) Run() error          { return a.wf.ClearData() }
 
 // Deletes the contents of the workflow's cache & data directories.
-type resetMA struct{}
+type resetMA struct {
+	wf *Workflow
+}
 
 func (a resetMA) Keyword() string     { return "reset" }
 func (a resetMA) Description() string { return "Delete all saved and cached workflow data" }
 func (a resetMA) RunText() string     { return "Deleted workflow saved and cached data" }
-func (a resetMA) Run() error          { return Reset() }
+func (a resetMA) Run() error          { return a.wf.Reset() }
 
 // Opens URL in default browser.
 type helpMA struct {

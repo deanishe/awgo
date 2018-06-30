@@ -17,23 +17,26 @@ import (
 
 // TestRunInBackground ensures background jobs work.
 func TestRunInBackground(t *testing.T) {
+
+	wf := New()
+
 	cmd := exec.Command("sleep", "5")
-	if IsRunning("sleep") {
+	if wf.IsRunning("sleep") {
 		t.Fatalf("Job 'sleep' is already running")
 	}
-	if err := RunInBackground("sleep", cmd); err != nil {
+	if err := wf.RunInBackground("sleep", cmd); err != nil {
 		t.Fatalf("Error starting job 'sleep': %s", err)
 	}
-	if !IsRunning("sleep") {
+	if !wf.IsRunning("sleep") {
 		t.Fatalf("Job 'sleep' is not running")
 	}
-	p := pidFile("sleep")
+	p := wf.pidFile("sleep")
 	if !util.PathExists(p) {
 		t.Fatalf("No PID file for 'sleep'")
 	}
 	// Duplicate jobs fail
 	cmd = exec.Command("sleep", "5")
-	err := RunInBackground("sleep", cmd)
+	err := wf.RunInBackground("sleep", cmd)
 	if err == nil {
 		t.Fatal("Starting duplicate 'sleep' job didn't error")
 	}
@@ -44,10 +47,10 @@ func TestRunInBackground(t *testing.T) {
 		t.Errorf("IsAlreadyRunning didn't identify ErrAlreadyRunning")
 	}
 	// Job killed OK
-	if err := Kill("sleep"); err != nil {
+	if err := wf.Kill("sleep"); err != nil {
 		t.Fatalf("Error killing 'sleep' job: %s", err)
 	}
-	if IsRunning("sleep") {
+	if wf.IsRunning("sleep") {
 		t.Fatal("'sleep' job still running")
 	}
 	if util.PathExists(p) {

@@ -16,11 +16,14 @@ import (
 
 func TestNewFileItem(t *testing.T) {
 
-	ipPath := filepath.Join(wf.Dir(), "info.plist")
-	ipShort := strings.Replace(ipPath, os.Getenv("HOME"), "~", -1)
+	var (
+		wf      = New()
+		ipPath  = filepath.Join(wf.Dir(), "info.plist")
+		ipShort = strings.Replace(ipPath, os.Getenv("HOME"), "~", -1)
 
-	fb := Feedback{}
-	it := fb.NewFileItem(ipPath)
+		fb = Feedback{}
+		it = fb.NewFileItem(ipPath)
+	)
 
 	if it.title != "info.plist" {
 		t.Fatalf("Incorrect title: %v", it.title)

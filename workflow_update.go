@@ -28,14 +28,12 @@ type Updater interface {
 // Updating
 
 // setUpdater sets an updater for the workflow.
-func setUpdater(u Updater) { wf.setUpdater(u) }
 func (wf *Workflow) setUpdater(u Updater) {
 	wf.Updater = u
 	wf.MagicActions.Register(&updateMA{wf.Updater})
 }
 
 // UpdateCheckDue returns true if an update is available.
-func UpdateCheckDue() bool { return wf.UpdateCheckDue() }
 func (wf *Workflow) UpdateCheckDue() bool {
 	if wf.Updater == nil {
 		log.Println("No updater configured")
@@ -45,7 +43,6 @@ func (wf *Workflow) UpdateCheckDue() bool {
 }
 
 // CheckForUpdate retrieves and caches the list of available releases.
-func CheckForUpdate() error { return wf.CheckForUpdate() }
 func (wf *Workflow) CheckForUpdate() error {
 	if wf.Updater == nil {
 		return errors.New("No updater configured")
@@ -54,7 +51,6 @@ func (wf *Workflow) CheckForUpdate() error {
 }
 
 // UpdateAvailable returns true if a newer version is available to install.
-func UpdateAvailable() bool { return wf.UpdateAvailable() }
 func (wf *Workflow) UpdateAvailable() bool {
 	if wf.Updater == nil {
 		log.Println("No updater configured")
@@ -64,7 +60,6 @@ func (wf *Workflow) UpdateAvailable() bool {
 }
 
 // InstallUpdate downloads and installs the latest version of the workflow.
-func InstallUpdate() error { return wf.InstallUpdate() }
 func (wf *Workflow) InstallUpdate() error {
 	if wf.Updater == nil {
 		return errors.New("No updater configured")

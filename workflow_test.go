@@ -19,10 +19,10 @@ func TestWorkflowValues(t *testing.T) {
 	withTestWf(func(wf *Workflow) {
 
 		if wf.Name() != tName {
-			t.Errorf("wrong name. Expected=%s, Got=%s", tName, wf.Name())
+			t.Errorf("Bad Name. Expected=%s, Got=%s", tName, wf.Name())
 		}
 		if wf.BundleID() != tBundleID {
-			t.Errorf("wrong bundle ID. Expected=%s, Got=%s", tBundleID, wf.BundleID())
+			t.Errorf("Bad BundleID. Expected=%s, Got=%s", tBundleID, wf.BundleID())
 		}
 	})
 }
@@ -37,15 +37,15 @@ func TestOptions(t *testing.T) {
 	}{
 		{
 			HelpURL("http://www.example.com"),
-			func(wf *Workflow) bool { return wf.HelpURL == "http://www.example.com" },
+			func(wf *Workflow) bool { return wf.helpURL == "http://www.example.com" },
 			"Set HelpURL"},
 		{
 			MaxResults(10),
-			func(wf *Workflow) bool { return wf.MaxResults == 10 },
+			func(wf *Workflow) bool { return wf.maxResults == 10 },
 			"Set MaxResults"},
 		{
 			LogPrefix("blah"),
-			func(wf *Workflow) bool { return wf.LogPrefix == "blah" },
+			func(wf *Workflow) bool { return wf.logPrefix == "blah" },
 			"Set LogPrefix"},
 		{
 			SessionName("SESH"),
@@ -53,7 +53,7 @@ func TestOptions(t *testing.T) {
 			"Set SessionName"},
 		{
 			SortOptions(),
-			func(wf *Workflow) bool { return wf.SortOptions == nil },
+			func(wf *Workflow) bool { return wf.sortOptions == nil },
 			"Set SortOptions"},
 		{
 			SuppressUIDs(true),
@@ -65,20 +65,28 @@ func TestOptions(t *testing.T) {
 			"Set MagicPrefix"},
 		{
 			MaxLogSize(2048),
-			func(wf *Workflow) bool { return wf.MaxLogSize == 2048 },
+			func(wf *Workflow) bool { return wf.maxLogSize == 2048 },
 			"Set MaxLogSize"},
 		{
 			TextErrors(true),
-			func(wf *Workflow) bool { return wf.TextErrors == true },
+			func(wf *Workflow) bool { return wf.textErrors == true },
 			"Set TextErrors"},
 		{
 			AddMagic(&testMA{}),
-			func(wf *Workflow) bool { return wf.MagicActions["test"] != nil },
+			func(wf *Workflow) bool { return wf.MagicActions.actions["test"] != nil },
 			"Add Magic"},
 		{
 			RemoveMagic(logMA{}),
-			func(wf *Workflow) bool { return wf.MagicActions["log"] == nil },
+			func(wf *Workflow) bool { return wf.MagicActions.actions["log"] == nil },
 			"Remove Magic"},
+		{
+			customEnv(mapEnv{
+				"alfred_workflow_bundleid": "fakeid",
+				"alfred_workflow_cache":    os.Getenv("alfred_workflow_cache"),
+				"alfred_workflow_data":     os.Getenv("alfred_workflow_data"),
+			}),
+			func(wf *Workflow) bool { return wf.BundleID() == "fakeid" },
+			"CustomEnv"},
 	}
 
 	for _, td := range data {
@@ -163,8 +171,8 @@ func ExampleNew() {
 // Pass one or more Options to New() to configure the created Workflow.
 func ExampleNew_withOptions() {
 	wf := New(HelpURL("http://www.example.com"), MaxResults(200))
-	fmt.Println(wf.HelpURL)
-	fmt.Println(wf.MaxResults)
+	fmt.Println(wf.helpURL)
+	fmt.Println(wf.maxResults)
 	// Output:
 	// http://www.example.com
 	// 200
@@ -174,12 +182,14 @@ func ExampleNew_withOptions() {
 //
 // Typically, when you're done adding Items, you call SendFeedback() to
 // send the results to Alfred.
-func ExampleNewItem() {
-	// Create a new item via the default Workflow object, which will
-	// track the Item and send it to Alfred when you call SendFeedback()
+func ExampleWorkflow_NewItem() {
+	wf := New()
+	// Create a new item via the Workflow object, which will
+	// track the Item and send it to Alfred when you call
+	// Workflow.SendFeedback()
 	//
 	// Title is the only required value.
-	it := NewItem("First Result").
+	it := wf.NewItem("First Result").
 		Subtitle("Some details here")
 
 	// Just to see what it looks like...
@@ -189,20 +199,20 @@ func ExampleNewItem() {
 }
 
 // Change Workflow's configuration after creation, then revert it.
-func ExampleConfigure() {
+func ExampleWorkflow_Configure() {
 	wf := New()
 	// Default settings (false and 0)
-	fmt.Println(wf.TextErrors)
-	fmt.Println(wf.MaxResults)
+	fmt.Println(wf.textErrors)
+	fmt.Println(wf.maxResults)
 	// Turn text errors on, set max results and save Option to revert
 	// to previous configuration
 	previous := wf.Configure(TextErrors(true), MaxResults(200))
-	fmt.Println(wf.TextErrors)
-	fmt.Println(wf.MaxResults)
+	fmt.Println(wf.textErrors)
+	fmt.Println(wf.maxResults)
 	// Revert to previous configuration
 	wf.Configure(previous)
-	fmt.Println(wf.TextErrors)
-	fmt.Println(wf.MaxResults)
+	fmt.Println(wf.textErrors)
+	fmt.Println(wf.maxResults)
 	// Output:
 	// false
 	// 0
