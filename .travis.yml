@@ -1,0 +1,7 @@
+language: go
+
+go:
+  - "1.x"
+
+script: ./run-tests.sh -i
+
