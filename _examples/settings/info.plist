@@ -354,13 +354,13 @@ variables={allvars}
 	<key>variables</key>
 	<dict>
 		<key>API_KEY</key>
-		<string>3dwrrupbujdjcznddbva6fuj3rmzbd</string>
+		<string></string>
 		<key>HOSTNAME</key>
-		<string>www.example.com</string>
+		<string></string>
 		<key>PORT</key>
-		<string>1234</string>
+		<string></string>
 		<key>USERNAME</key>
-		<string>jimmy_the_spliff</string>
+		<string></string>
 	</dict>
 	<key>variablesdontexport</key>
 	<array>

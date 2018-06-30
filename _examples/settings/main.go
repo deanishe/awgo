@@ -64,7 +64,7 @@ func runSet(key, value string) {
 		wf.FatalError(err)
 	}
 
-	if err := wf.Alfred.RunTrigger("settings", "").Do(); err != nil {
+	if err := wf.Alfred.RunTrigger("settings", ""); err != nil {
 		wf.FatalError(err)
 	}
 
