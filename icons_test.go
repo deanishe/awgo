@@ -42,7 +42,7 @@ func TestIcons(t *testing.T) {
 			t.Fatalf("icon.Type is not empty: %v", icon.Value)
 		}
 		// Skip path validation on Travis because it's a Linux box
-		if os.Getenv("TRAVIS_BRANCH") != "" {
+		if os.Getenv("TRAVIS") != "" {
 			continue
 		}
 		_, err := os.Stat(icon.Value)
