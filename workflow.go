@@ -7,7 +7,6 @@
 package aw
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -19,20 +18,27 @@ import (
 
 	"github.com/deanishe/awgo/fuzzy"
 	"github.com/deanishe/awgo/util"
-
-	"os/exec"
 )
 
 // AwGoVersion is the semantic version number of this library.
-const AwGoVersion = "0.13.2"
+const AwGoVersion = "0.14.0"
+
+// Default Workflow settings. Can be changed with the corresponding Options.
+//
+// See the Options and Workflow documentation for more information.
+const (
+	DefaultLogPrefix   = "\U0001F37A"    // Beer mug
+	DefaultMaxLogSize  = 1048576         // 1 MiB
+	DefaultMaxResults  = 0               // No limit, i.e. send all results to Alfred
+	DefaultSessionName = "AW_SESSION_ID" // Workflow variable session ID is stored in
+	DefaultMagicPrefix = "workflow:"     // Prefix to call "magic" actions
+)
 
 var (
 	startTime time.Time // Time execution started
 
 	// The workflow object operated on by top-level functions.
-	// It can be retrieved/replaced with DefaultWorkflow() and
-	// SetDefaultWorkflow() respectively.
-	wf *Workflow
+	// wf *Workflow
 
 	// Flag, as we only want to set up logging once
 	// TODO: Better, more pluggable logging
@@ -42,218 +48,35 @@ var (
 // init creates the default Workflow.
 func init() {
 	startTime = time.Now()
-	wf = New()
 }
 
-// Updater can check for and download & install newer versions of the workflow.
-// There is a concrete implementation and documentation in subpackage "update".
-type Updater interface {
-	UpdateInterval(time.Duration) // Set interval between checks
-	UpdateAvailable() bool        // Return true if a newer version is available
-	CheckDue() bool               // Return true if a check for a newer version is due
-	CheckForUpdate() error        // Retrieve available releases, e.g. from a URL
-	Install() error               // Install the latest version
-}
-
-// Option is a configuration option for Workflow. Pass one or more Options to
-// New() or Workflow.Configure(). An Option returns its inverse (i.e. an Option
-// that restores the previous value).
-type Option func(wf *Workflow) Option
-
-// options wraps multiple Options, allowing the application of their inverse
-// via a single call to options.apply().
-type options []Option
-
-// apply configures Workflow with all options and returns a single Option
-// to reverse all changes.
-func (opts options) apply(wf *Workflow) Option {
-	previous := make(options, len(opts))
-	for i, opt := range opts {
-		previous[i] = wf.Configure(opt)
-	}
-	return previous.apply
-}
-
-// HelpURL sets the link to your issues/page forum thread where users can
-// ask for help. It is shown in the debugger/log if an error occurs
-// ("Get help at http://…").
-func HelpURL(URL string) Option {
-	return func(wf *Workflow) Option {
-		prev := wf.HelpURL
-		ma := &helpMagic{URL}
-		if URL != "" {
-			wf.MagicActions.Register(ma)
-		} else {
-			wf.MagicActions.Unregister(ma)
-		}
-		wf.HelpURL = URL
-		return HelpURL(prev)
-	}
-}
-
-// LogPrefix is the character printed to the debugger at the start of each run.
-// Its purpose is to ensure that the first real log message is shown on its own
-// line. It is only sent to Alfred's debugger, not the log file.
+// Workflow provides a consolidated API for building Script Filters.
 //
-// Default: Purple Heart (\U0001F49C)
-func LogPrefix(prefix string) Option {
-	return func(wf *Workflow) Option {
-		prev := wf.LogPrefix
-		wf.LogPrefix = prefix
-		return LogPrefix(prev)
-	}
-}
-
-// MagicPrefix sets the prefix for "magic" commands.
-// If a user enters this prefix, AwGo takes control of the workflow and
-// shows a list of matching magic commands to the user.
+// As a rule, you should create a Workflow in init or main and call your main
+// entry-point via Workflow.Run(), which catches panics, and logs & shows the
+// error in Alfred.
 //
-// Default: workflow:
-func MagicPrefix(prefix string) Option {
-	return func(wf *Workflow) Option {
-		prev := wf.magicPrefix
-		wf.magicPrefix = prefix
-		return MagicPrefix(prev)
-	}
-}
-
-// MaxLogSize sets the size (in bytes) at which the workflow log is rotated.
-// Default: 1 MiB
-func MaxLogSize(bytes int) Option {
-	return func(wf *Workflow) Option {
-		prev := wf.MaxLogSize
-		wf.MaxLogSize = bytes
-		return MaxLogSize(prev)
-	}
-}
-
-// MaxResults is the maximum number of results to send to Alfred.
-// 0 means send all results.
-// Default: 0
-func MaxResults(num int) Option {
-	return func(wf *Workflow) Option {
-		prev := wf.MaxResults
-		wf.MaxResults = num
-		return MaxResults(prev)
-	}
-}
-
-// TextErrors tells Workflow to print errors as text, not JSON.
-// Set to true if output goes to a Notification.
-func TextErrors(on bool) Option {
-	return func(wf *Workflow) Option {
-		prev := wf.TextErrors
-		wf.TextErrors = on
-		return TextErrors(prev)
-	}
-}
-
-// SortOptions sets the fuzzy sorting options for Workflow.Filter().
-func SortOptions(opts ...fuzzy.Option) Option {
-	return func(wf *Workflow) Option {
-		prev := wf.SortOptions
-		wf.SortOptions = opts
-		return SortOptions(prev...)
-	}
-}
-
-// SuppressUIDs prevents UIDs from being set on feedback Items.
-// This turns off Alfred's knowledge, so items will be shown in the order
-// you add them. Useful if you need a particular item to be the top result,
-// e.g. a notification of an update.
+// Script Filter
 //
-// This setting only applies to Items created *after* it has been set.
-func SuppressUIDs(on bool) Option {
-	return func(wf *Workflow) Option {
-		prev := wf.Feedback.NoUIDs
-		wf.Feedback.NoUIDs = on
-		return SuppressUIDs(prev)
-	}
-}
-
-// Update sets the updater for the Workflow.
-func Update(updater Updater) Option {
-	return func(wf *Workflow) Option {
-		if updater != nil && wf.Version() == "" {
-			panic("can't set Updater as workflow has no version number")
-		}
-		prev := wf.Updater
-		wf.SetUpdater(updater)
-		return Update(prev)
-	}
-}
-
-// AddMagic registers magic actions with the Workflow.
-func AddMagic(actions ...MagicAction) Option {
-	return func(wf *Workflow) Option {
-		for _, action := range actions {
-			wf.MagicActions.Register(action)
-		}
-		return RemoveMagic(actions...)
-	}
-}
-
-// RemoveMagic unregisters magic actions with Workflow.
-func RemoveMagic(actions ...MagicAction) Option {
-	return func(wf *Workflow) Option {
-		for _, action := range actions {
-			delete(wf.MagicActions, action.Keyword())
-		}
-		return AddMagic(actions...)
-	}
-}
-
-// Workflow provides a simple, consolidated API for building Script
-// Filters and talking to Alfred.
+// To generate feedback for a Script Filter, use Workflow.NewItem() to create
+// new Items and Workflow.SendFeedback() to send the results to Alfred.
 //
-// As a rule, you should create a Workflow in main() and call your main
-// entry-point via Workflow.Run(). Use Workflow.NewItem() to create new
-// feedback Items and Workflow.SendFeedback() to send the results to
-// Alfred.
+// Run Script
 //
-// If you don't need to customise Workflow's behaviour in any way, you
-// can use the package-level functions, which call the corresponding
-// methods on the default Workflow object.
+// Use the TextErrors option, so any rescued panics are printed as text,
+// not as JSON.
 //
-// See the examples/ subdirectory for some full examples of workflows.
+// Use ArgVars to set workflow variables, not Workflow/Feedback.
+//
+// See the _examples/ subdirectory for some full examples of workflows.
 type Workflow struct {
 	sync.WaitGroup
-	// The response that will be sent to Alfred. Workflow provides
-	// convenience wrapper methods, so you don't normally have to
-	// interact with this directly.
-	Feedback *Feedback
+	// Interface to workflow's settings.
+	// Reads workflow variables by type and saves new values to info.plist.
+	Config *Config
 
-	// Workflow execution environment. Contains Alfred and workflow parameters
-	// extracted from the environment variables exported by Alfred.
-	// See Context for documentation.
-	Ctx *Context
-
-	// HelpURL is a link to your issues page/forum thread where users can
-	// report bugs. It is shown in the debugger if the workflow crashes.
-	HelpURL string
-
-	// LogPrefix is the character printed to the log at the start of each run.
-	// Its purpose is to ensure the first real log message starts on its own line,
-	// instead of sharing a line with Alfred's blurb in the debugger. This is only
-	// printed to STDERR (i.e. Alfred's debugger), not written to the log file.
-	// Default: Purple Heart (\U0001F49C)
-	LogPrefix string
-
-	// MaxLogSize is the size (in bytes) at which the workflow log is rotated.
-	// Default: 1 MiB
-	MaxLogSize int
-
-	// MaxResults is the maximum number of results to send to Alfred.
-	// 0 means send all results.
-	// Default: 0
-	MaxResults int
-
-	// SortOptions are options for fuzzy sorting.
-	SortOptions []fuzzy.Option
-
-	// TextErrors tells Workflow to print errors as text, not JSON
-	// Set to true if output goes to a Notification.
-	TextErrors bool
+	// Call Alfred's AppleScript functions.
+	Alfred *Alfred
 
 	// Cache is a Cache pointing to the workflow's cache directory.
 	Cache *Cache
@@ -263,45 +86,74 @@ type Workflow struct {
 	// persist until the user closes Alfred or runs a different workflow.
 	Session *Session
 
-	// debug is set from Alfred's `alfred_debug` environment variable.
-	debug bool
-
-	// version is a semantic version set by user or read from environment variable.
-	version string
+	// The response that will be sent to Alfred. Workflow provides
+	// convenience wrapper methods, so you don't normally have to
+	// interact with this directly.
+	Feedback *Feedback
 
 	// Updater fetches updates for the workflow.
 	Updater Updater
 
-	magicPrefix string // Overrides DefaultMagicPrefix for magic actions.
 	// MagicActions contains the magic actions registered for this workflow.
 	// It is set to DefaultMagicActions by default.
-	MagicActions MagicActions
+	MagicActions *MagicActions
 
-	// Set from environment
-	bundleID    string
-	name        string
-	cacheDir    string
-	dataDir     string
-	workflowDir string
-	sessionID   string
+	logPrefix   string         // Written to debugger to force a newline
+	maxLogSize  int            // Maximum size of log file in bytes
+	magicPrefix string         // Overrides DefaultMagicPrefix for magic actions.
+	maxResults  int            // max. results to send to Alfred. 0 means send all.
+	sortOptions []fuzzy.Option // Options for fuzzy filtering
+	textErrors  bool           // Show errors as plaintext, not Alfred JSON
+	helpURL     string         // URL to help page (shown if there's an error)
+	dir         string         // Directory workflow is in
+	cacheDir    string         // Workflow's cache directory
+	dataDir     string         // Workflow's data directory
+	sessionName string         // Name of the variable sessionID is stored in
+	sessionID   string         // Random session ID
 }
 
-// New creates and initialises a new Workflow, passing any Options to Workflow.Configure().
+// New creates and initialises a new Workflow, passing any Options to
+// Workflow.Configure().
 //
 // For available options, see the documentation for the Option type and the
 // following functions.
-func New(opts ...Option) *Workflow {
-	wf := &Workflow{
-		Ctx:          NewContext(),
-		Feedback:     &Feedback{},
-		LogPrefix:    "\U0001F49C", // Purple heart
-		MaxLogSize:   1048576,      // 1 MiB
-		MaxResults:   0,            // Send all results to Alfred
-		MagicActions: MagicActions{},
-		SortOptions:  []fuzzy.Option{},
+//
+// IMPORTANT: In order to be able to initialise the Workflow correctly,
+// New must be run within a valid Alfred environment; specifically
+// *at least* the following environment variables must be set:
+//
+//     alfred_workflow_bundleid
+//     alfred_workflow_cache
+//     alfred_workflow_data
+//
+// If you aren't running from Alfred, or would like to specify a
+// custom environment, use NewFromEnv().
+func New(opts ...Option) *Workflow { return NewFromEnv(nil, opts...) }
+
+// NewFromEnv creates a new Workflows from a custom Env, instead of
+// reading its configuration from Alfred's environment variables.
+func NewFromEnv(env Env, opts ...Option) *Workflow {
+
+	if env == nil {
+		env = sysEnv{}
 	}
 
-	wf.MagicActions.Register(DefaultMagicActions...)
+	if err := validateEnv(env); err != nil {
+		panic(err)
+	}
+
+	wf := &Workflow{
+		Config:      NewConfig(env),
+		Alfred:      NewAlfred(env),
+		Feedback:    &Feedback{},
+		logPrefix:   DefaultLogPrefix,
+		maxLogSize:  DefaultMaxLogSize,
+		maxResults:  DefaultMaxResults,
+		sessionName: DefaultSessionName,
+		sortOptions: []fuzzy.Option{},
+	}
+
+	wf.MagicActions = defaultMagicActions(wf)
 
 	wf.Configure(opts...)
 
@@ -317,7 +169,6 @@ func New(opts ...Option) *Workflow {
 
 // Configure applies one or more Options to Workflow. The returned Option reverts
 // all Options passed to Configure.
-func Configure(opts ...Option) (previous Option) { return wf.Configure(opts...) }
 func (wf *Workflow) Configure(opts ...Option) (previous Option) {
 	prev := make(options, len(opts))
 	for i, opt := range opts {
@@ -337,11 +188,14 @@ func (wf *Workflow) initializeLogging() {
 	// Rotate log file if larger than MaxLogSize
 	fi, err := os.Stat(wf.LogFile())
 	if err == nil {
-		if fi.Size() >= int64(wf.MaxLogSize) {
+
+		if fi.Size() >= int64(wf.maxLogSize) {
+
 			new := wf.LogFile() + ".1"
 			if err := os.Rename(wf.LogFile(), new); err != nil {
-				fmt.Fprintf(os.Stderr, "Error rotating log: %v", err)
+				fmt.Fprintf(os.Stderr, "Error rotating log: %v\n", err)
 			}
+
 			fmt.Fprintln(os.Stderr, "Rotated log")
 		}
 	}
@@ -349,6 +203,7 @@ func (wf *Workflow) initializeLogging() {
 	// Open log file
 	file, err := os.OpenFile(wf.LogFile(),
 		os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
+
 	if err != nil {
 		wf.Fatal(fmt.Sprintf("Couldn't open log file %s : %v",
 			wf.LogFile(), err))
@@ -357,8 +212,9 @@ func (wf *Workflow) initializeLogging() {
 	// Attach logger to file
 	multi := io.MultiWriter(file, os.Stderr)
 	log.SetOutput(multi)
-	// log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
-	if wf.Ctx.Debug {
+
+	// Show filenames and line numbers if Alfred's debugger is open
+	if wf.Debug() {
 		log.SetFlags(log.Ltime | log.Lshortfile)
 	} else {
 		log.SetFlags(log.Ltime)
@@ -370,53 +226,55 @@ func (wf *Workflow) initializeLogging() {
 // --------------------------------------------------------------------
 // API methods
 
-// Debug returns true if Alfred's debugger is open.
-func Debug() bool                { return wf.debug }
-func (wf *Workflow) Debug() bool { return wf.debug }
-
 // BundleID returns the workflow's bundle ID. This library will not
 // work without a bundle ID, which is set in the workflow's main
 // setup sheet in Alfred Preferences.
-func BundleID() string { return wf.BundleID() }
 func (wf *Workflow) BundleID() string {
-	if wf.Ctx.BundleID == "" {
+
+	s := wf.Config.Get(EnvVarBundleID)
+	if s == "" {
 		wf.Fatal("No bundle ID set. You *must* set a bundle ID to use AwGo.")
 	}
-	return wf.Ctx.BundleID
+	return s
 }
 
 // Name returns the workflow's name as specified in the workflow's main
 // setup sheet in Alfred Preferences.
-func Name() string                { return wf.Name() }
-func (wf *Workflow) Name() string { return wf.Ctx.Name }
+func (wf *Workflow) Name() string { return wf.Config.Get(EnvVarName) }
 
 // Version returns the workflow's version set in the workflow's configuration
 // sheet in Alfred Preferences.
-func Version() string                { return wf.Version() }
-func (wf *Workflow) Version() string { return wf.Ctx.WorkflowVersion }
+func (wf *Workflow) Version() string { return wf.Config.Get(EnvVarVersion) }
 
-// SetVersion sets the workflow's version string.
-func SetVersion(v string)                { wf.SetVersion(v) }
-func (wf *Workflow) SetVersion(v string) { wf.version = v }
+// SessionID returns the session ID for this run of the workflow.
+// This is used internally for session-scoped caching.
+//
+// The session ID is persisted as a workflow variable. It and the session
+// persist as long as the user is using the workflow in Alfred. That
+// means that the session expires as soon as Alfred closes or the user
+// runs a different workflow.
+func (wf *Workflow) SessionID() string {
 
-// Dir returns the path to the workflow's root directory.
-func Dir() string { return wf.Dir() }
-func (wf *Workflow) Dir() string {
-	if wf.workflowDir == "" {
-		dir, err := util.FindWorkflowRoot()
-		if err != nil {
-			panic(err)
-			// wf.FatalError(err)
+	if wf.sessionID == "" {
+
+		ev := os.Getenv(wf.sessionName)
+
+		if ev != "" {
+			wf.sessionID = ev
+		} else {
+			wf.sessionID = NewSessionID()
 		}
-		wf.workflowDir = dir
 	}
-	return wf.workflowDir
+
+	return wf.sessionID
 }
+
+// Debug returns true if Alfred's debugger is open.
+func (wf *Workflow) Debug() bool { return wf.Config.GetBool(EnvVarDebug) }
 
 // Args returns command-line arguments passed to the program.
 // It intercepts "magic args" and runs the corresponding actions, terminating
-// the workflow.
-// See MagicAction for full documentation.
+// the workflow. See MagicAction for full documentation.
 func (wf *Workflow) Args() []string {
 	prefix := DefaultMagicPrefix
 	if wf.magicPrefix != "" {
@@ -425,192 +283,24 @@ func (wf *Workflow) Args() []string {
 	return wf.MagicActions.Args(os.Args[1:], prefix)
 }
 
-// --------------------------------------------------------------------
-// Cache & Data
-
-// CacheDir returns the path to the workflow's cache directory.
-// The directory will be created if it does not already exist.
-func CacheDir() string { return wf.CacheDir() }
-func (wf *Workflow) CacheDir() string {
-	if wf.cacheDir == "" { // Really old version of Alfred with no envvars?
-		wf.cacheDir = os.ExpandEnv(fmt.Sprintf(
-			"$HOME/Library/Caches/com.runningwithcrayons.Alfred-3/Workflow Data/%s",
-			wf.BundleID()))
-	}
-	return util.MustExist(wf.cacheDir)
-}
-
-// OpenCache opens the workflow's cache directory in the default application (usually Finder).
-func OpenCache() error { return wf.OpenCache() }
-func (wf *Workflow) OpenCache() error {
-	util.MustExist(wf.DataDir())
-	cmd := exec.Command("open", wf.CacheDir())
-	return cmd.Run()
-}
-
-// ClearCache deletes all files from the workflow's cache directory.
-func ClearCache() error { return wf.ClearCache() }
-func (wf *Workflow) ClearCache() error {
-	return util.ClearDirectory(wf.CacheDir())
-}
-
-// DataDir returns the path to the workflow's data directory.
-// The directory will be created if it does not already exist.
-func DataDir() string { return wf.DataDir() }
-func (wf *Workflow) DataDir() string {
-	if wf.dataDir == "" { // Really old version of Alfred with no envvars?
-		wf.dataDir = os.ExpandEnv(fmt.Sprintf(
-			"$HOME/Library/Application Support/Alfred 3/Workflow Data/%s",
-			wf.BundleID()))
-	}
-	return util.MustExist(wf.dataDir)
-}
-
-// OpenData opens the workflow's data directory in the default application (usually Finder).
-func OpenData() error { return wf.OpenData() }
-func (wf *Workflow) OpenData() error {
-	cmd := exec.Command("open", wf.DataDir())
-	return cmd.Run()
-}
-
-// ClearData deletes all files from the workflow's cache directory.
-func ClearData() error { return wf.ClearData() }
-func (wf *Workflow) ClearData() error {
-	return util.ClearDirectory(wf.DataDir())
-}
-
-// SessionID returns the session ID for this run of the workflow. This is used
-// internally for session-scoped caching.
-func SessionID() string { return wf.SessionID() }
-func (wf *Workflow) SessionID() string {
-	if wf.sessionID == "" {
-		ev := os.Getenv("AW_SESSION_ID")
-		if ev != "" {
-			wf.sessionID = ev
-		} else {
-			wf.sessionID = NewSessionID()
-		}
-	}
-	return wf.sessionID
-}
-
-// Reset deletes all workflow data (cache and data directories).
-func Reset() error { return wf.Reset() }
-func (wf *Workflow) Reset() error {
-	errs := []error{}
-	if err := wf.ClearCache(); err != nil {
-		errs = append(errs, err)
-	}
-	if err := wf.ClearData(); err != nil {
-		errs = append(errs, err)
-	}
-	if len(errs) > 0 {
-		return errs[0]
-	}
-	return nil
-}
-
-// LogFile returns the path to the workflow's log file.
-func LogFile() string { return wf.LogFile() }
-func (wf *Workflow) LogFile() string {
-	return filepath.Join(wf.CacheDir(), fmt.Sprintf("%s.log", wf.BundleID()))
-}
-
-// OpenLog opens the workflow's logfile in the default application (usually Console.app).
-func OpenLog() error { return wf.OpenLog() }
-func (wf *Workflow) OpenLog() error {
-	if !util.PathExists(wf.LogFile()) {
-		log.Println("Creating log file...")
-	}
-	cmd := exec.Command("open", wf.LogFile())
-	return cmd.Run()
-}
-
-func OpenHelp() error { return wf.OpenHelp() }
-func (wf *Workflow) OpenHelp() error {
-	if wf.HelpURL == "" {
-		return errors.New("Help URL is not set")
-	}
-	cmd := exec.Command("open", wf.HelpURL)
-	return cmd.Run()
-}
-
-// --------------------------------------------------------------------
-// Feedback
-
-// Rerun tells Alfred to re-run the Script Filter after `secs` seconds.
-func Rerun(secs float64) *Workflow { return wf.Rerun(secs) }
-func (wf *Workflow) Rerun(secs float64) *Workflow {
-	wf.Feedback.Rerun(secs)
-	return wf
-}
-
-// Vars returns the workflow variables set on Workflow.Feedback.
-// See Feedback.Vars() for more information.
-func Vars() map[string]string { return wf.Vars() }
-func (wf *Workflow) Vars() map[string]string {
-	return wf.Feedback.Vars()
-}
-
-// Var sets the value of workflow variable k on Workflow.Feedback to v.
-// See Feedback.Var() for more information.
-func Var(k, v string) *Workflow { return wf.Var(k, v) }
-func (wf *Workflow) Var(k, v string) *Workflow {
-	wf.Feedback.Var(k, v)
-	return wf
-}
-
-// NewItem adds and returns a new feedback Item.
-// See Feedback.NewItem() for more information.
-func NewItem(title string) *Item { return wf.NewItem(title) }
-func (wf *Workflow) NewItem(title string) *Item {
-	return wf.Feedback.NewItem(title)
-}
-
-// NewFileItem adds and returns a new feedback Item pre-populated from path.
-// See Feedback.NewFileItem() for more information.
-func NewFileItem(path string) *Item { return wf.NewFileItem(path) }
-func (wf *Workflow) NewFileItem(path string) *Item {
-	return wf.Feedback.NewFileItem(path)
-}
-
-// NewWarningItem adds and returns a new Feedback Item with the system
-// warning icon (exclamation mark on yellow triangle).
-func NewWarningItem(title, subtitle string) *Item { return wf.NewWarningItem(title, subtitle) }
-func (wf *Workflow) NewWarningItem(title, subtitle string) *Item {
-	return wf.Feedback.NewItem(title).
-		Subtitle(subtitle).
-		Icon(IconWarning)
-}
-
-// IsEmpty returns true if Workflow contains no items.
-func IsEmpty() bool                { return wf.IsEmpty() }
-func (wf *Workflow) IsEmpty() bool { return len(wf.Feedback.Items) == 0 }
-
-// Filter fuzzy-sorts feedback Items against query and deletes Items that don't match.
-func Filter(query string) []*fuzzy.Result { return wf.Filter(query) }
-func (wf *Workflow) Filter(query string) []*fuzzy.Result {
-	return wf.Feedback.Filter(query, wf.SortOptions...)
-}
-
 // Run runs your workflow function, catching any errors.
-// If the workflow panics, Run rescues and displays an error
-// message in Alfred.
-func Run(fn func()) { wf.Run(fn) }
+// If the workflow panics, Run rescues and displays an error message in Alfred.
 func (wf *Workflow) Run(fn func()) {
-	var vstr string
+
+	vstr := wf.Name()
+
 	if wf.Version() != "" {
-		vstr = fmt.Sprintf("%s/%v", wf.Name(), wf.Version())
-	} else {
-		vstr = wf.Name()
+		vstr += "/" + wf.Version()
 	}
+
 	vstr = fmt.Sprintf(" %s (AwGo/%v) ", vstr, AwGoVersion)
 
 	// Print right after Alfred's introductory blurb in the debugger.
 	// Alfred strips whitespace.
-	if wf.LogPrefix != "" {
-		fmt.Fprintln(os.Stderr, wf.LogPrefix)
+	if wf.logPrefix != "" {
+		fmt.Fprintln(os.Stderr, wf.logPrefix)
 	}
+
 	log.Println(util.Pad(vstr, "-", 50))
 
 	// Clear expired session data
@@ -623,15 +313,19 @@ func (wf *Workflow) Run(fn func()) {
 	// Catch any `panic` and display an error in Alfred.
 	// Fatal(msg) will terminate the process (via log.Fatal).
 	defer func() {
+
 		if r := recover(); r != nil {
+
 			log.Println(util.Pad(" FATAL ERROR ", "-", 50))
 			log.Printf("%s : %s", r, debug.Stack())
 			log.Println(util.Pad(" END STACK TRACE ", "-", 50))
+
 			// log.Printf("Recovered : %x", r)
 			err, ok := r.(error)
 			if ok {
 				wf.outputErrorMsg(err.Error())
 			}
+
 			wf.outputErrorMsg(fmt.Sprintf("%v", r))
 		}
 	}()
@@ -643,114 +337,12 @@ func (wf *Workflow) Run(fn func()) {
 	finishLog(false)
 }
 
-// FatalError displays an error message in Alfred, then calls log.Fatal(),
-// terminating the workflow.
-func FatalError(err error)                { wf.FatalError(err) }
-func (wf *Workflow) FatalError(err error) { wf.Fatal(err.Error()) }
-
-// Fatal displays an error message in Alfred, then calls log.Fatal(),
-// terminating the workflow.
-func Fatal(msg string)                { wf.Fatal(msg) }
-func (wf *Workflow) Fatal(msg string) { wf.outputErrorMsg(msg) }
-
-// Fatalf displays an error message in Alfred, then calls log.Fatal(),
-// terminating the workflow.
-func Fatalf(format string, args ...interface{}) { wf.Fatalf(format, args...) }
-func (wf *Workflow) Fatalf(format string, args ...interface{}) {
-	wf.Fatal(fmt.Sprintf(format, args...))
-}
-
-// Warn displays a warning message in Alfred immediately. Unlike
-// FatalError()/Fatal(), this does not terminate the workflow,
-// but you can't send any more results to Alfred.
-func Warn(title, subtitle string) *Workflow { return wf.Warn(title, subtitle) }
-func (wf *Workflow) Warn(title, subtitle string) *Workflow {
-	wf.Feedback.Clear()
-	wf.NewItem(title).
-		Subtitle(subtitle).
-		Icon(IconWarning)
-	return wf.SendFeedback()
-}
-
-// WarnEmpty adds a warning item to feedback if there are no other items.
-func WarnEmpty(title, subtitle string) { wf.WarnEmpty(title, subtitle) }
-func (wf *Workflow) WarnEmpty(title, subtitle string) {
-	if wf.IsEmpty() {
-		wf.Warn(title, subtitle)
-	}
-}
-
-// SendFeedback generates and sends the JSON response to Alfred.
-// The JSON is output to STDOUT. At this point, Alfred considers your
-// workflow complete; sending further responses will have no effect.
-func SendFeedback() { wf.SendFeedback() }
-func (wf *Workflow) SendFeedback() *Workflow {
-	// Set session ID
-	wf.Var("AW_SESSION_ID", wf.SessionID())
-	// Truncate Items if MaxResults is set
-	if wf.MaxResults > 0 && len(wf.Feedback.Items) > wf.MaxResults {
-		wf.Feedback.Items = wf.Feedback.Items[0:wf.MaxResults]
-	}
-	if err := wf.Feedback.Send(); err != nil {
-		log.Fatalf("Error generating JSON : %v", err)
-	}
-	return wf
-}
-
-// --------------------------------------------------------------------
-// Updating
-
-// SetUpdater sets an updater for the workflow.
-func SetUpdater(u Updater) { wf.SetUpdater(u) }
-func (wf *Workflow) SetUpdater(u Updater) {
-	wf.Updater = u
-	wf.MagicActions.Register(&updateMagic{wf.Updater})
-}
-
-// UpdateCheckDue returns true if an update is available.
-func UpdateCheckDue() bool { return wf.UpdateCheckDue() }
-func (wf *Workflow) UpdateCheckDue() bool {
-	if wf.Updater == nil {
-		log.Println("No updater configured")
-		return false
-	}
-	return wf.Updater.CheckDue()
-}
-
-// CheckForUpdate retrieves and caches the list of available releases.
-func CheckForUpdate() error { return wf.CheckForUpdate() }
-func (wf *Workflow) CheckForUpdate() error {
-	if wf.Updater == nil {
-		return errors.New("No updater configured")
-	}
-	return wf.Updater.CheckForUpdate()
-}
-
-// UpdateAvailable returns true if a newer version is available to install.
-func UpdateAvailable() bool { return wf.UpdateAvailable() }
-func (wf *Workflow) UpdateAvailable() bool {
-	if wf.Updater == nil {
-		log.Println("No updater configured")
-		return false
-	}
-	return wf.Updater.UpdateAvailable()
-}
-
-// InstallUpdate downloads and installs the latest version of the workflow.
-func InstallUpdate() error { return wf.InstallUpdate() }
-func (wf *Workflow) InstallUpdate() error {
-	if wf.Updater == nil {
-		return errors.New("No updater configured")
-	}
-	return wf.Updater.Install()
-}
-
 // --------------------------------------------------------------------
 // Helper methods
 
 // outputErrorMsg prints and logs error, then exits process.
 func (wf *Workflow) outputErrorMsg(msg string) {
-	if wf.TextErrors {
+	if wf.textErrors {
 		fmt.Print(msg)
 	} else {
 		wf.Feedback.Clear()
@@ -759,20 +351,18 @@ func (wf *Workflow) outputErrorMsg(msg string) {
 	}
 	log.Printf("[ERROR] %s", msg)
 	// Show help URL or website URL
-	if wf.HelpURL != "" {
-		log.Printf("Get help at %s", wf.HelpURL)
+	if wf.helpURL != "" {
+		log.Printf("Get help at %s", wf.helpURL)
 	}
 	finishLog(true)
 }
 
 // awDataDir is the directory for AwGo's own data.
-func awDataDir() string { return wf.awDataDir() }
 func (wf *Workflow) awDataDir() string {
 	return util.MustExist(filepath.Join(wf.DataDir(), "_aw"))
 }
 
 // awCacheDir is the directory for AwGo's own cache.
-func awCacheDir() string { return wf.awCacheDir() }
 func (wf *Workflow) awCacheDir() string {
 	return util.MustExist(filepath.Join(wf.CacheDir(), "_aw"))
 }
@@ -782,19 +372,13 @@ func (wf *Workflow) awCacheDir() string {
 
 // finishLog outputs the workflow duration
 func finishLog(fatal bool) {
+
 	elapsed := time.Now().Sub(startTime)
-	s := util.Pad(fmt.Sprintf(" %s ", util.HumanDuration(elapsed)), "-", 50)
+	s := util.Pad(fmt.Sprintf(" %v ", elapsed), "-", 50)
+
 	if fatal {
 		log.Fatalln(s)
 	} else {
 		log.Println(s)
 	}
 }
-
-// DefaultWorkflow returns the Workflow object used by the
-// package-level functions.
-func DefaultWorkflow() *Workflow { return wf }
-
-// SetDefaultWorkflow changes the Workflow object used by the
-// package-level functions.
-func SetDefaultWorkflow(w *Workflow) { wf = w }

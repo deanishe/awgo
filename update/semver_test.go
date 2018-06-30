@@ -144,33 +144,33 @@ func TestComparisonV(t *testing.T) {
 			t.Fatalf("Failed comparison %q vs %q. Expected=%d, Got=%d", v1, v1, td.r, r)
 		}
 		if td.r == 0 {
-			if !v1.EQ(v2) {
+			if !v1.Eq(v2) {
 				t.Fatalf("[EQ] Did not compare as equal: %q %q", v1, v2)
 			}
-			if !v1.GTE(v2) {
+			if !v1.Gte(v2) {
 				t.Fatalf("[GTE] Did not compare as equal: %q %q", v1, v2)
 			}
-			if !v1.LTE(v2) {
+			if !v1.Lte(v2) {
 				t.Fatalf("[LTE] Did not compare as equal: %q %q", v1, v2)
 			}
 		} else if td.r == 1 {
-			if v1.EQ(v2) {
+			if v1.Eq(v2) {
 				t.Fatalf("[EQ] Compared as equal: %q %q", v1, v2)
 			}
-			if !v1.GTE(v2) {
+			if !v1.Gte(v2) {
 				t.Fatalf("[GTE] Did not compare as greater: %q %q", v1, v2)
 			}
-			if v1.LTE(v2) {
+			if v1.Lte(v2) {
 				t.Fatalf("[LTE] Compared as LTE: %q %q", v1, v2)
 			}
 		} else if td.r == -1 {
-			if v1.EQ(v2) {
+			if v1.Eq(v2) {
 				t.Fatalf("[EQ] Compared as equal: %q %q", v1, v2)
 			}
-			if v1.GTE(v2) {
+			if v1.Gte(v2) {
 				t.Fatalf("[GTE] Compared as GTE: %q %q", v1, v2)
 			}
-			if !v1.LTE(v2) {
+			if !v1.Lte(v2) {
 				t.Fatalf("[LTE] Did not compare as LTE: %q %q", v1, v2)
 			}
 		}

@@ -23,7 +23,14 @@ var (
 	bookmarksPath = os.ExpandEnv("$HOME/Library/Safari/Bookmarks.plist")
 )
 
-// Bookmarks is a slice of Bookmark structs that implements fuzzy.Interface.
+// Bookmark is a Safari bookmark.
+type Bookmark struct {
+	Title  string // Bookmark title
+	Domain string // Domain of URL
+	URL    string // Bookmark URL
+}
+
+// Bookmarks is a slice of Bookmark structs that implements fuzzy.Sortable.
 type Bookmarks []*Bookmark
 
 // Implement sort.Interface.
@@ -31,9 +38,9 @@ func (b Bookmarks) Len() int           { return len(b) }
 func (b Bookmarks) Swap(i, j int)      { b[i], b[j] = b[j], b[i] }
 func (b Bookmarks) Less(i, j int) bool { return b[i].Title < b[j].Title }
 
-// SortKey implements fuzzy.Interface. It sets the search keywords to the
+// Keywords implements fuzzy.Sortable. It sets the search keywords to the
 // title of the bookmark plus the URL domain.
-func (b Bookmarks) SortKey(i int) string {
+func (b Bookmarks) Keywords(i int) string {
 	return fmt.Sprintf("%s %s", b[i].Title, b[i].Domain)
 }
 
@@ -49,13 +56,6 @@ func (b Bookmarks) Filter(query string) Bookmarks {
 		hits = append(hits, b[i])
 	}
 	return hits
-}
-
-// Bookmark is a Safari bookmark.
-type Bookmark struct {
-	Title  string // Bookmark title
-	Domain string // Domain of URL
-	URL    string // Bookmark URL
 }
 
 // entry is a node in Safari's Bookmarks.plist file. This struct matches all

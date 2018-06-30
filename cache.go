@@ -46,15 +46,14 @@ type Cache struct {
 }
 
 // NewCache creates a new Cache using given directory.
-// Directory dir is created if it doesn't exist. The function will panic
-// if directory can't be created.
+// Directory is created if it doesn't exist. Panics if directory can't be created.
 func NewCache(dir string) *Cache {
 	util.MustExist(dir)
 	return &Cache{dir}
 }
 
 // Store saves data under the given name. If data is nil, the file is deleted.
-func (c *Cache) Store(name string, data []byte) error {
+func (c Cache) Store(name string, data []byte) error {
 	p := c.path(name)
 	if data == nil {
 		if util.PathExists(p) {
@@ -67,7 +66,7 @@ func (c *Cache) Store(name string, data []byte) error {
 
 // StoreJSON serialises v to JSON and saves it to the cache. If v is nil,
 // the cache is deleted.
-func (c *Cache) StoreJSON(name string, v interface{}) error {
+func (c Cache) StoreJSON(name string, v interface{}) error {
 	p := c.path(name)
 	if v == nil {
 		if util.PathExists(p) {
@@ -83,7 +82,7 @@ func (c *Cache) StoreJSON(name string, v interface{}) error {
 }
 
 // Load reads data saved under given name.
-func (c *Cache) Load(name string) ([]byte, error) {
+func (c Cache) Load(name string) ([]byte, error) {
 	p := c.path(name)
 	if _, err := os.Stat(p); err != nil {
 		return nil, err
@@ -92,7 +91,7 @@ func (c *Cache) Load(name string) ([]byte, error) {
 }
 
 // LoadJSON unmarshals a cache into v.
-func (c *Cache) LoadJSON(name string, v interface{}) error {
+func (c Cache) LoadJSON(name string, v interface{}) error {
 	p := c.path(name)
 	data, err := ioutil.ReadFile(p)
 	if err != nil {
@@ -106,7 +105,7 @@ func (c *Cache) LoadJSON(name string, v interface{}) error {
 // data are cached & returned.
 //
 // If maxAge is 0, any cached data are always returned.
-func (c *Cache) LoadOrStore(name string, maxAge time.Duration, reload func() ([]byte, error)) ([]byte, error) {
+func (c Cache) LoadOrStore(name string, maxAge time.Duration, reload func() ([]byte, error)) ([]byte, error) {
 	var load bool
 	age, err := c.Age(name)
 	if err != nil {
@@ -134,7 +133,7 @@ func (c *Cache) LoadOrStore(name string, maxAge time.Duration, reload func() ([]
 // unmarshalled into v.
 //
 // If maxAge is 0, any cached data are loaded regardless of age.
-func (c *Cache) LoadOrStoreJSON(name string, maxAge time.Duration, reload func() (interface{}, error), v interface{}) error {
+func (c Cache) LoadOrStoreJSON(name string, maxAge time.Duration, reload func() (interface{}, error), v interface{}) error {
 	var (
 		load bool
 		data []byte
@@ -170,10 +169,10 @@ func (c *Cache) LoadOrStoreJSON(name string, maxAge time.Duration, reload func()
 }
 
 // Exists returns true if the named cache exists.
-func (c *Cache) Exists(name string) bool { return util.PathExists(c.path(name)) }
+func (c Cache) Exists(name string) bool { return util.PathExists(c.path(name)) }
 
 // Expired returns true if the named cache does not exist or is older than maxAge.
-func (c *Cache) Expired(name string, maxAge time.Duration) bool {
+func (c Cache) Expired(name string, maxAge time.Duration) bool {
 	age, err := c.Age(name)
 	if err != nil {
 		return true
@@ -182,7 +181,7 @@ func (c *Cache) Expired(name string, maxAge time.Duration) bool {
 }
 
 // Age returns the age of the data cached at name.
-func (c *Cache) Age(name string) (time.Duration, error) {
+func (c Cache) Age(name string) (time.Duration, error) {
 	p := c.path(name)
 	fi, err := os.Stat(p)
 	if err != nil {
@@ -192,7 +191,7 @@ func (c *Cache) Age(name string) (time.Duration, error) {
 }
 
 // path returns the path to a named file within cache directory.
-func (c *Cache) path(name string) string { return filepath.Join(c.Dir, name) }
+func (c Cache) path(name string) string { return filepath.Join(c.Dir, name) }
 
 // Session is a Cache that is tied to the `sessionID` value passed to NewSession().
 //
@@ -234,7 +233,7 @@ func NewSessionID() string {
 
 // Clear removes session-scoped cache data. If current is true, it also removes
 // data cached for the current session.
-func (s *Session) Clear(current bool) error {
+func (s Session) Clear(current bool) error {
 	prefix := sessionPrefix + "."
 	curPrefix := fmt.Sprintf("%s.%s.", sessionPrefix, s.SessionID)
 
@@ -258,23 +257,23 @@ func (s *Session) Clear(current bool) error {
 
 // Store saves data under the given name. If len(data) is 0, the file is
 // deleted.
-func (s *Session) Store(name string, data []byte) error {
+func (s Session) Store(name string, data []byte) error {
 	return s.cache.Store(s.name(name), data)
 }
 
 // StoreJSON serialises v to JSON and saves it to the cache. If v is nil,
 // the cache is deleted.
-func (s *Session) StoreJSON(name string, v interface{}) error {
+func (s Session) StoreJSON(name string, v interface{}) error {
 	return s.cache.StoreJSON(s.name(name), v)
 }
 
 // Load reads data saved under given name.
-func (s *Session) Load(name string) ([]byte, error) {
+func (s Session) Load(name string) ([]byte, error) {
 	return s.cache.Load(s.name(name))
 }
 
 // LoadJSON unmarshals a cache into v.
-func (s *Session) LoadJSON(name string, v interface{}) error {
+func (s Session) LoadJSON(name string, v interface{}) error {
 	return s.cache.LoadJSON(s.name(name), v)
 }
 
@@ -282,23 +281,23 @@ func (s *Session) LoadJSON(name string, v interface{}) error {
 // reload is called, and the resulting data are cached & returned.
 //
 // If maxAge is 0, any cached data are always returned.
-func (s *Session) LoadOrStore(name string, reload func() ([]byte, error)) ([]byte, error) {
+func (s Session) LoadOrStore(name string, reload func() ([]byte, error)) ([]byte, error) {
 	return s.cache.LoadOrStore(s.name(name), 0, reload)
 }
 
 // LoadOrStoreJSON loads JSON-serialised data from cache if they exist.
 // If the data do not exist, reload is called, and the resulting interface{}
 // is cached and returned.
-func (s *Session) LoadOrStoreJSON(name string, reload func() (interface{}, error), v interface{}) error {
+func (s Session) LoadOrStoreJSON(name string, reload func() (interface{}, error), v interface{}) error {
 	return s.cache.LoadOrStoreJSON(s.name(name), 0, reload, v)
 }
 
 // Exists returns true if the named cache exists.
-func (s *Session) Exists(name string) bool {
+func (s Session) Exists(name string) bool {
 	return s.cache.Exists(s.name(name))
 }
 
 // name prefixes name with session prefix and session ID.
-func (s *Session) name(name string) string {
+func (s Session) name(name string) string {
 	return fmt.Sprintf("%s.%s.%s", sessionPrefix, s.SessionID, name)
 }

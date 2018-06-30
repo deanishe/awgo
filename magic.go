@@ -16,66 +16,173 @@ import (
 	"strings"
 )
 
-// DefaultMagicPrefix is the default prefix for "magic" arguments.
-// This can be overriden with the MagicPrefix value in Options.
-const DefaultMagicPrefix = "workflow:"
-
-// Magic actions registered by default.
-var (
-	DefaultMagicActions = []MagicAction{
-		openLogMagic{},    // Opens log file
-		openCacheMagic{},  // Opens cache directory
-		clearCacheMagic{}, // Clears cache directory
-		openDataMagic{},   // Opens data directory
-		clearDataMagic{},  // Clears data directory
-		resetMagic{},      // Clears cache and data directories
+// defaultMagicActions creates a MagicActions with the default actions
+// already registered.
+func defaultMagicActions(wf *Workflow) *MagicActions {
+	ma := &MagicActions{
+		actions: map[string]MagicAction{},
+		wf:      wf,
 	}
-)
+	ma.Register(
+		logMA{wf},
+		cacheMA{wf},
+		clearCacheMA{wf},
+		dataMA{wf},
+		clearDataMA{wf},
+		resetMA{wf},
+	)
+	return ma
+}
+
+/*
+MagicAction is a command that is called directly by AwGo (i.e.  your workflow
+code is not run) if its keyword is passed in a user query.
+
+To use Magic Actions, it's imperative that your workflow call
+Args()/Workflow.Args().
+
+Calls to Args()/Workflow.Args() check the workflow's arguments (os.Args[1:])
+for the magic prefix ("workflow:" by default), and hijack control
+of the workflow if found.
+
+If an exact keyword match is found (e.g. "workflow:log"), the corresponding
+action is executed, and the workflow exits.
+
+If no exact match is found, AwGo runs a Script Filter for the user to
+select an action. Hitting TAB or RETURN on an item will run it.
+
+Magic Actions are mainly aimed at making debugging and supporting users easier
+(via the built-in actions), but they also provide a simple way to integrate
+your own commands that don't need a "real" UI.
+
+For example, setting an Updater on Workflow adds an "update" command that
+checks for & installs a new version of the workflow.
+
+
+Defaults
+
+There are several built-in magic actions, which are registered by
+default:
+
+	<prefix>log         Open workflow's log file in the default app (usually
+	                    Console).
+	<prefix>data        Open workflow's data directory in the default app
+	                    (usually Finder).
+	<prefix>cache       Open workflow's data directory in the default app
+	                    (usually Finder).
+	<prefix>deldata     Delete everything in the workflow's data directory.
+	<prefix>delcache    Delete everything in the workflow's cache directory.
+	<prefix>reset       Delete everything in the workflow's data and cache directories.
+	<prefix>help        Open help URL in default browser.
+	                    Only registered if you have set a HelpURL.
+	<prefix>update      Check for updates and install a newer version of the
+	                    workflow if available.
+	                    Only registered if you have configured an Updater.
+
+
+Custom Actions
+
+To add custom MagicActions, you must register them with your Workflow
+*before* you call Workflow.Args()
+
+To do this, pass MagicAction implementors to Workflow.MagicActions.Register()
+
+*/
+type MagicAction interface {
+	// Keyword is what the user must enter to run the action after
+	// AwGo has recognised the magic prefix. So if the prefix is
+	// "workflow:" (the default), a user must enter the query
+	// "workflow:<keyword>" to execute this action.
+	Keyword() string
+
+	// Description is shown when a user has entered "magic" mode, but
+	// the query does not yet match a keyword.
+	Description() string
+
+	// RunText is sent to Alfred and written to the log file &
+	// debugger when the action is run.
+	RunText() string
+
+	// Run is called when the Magic Action is triggered.
+	Run() error
+}
 
 // MagicActions contains the registered magic actions. See the MagicAction
 // interface for full documentation.
-type MagicActions map[string]MagicAction
+type MagicActions struct {
+	actions map[string]MagicAction
+	wf      *Workflow
+}
 
 // Register adds a MagicAction to the mapping. Previous entries are overwritten.
-func (ma MagicActions) Register(actions ...MagicAction) {
+func (ma *MagicActions) Register(actions ...MagicAction) {
 	for _, action := range actions {
-		ma[action.Keyword()] = action
+		ma.actions[action.Keyword()] = action
 	}
 }
 
 // Unregister removes a MagicAction from the mapping (based on its keyword).
-func (ma MagicActions) Unregister(actions ...MagicAction) {
+func (ma *MagicActions) Unregister(actions ...MagicAction) {
 	for _, action := range actions {
-		delete(ma, action.Keyword())
+		delete(ma.actions, action.Keyword())
 	}
 }
 
 // Args runs a magic action or returns command-line arguments.
 // It parses args for magic actions. If it finds one, it takes
-// control of your workflow and runs the action.
+// control of your workflow and runs the action. Control is
+// not returned to your code.
 //
-// If not magic actions are found, it returns args.
-func (ma MagicActions) Args(args []string, prefix string) []string {
+// If no magic actions are found, it returns args.
+func (ma *MagicActions) Args(args []string, prefix string) []string {
+
+	args, handled := ma.handleArgs(args, prefix)
+
+	if handled {
+		finishLog(false)
+		os.Exit(0)
+	}
+
+	return args
+
+}
+
+// handleArgs checks args for the magic prefix. Returns args and true if
+// it found and handled a magic argument.
+func (ma *MagicActions) handleArgs(args []string, prefix string) ([]string, bool) {
+
+	var handled bool
+
 	for _, arg := range args {
+
 		arg = strings.TrimSpace(arg)
+
 		if strings.HasPrefix(arg, prefix) {
+
 			query := arg[len(prefix):]
-			action := ma[query]
+			action := ma.actions[query]
+
 			if action != nil {
+
 				log.Printf(action.RunText())
-				NewItem(action.RunText()).
+
+				ma.wf.NewItem(action.RunText()).
 					Icon(IconInfo).
 					Valid(false)
-				SendFeedback()
+
+				ma.wf.SendFeedback()
+
 				if err := action.Run(); err != nil {
 					log.Printf("Error running magic arg `%s`: %s", action.Description(), err)
 					finishLog(true)
 				}
-				finishLog(false)
-				os.Exit(0)
+
+				handled = true
+
 			} else {
-				for kw, action := range ma {
-					NewItem(action.Keyword()).
+				for kw, action := range ma.actions {
+
+					ma.wf.NewItem(action.Keyword()).
 						Subtitle(action.Description()).
 						Valid(false).
 						Icon(IconInfo).
@@ -83,154 +190,101 @@ func (ma MagicActions) Args(args []string, prefix string) []string {
 						Autocomplete(prefix + kw).
 						Match(fmt.Sprintf("%s %s", action.Keyword(), action.Description()))
 				}
-				Filter(query)
-				WarnEmpty("No matching action", "Try another query?")
-				SendFeedback()
-				os.Exit(0)
+
+				ma.wf.Filter(query)
+				ma.wf.WarnEmpty("No matching action", "Try another query?")
+				ma.wf.SendFeedback()
+
+				handled = true
 			}
 		}
 	}
-	return args
-}
 
-// MagicAction is a command that is called directly by AwGo (i.e. your workflow
-// code is not run) if its keyword is passed in a user query. Magic Actions are
-// mainly aimed at making debugging and supporting users easier (via the
-// built-in actions), but it also provides a simple way to integrate your own
-// commands that don't need a "real" UI (via Item.Autocomplete("<prefix>:XYZ")
-// + Item.Valid(false)).
-//
-// The "update" sub-package registers a Magic Action to check for and install
-// an update, for example.
-//
-// The built-in Magic Actions provide useful functions for debugging problems
-// with workflows, so you, the developer, don't have to implement them yourself
-// and don't have to hand-hold users through the process of digging out files
-// buried somewhere deep in ~/Library. For example, you can simply request that
-// a user enter "workflow:log" to open the log file or "workflow:delcache" to
-// delete any cached data, instead of asking them to root around somewhere in
-// ~/Library.
-//
-// To use Magic Actions, it's imperative that your workflow retrieves
-// command-line arguments via Args()/Workflow.Args() instead of accessing
-// os.Args directly (or at least calls Args()/Workflow.Args()).
-//
-// These functions return os.Args[1:], but first check if any argument starts
-// with the "magic" prefix ("workflow:" by default).
-//
-// If so, AwGo will take control of the workflow (i.e. your code will no
-// longer be run) and run its own "magic" mode. In this mode, it checks
-// if the rest of the user query matches the keyword for a registered
-// MagicAction, and if so, it runs that action, displaying RunText() in
-// Alfred (if it's a Script Filter) and the log file & debugger.
-//
-// If no keyword matches, AwGo sends a list of available magic actions
-// to Alfred, filtered by the user's query. Hitting TAB or RETURN on
-// an item will run it.
-//
-//
-// The built-in magic actions are:
-//
-//    Keyword           | Action
-//    --------------------------------------------------------------------------------------
-//    <prefix>log       | Open workflow's log file in the default app (usually Console).
-//    <prefix>data      | Open workflow's data directory in the default app (usually Finder).
-//    <prefix>cache     | Open workflow's data directory in the default app (usually Finder).
-//    <prefix>deldata   | Delete everything in the workflow's data directory.
-//    <prefix>delcache  | Delete everything in the workflow's cache directory.
-//    <prefix>reset     | Delete everything in the workflow's data and cache directories.
-//    <prefix>help      | Open help URL in default browser.
-//                      | Only registered if you have set a HelpURL.
-//    <prefix>update    | Check for updates and install a newer version of the workflow
-//                      | if available.
-//                      | Only registered if you have set an Updater.
-//
-type MagicAction interface {
-	// Keyword is what the user must enter to run the action after
-	// AwGo has recognised the magic prefix. So if the prefix is "workflow:"
-	// (the default), a user must enter the query "workflow:<keyword>" to
-	// execute this action.
-	Keyword() string
-	// Description is shown when a user has entered "magic" mode, but
-	// the query does not yet match a keyword.
-	Description() string
-	// RunText is sent to Alfred and written to the log file & debugger when
-	// the action is run.
-	RunText() string
-	// Run is called when the Magic Action is triggered.
-	Run() error
+	return args, handled
 }
 
 // Opens workflow's log file.
-type openLogMagic struct{}
+type logMA struct {
+	wf *Workflow
+}
 
-func (a openLogMagic) Keyword() string     { return "log" }
-func (a openLogMagic) Description() string { return "Open workflow's log file" }
-func (a openLogMagic) RunText() string     { return "Opening log file…" }
-func (a openLogMagic) Run() error          { return OpenLog() }
+func (a logMA) Keyword() string     { return "log" }
+func (a logMA) Description() string { return "Open workflow's log file" }
+func (a logMA) RunText() string     { return "Opening log file…" }
+func (a logMA) Run() error          { return a.wf.OpenLog() }
 
 // Opens workflow's data directory.
-type openDataMagic struct{}
+type dataMA struct {
+	wf *Workflow
+}
 
-func (a openDataMagic) Keyword() string     { return "data" }
-func (a openDataMagic) Description() string { return "Open workflow's data directory" }
-func (a openDataMagic) RunText() string     { return "Opening data directory…" }
-func (a openDataMagic) Run() error          { return OpenData() }
+func (a dataMA) Keyword() string     { return "data" }
+func (a dataMA) Description() string { return "Open workflow's data directory" }
+func (a dataMA) RunText() string     { return "Opening data directory…" }
+func (a dataMA) Run() error          { return a.wf.OpenData() }
 
 // Opens workflow's cache directory.
-type openCacheMagic struct{}
+type cacheMA struct {
+	wf *Workflow
+}
 
-func (a openCacheMagic) Keyword() string     { return "cache" }
-func (a openCacheMagic) Description() string { return "Open workflow's cache directory" }
-func (a openCacheMagic) RunText() string     { return "Opening cache directory…" }
-func (a openCacheMagic) Run() error          { return OpenCache() }
+func (a cacheMA) Keyword() string     { return "cache" }
+func (a cacheMA) Description() string { return "Open workflow's cache directory" }
+func (a cacheMA) RunText() string     { return "Opening cache directory…" }
+func (a cacheMA) Run() error          { return a.wf.OpenCache() }
 
 // Deletes the contents of the workflow's cache directory.
-type clearCacheMagic struct{}
+type clearCacheMA struct {
+	wf *Workflow
+}
 
-func (a clearCacheMagic) Keyword() string     { return "delcache" }
-func (a clearCacheMagic) Description() string { return "Delete workflow's cached data" }
-func (a clearCacheMagic) RunText() string     { return "Deleted workflow's cached data" }
-func (a clearCacheMagic) Run() error          { return ClearCache() }
+func (a clearCacheMA) Keyword() string     { return "delcache" }
+func (a clearCacheMA) Description() string { return "Delete workflow's cached data" }
+func (a clearCacheMA) RunText() string     { return "Deleted workflow's cached data" }
+func (a clearCacheMA) Run() error          { return a.wf.ClearCache() }
 
 // Deletes the contents of the workflow's data directory.
-type clearDataMagic struct{}
+type clearDataMA struct {
+	wf *Workflow
+}
 
-func (a clearDataMagic) Keyword() string     { return "deldata" }
-func (a clearDataMagic) Description() string { return "Delete workflow's saved data" }
-func (a clearDataMagic) RunText() string     { return "Deleted workflow's saved data" }
-func (a clearDataMagic) Run() error          { return ClearData() }
+func (a clearDataMA) Keyword() string     { return "deldata" }
+func (a clearDataMA) Description() string { return "Delete workflow's saved data" }
+func (a clearDataMA) RunText() string     { return "Deleted workflow's saved data" }
+func (a clearDataMA) Run() error          { return a.wf.ClearData() }
 
 // Deletes the contents of the workflow's cache & data directories.
-type resetMagic struct{}
+type resetMA struct {
+	wf *Workflow
+}
 
-func (a resetMagic) Keyword() string     { return "reset" }
-func (a resetMagic) Description() string { return "Delete all saved and cached workflow data" }
-func (a resetMagic) RunText() string     { return "Deleted workflow saved and cached data" }
-func (a resetMagic) Run() error          { return Reset() }
+func (a resetMA) Keyword() string     { return "reset" }
+func (a resetMA) Description() string { return "Delete all saved and cached workflow data" }
+func (a resetMA) RunText() string     { return "Deleted workflow saved and cached data" }
+func (a resetMA) Run() error          { return a.wf.Reset() }
 
 // Opens URL in default browser.
-type helpMagic struct {
+type helpMA struct {
 	URL string
 }
 
-func (a helpMagic) Keyword() string     { return "help" }
-func (a helpMagic) Description() string { return "Open workflow help URL in default browser" }
-func (a helpMagic) RunText() string     { return "Opening help in your browser…" }
-func (a helpMagic) Run() error {
+func (a helpMA) Keyword() string     { return "help" }
+func (a helpMA) Description() string { return "Open workflow help URL in default browser" }
+func (a helpMA) RunText() string     { return "Opening help in your browser…" }
+func (a helpMA) Run() error {
 	cmd := exec.Command("open", a.URL)
 	return cmd.Run()
 }
 
 // Updates the workflow if a newer release is available.
-type updateMagic struct {
+type updateMA struct {
 	updater Updater
 }
 
-func (a updateMagic) Keyword() string     { return "update" }
-func (a updateMagic) Description() string { return "Check for updates, and install if one is available" }
-func (a updateMagic) RunText() string     { return "Fetching update…" }
-func (a updateMagic) Run() error {
+func (a updateMA) Keyword() string     { return "update" }
+func (a updateMA) Description() string { return "Check for updates, and install if one is available" }
+func (a updateMA) RunText() string     { return "Fetching update…" }
+func (a updateMA) Run() error {
 	if err := a.updater.CheckForUpdate(); err != nil {
 		return err
 	}

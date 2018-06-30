@@ -120,7 +120,7 @@ func fetchRepos() ([]*Repo, error) {
 		}
 
 		// Parse response
-		data, err := ioutil.ReadAll(resp.Body)
+		data, _ := ioutil.ReadAll(resp.Body)
 		r := apiResponse{}
 		if err := json.Unmarshal(data, &r); err != nil {
 			return nil, err

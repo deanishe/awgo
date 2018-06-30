@@ -21,7 +21,7 @@ type Contact struct {
 // Name returns the full name of the Contact.
 func (c *Contact) Name() string { return fmt.Sprintf("%s %s", c.Firstname, c.Lastname) }
 
-// Contacts is a collection of Contact items. This is where fuzzy.Interface
+// Contacts is a collection of Contact items. This is where fuzzy.Sortable
 // must be implemented to enable fuzzy sorting.
 type Contacts []*Contact
 
@@ -30,9 +30,9 @@ func (co Contacts) Len() int           { return len(co) }
 func (co Contacts) Swap(i, j int)      { co[i], co[j] = co[j], co[i] }
 func (co Contacts) Less(i, j int) bool { return co[i].Name() < co[j].Name() }
 
-// SortKey implements Sortable.
+// Keywords implements Sortable.
 // Comparisons are based on the the full name of the contact.
-func (co Contacts) SortKey(i int) string { return co[i].Name() }
+func (co Contacts) Keywords(i int) string { return co[i].Name() }
 
 // Fuzzy sort contacts by name.
 func ExampleSort() {

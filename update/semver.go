@@ -28,7 +28,7 @@ type SemVers []SemVer
 func (vs SemVers) Len() int { return len(vs) }
 
 // Less implements sort.Interface
-func (vs SemVers) Less(i, j int) bool { return vs[i].LT(vs[j]) }
+func (vs SemVers) Less(i, j int) bool { return vs[i].Lt(vs[j]) }
 
 // Swap implements sort.Interface
 func (vs SemVers) Swap(i, j int) { vs[i], vs[j] = vs[j], vs[i] }
@@ -45,7 +45,7 @@ func SortSemVer(versions []SemVer) {
 //	- Version string may be prefixed with "v", e.g. "v1" or "v3.0.1-beta".
 //	  The "v" prefix is stripped, so "v1" == "1.0.0".
 //	- Dots and integers are ignored in pre-release identifiers: they are
-//	  compared purely alphanumerically, e.g. "v1-beta.11 < "v1-beta.2".
+//	  compared purely alphanumerically, e.g. "v1-beta.11" < "v1-beta.2".
 //	  Use "v1-beta.02" instead.
 type SemVer struct {
 	Major      uint64 // Increment for breaking changes.
@@ -177,28 +177,23 @@ func (v SemVer) Compare(v2 SemVer) int {
 	return 0
 }
 
-// Equals checks if v == v2
-func (v SemVer) Equals(v2 SemVer) bool {
-	return v.Compare(v2) == 0
-}
+// Eq checks if v == v2
+func (v SemVer) Eq(v2 SemVer) bool { return v.Compare(v2) == 0 }
 
-// EQ checks if v == v2
-func (v SemVer) EQ(v2 SemVer) bool { return v.Equals(v2) }
+// Ne checks if v != v2
+func (v SemVer) Ne(v2 SemVer) bool { return !v.Eq(v2) }
 
-// NE checks if v != v2
-func (v SemVer) NE(v2 SemVer) bool { return !v.EQ(v2) }
+// Gt checks if v > v2
+func (v SemVer) Gt(v2 SemVer) bool { return v.Compare(v2) == 1 }
 
-// GT checks if v > v2
-func (v SemVer) GT(v2 SemVer) bool { return v.Compare(v2) == 1 }
+// Gte checks if v >= v2
+func (v SemVer) Gte(v2 SemVer) bool { return v.Compare(v2) >= 0 }
 
-// GTE checks if v >= v2
-func (v SemVer) GTE(v2 SemVer) bool { return v.Compare(v2) >= 0 }
+// Lt checks if v < v2
+func (v SemVer) Lt(v2 SemVer) bool { return v.Compare(v2) == -1 }
 
-// LT checks if v < v2
-func (v SemVer) LT(v2 SemVer) bool { return v.Compare(v2) == -1 }
-
-// LTE checks if v <= v2
-func (v SemVer) LTE(v2 SemVer) bool { return v.Compare(v2) <= 0 }
+// Lte checks if v <= v2
+func (v SemVer) Lte(v2 SemVer) bool { return v.Compare(v2) <= 0 }
 
 func containsOnly(s, allowed string) bool {
 	return strings.IndexFunc(s, func(r rune) bool {

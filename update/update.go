@@ -57,7 +57,7 @@ type Releases []*Release
 func (r Releases) Len() int { return len(r) }
 
 // Less implements sort.Interface
-func (r Releases) Less(i, j int) bool { return r[i].Version.LT(r[j].Version) }
+func (r Releases) Less(i, j int) bool { return r[i].Version.Lt(r[j].Version) }
 
 // Swap implements sort.Interface
 func (r Releases) Swap(i, j int) { r[i], r[j] = r[j], r[i] }
@@ -157,7 +157,7 @@ func (u *Updater) UpdateAvailable() bool {
 		return false
 	}
 	log.Printf("Latest release: %s", r.Version.String())
-	return r.Version.GT(u.CurrentVersion)
+	return r.Version.Gt(u.CurrentVersion)
 }
 
 // CheckDue returns true if the time since the last check is greater than
@@ -168,7 +168,7 @@ func (u *Updater) CheckDue() bool {
 		return true
 	}
 	elapsed := time.Now().Sub(u.LastCheck)
-	log.Printf("%s since last check for update", util.HumanDuration(elapsed))
+	log.Printf("%s since last check for update", elapsed)
 	return elapsed.Nanoseconds() > u.updateInterval.Nanoseconds()
 }
 
@@ -206,11 +206,7 @@ func (u *Updater) Install() error {
 	if err := download(r.URL, p); err != nil {
 		return err
 	}
-	cmd := exec.Command("open", "-a", "Alfred 3", p)
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-	return nil
+	return exec.Command("open", "-a", "Alfred 3", p).Run()
 }
 
 // cachePath returns a filepath within AwGo's update cache directory.

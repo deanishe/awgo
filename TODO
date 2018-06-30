@@ -1,6 +1,24 @@
 
+Refactor:
+	- Embed Alfred, Feedback, MagicActions (...) into Workflow?
+		- Filter API is different
+	- Add FieldNum to binding (save all the iteration) @done(2018-02-13)
+	- Update API: Dodgy?
+	- Fuzzy API: Dodgy?
+
 Features:
-	- Use "match" field for fuzzy sorting Items, not "sortkey" @3.5
+	- Conf: fallbacks for unset *and* empty variables @done(2018-02-12)
+	- Bind to struct via tags @done(2018-02-11)
+	- Add RunScriptFile to util @done(2018-02-11)
+	- Add Alfred struct @done(2018-02-11)
+		- NewAlfred() @done(2018-02-11)
+		- Search() @done(2018-02-11)
+		- Action() @done(2018-02-11)
+		- Browse() @done(2018-02-11)
+		- RunTrigger() @done(2018-02-11)
+		- SetConfig() @done(2018-02-11)
+		- RemoveConfig() @done(2018-02-11)
+	- Use "match" field for fuzzy sorting Items, not "sortkey" @3.5 @done(2018-02-11)
 		"match" field added in Alfred 3.5
 
 Other:
@@ -15,7 +33,7 @@ Archive:
 	- Caching @done(2017-08-13) @project(Features)
 		Read/write bytes to named cache/data file.
 		LoadOrSave() - Read from cache or reload and cache.
-	- Make SemVer accept pre-release data without minor and patch numbers. @done(17-09-15 16:09) @project(Features)
-	- Separate HTTP connect and download timeouts in update.go. @done(17-09-15 15:52) @project(Features)
+	- Make SemVer accept pre-release data without minor and patch numbers. @done(2017-09-15) @project(Features)
+	- Separate HTTP connect and download timeouts in update.go. @done(2017-09-15) @project(Features)
 
 #  vim: ft=taskpaper ts=2 sw=2 tw=80 noet :

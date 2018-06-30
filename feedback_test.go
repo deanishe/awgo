@@ -15,13 +15,20 @@ import (
 )
 
 func TestNewFileItem(t *testing.T) {
-	ipPath := filepath.Join(Dir(), "info.plist")
-	ipShort := strings.Replace(ipPath, os.Getenv("HOME"), "~", -1)
-	fb := Feedback{}
-	it := fb.NewFileItem(ipPath)
+
+	var (
+		wf      = New()
+		ipPath  = filepath.Join(wf.Dir(), "info.plist")
+		ipShort = strings.Replace(ipPath, os.Getenv("HOME"), "~", -1)
+
+		fb = Feedback{}
+		it = fb.NewFileItem(ipPath)
+	)
+
 	if it.title != "info.plist" {
 		t.Fatalf("Incorrect title: %v", it.title)
 	}
+
 	if *it.subtitle != ipShort {
 		t.Fatalf("Incorrect subtitle: %v", *it.subtitle)
 	}
@@ -461,13 +468,4 @@ func TestFilterFeedback(t *testing.T) {
 			}
 		}
 	}
-}
-
-func ExampleArgVars() {
-	// Set workflow variables from Alfred's Run Script Action
-	av := NewArgVars()
-	av.Arg("baz")        // Set output (i.e. next action's {query}) to "baz"
-	av.Var("foo", "bar") // Set workflow variable "foo" to "bar"
-	av.Send()
-	// Output: {"alfredworkflow":{"arg":"baz","variables":{"foo":"bar"}}}
 }

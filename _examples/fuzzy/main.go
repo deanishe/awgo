@@ -34,26 +34,29 @@ func init() {
 	wf = aw.New()                // Initialise workflow
 }
 
-// readDir returns the paths to all the visible subdirectories of `dirpath`.
+// readDir returns the paths to all visible subdirectories of `dirpath`.
 func readDir(dirpath string) []string {
+
 	paths := []string{}
 	files, _ := ioutil.ReadDir(dirpath)
+
 	for _, fi := range files {
+
 		// Ignore files and hidden files
 		if !fi.IsDir() || strings.HasPrefix(fi.Name(), ".") {
 			continue
 		}
+
 		paths = append(paths, filepath.Join(dirpath, fi.Name()))
 	}
+
 	return paths
 }
 
 // run executes the Script Filter.
 func run() {
-	var (
-		query       string
-		args, paths []string
-	)
+
+	var query string
 
 	// ----------------------------------------------------------------
 	// Handle CLI arguments
@@ -63,19 +66,21 @@ func run() {
 	// same as os.Args[1:], but the arguments are first parsed for AwGo's
 	// magic actions (i.e. `workflow:*` to allow the user to easily open
 	// the log or data/cache directory).
-	args = wf.Args()
-	if len(args) > 0 {
-		// When run from a workflow, because the program is called from
-		// Alfred with "{query}" or "$1", $1 will always be set, even
-		// if to an emtpy string.
+	if args := wf.Args(); len(args) > 0 {
+		// If you're using "{query}" or "$1" (with quotes) in your
+		// Script Filter, $1 will always be set, even if to an empty
+		// string.
+		// This guard serves mostly to prevent errors when run on
+		// the command line.
 		query = args[0]
 	}
 
 	// ----------------------------------------------------------------
 	// Load data and create Alfred items
 	// ----------------------------------------------------------------
-	paths = readDir(startDir)
-	for _, path := range paths {
+
+	for _, path := range readDir(startDir) {
+
 		// Convenience method. Sets Item title to filename, subtitle
 		// to shortened path, arg to full path, and icon to file icon.
 		it := wf.NewFileItem(path)
@@ -88,17 +93,22 @@ func run() {
 	// ----------------------------------------------------------------
 	// Filter items based on user query
 	// ----------------------------------------------------------------
+
 	if query != "" {
+
 		res := wf.Filter(query)
+
 		log.Printf("%d results match \"%s\"", len(res), query)
+
 		for i, r := range res {
-			log.Printf("%02d. score=%0.1f sortkey=%s", i+1, r.Score, wf.Feedback.SortKey(i))
+			log.Printf("%02d. score=%0.1f sortkey=%s", i+1, r.Score, wf.Feedback.Keywords(i))
 		}
 	}
 
 	// ----------------------------------------------------------------
 	// Send results to Alfred
 	// ----------------------------------------------------------------
+
 	// Show a warning in Alfred if there are no items
 	wf.WarnEmpty("No matching folders found", "Try a different query?")
 

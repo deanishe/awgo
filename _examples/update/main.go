@@ -10,8 +10,8 @@
 Workflow update is an example of how to use AwGo's update API.
 
 It demonstrates best practices for handling updates, in particular
-loading the list of releases in a background process and only showing
-an "Update is available!" message if the user query is empty.
+loading the list of available releases in a background process and only
+showing an "Update is available!" message if the user query is empty.
 
 Details
 
@@ -20,10 +20,14 @@ pointing to the GitHub repo "deanishe/alfred-ssh" (a completely
 different workflow), which is several versions ahead.
 
 The Script Filter code loads the time of the last update check, and if a
-check is due, it calls itself with the "check" command via AwGo's
+check is due, it calls itself with the "-check" flag via AwGo's
 background job API.
 
-When run with "check", the program calls Workflow.CheckForUpdate() to
+Because the release updater runs in a background process, its output is
+not shown in Alfred's debugger. Enter the query "workflow:log" to
+open the log file if you would like to see the output of the updater.
+
+When run with "-check", the program calls Workflow.CheckForUpdate() to
 cache the available releases.
 
 After that has completed, subsequent runs of the Script Filter will show
@@ -41,50 +45,91 @@ rather than actually updating this one).
 package main
 
 import (
-	"fmt"
+	"flag"
 	"log"
 	"os"
 	"os/exec"
 
 	"github.com/deanishe/awgo"
 	"github.com/deanishe/awgo/update"
-	"github.com/docopt/docopt-go"
 )
 
 // Name of the background job that checks for updates
 const updateJobName = "checkForUpdate"
 
-var usage = `update (search|check) [<query>]
-
-Demonstrates self-updating using AwGo.
-
-Usage:
-    update search [<query>]
-    update check
-    update -h
-
-Options:
-    -h, --help    Show this message and exit.
-`
-
 var (
+	// Command-line arguments
+	doCheck bool
+	query   string
+
 	// Icon to show if an update is available
 	iconAvailable = &aw.Icon{Value: "update-available.png"}
 	repo          = "deanishe/alfred-ssh" // GitHub repo
 	wf            *aw.Workflow            // Our Workflow struct
+
+	// Fake data for Script Filter
+	items = []string{
+		"Jacob James",
+		"John Cameron",
+		"Peter Randolph",
+		"Troy Richards",
+		"Timothy Anderson",
+		"Destiny Singleton",
+		"Joshua Hunt",
+		"Bridget Rodriguez",
+		"Ana Santiago",
+		"Luis Davis",
+		"Mark Jackson",
+		"Joseph Johnson",
+		"Ryan Hendricks",
+		"Mary Henderson",
+		"Timothy Perkins",
+		"Mary Henry",
+		"Mindy Harrison",
+		"Amanda Hawkins",
+		"Beverly Brown",
+		"Laura Brown",
+		"Timothy Patterson",
+		"Sandra Murphy",
+		"Katherine Reese",
+		"Nichole Trevino",
+		"David Logan",
+		"Allison Thompson",
+		"Mark Gibbs",
+		"Danielle Willis",
+		"Kayla Hill",
+		"Kevin Morales",
+		"Jeffrey Wheeler",
+		"James Bradley",
+		"Jeffrey Henry",
+		"Nicole Conner",
+		"Craig Smith",
+		"Steven O'Neill",
+		"Cathy Mcknight",
+		"Nicolas Waters",
+		"Shawn Johnson",
+		"Antonio Riley",
+	}
 )
 
 func init() {
+	// Command-line flags
+	flag.BoolVar(&doCheck, "check", false, "check for a new version")
+
 	wf = aw.New(update.GitHub(repo))
 }
 
 func run() {
-	// Pass wf.Args() to docopt because our update logic relies on AwGo's magic actions.
-	args, _ := docopt.Parse(usage, wf.Args(), true, wf.Version(), false, true)
+	wf.Args() // call to handle magic actions
+	flag.Parse()
+
+	if args := flag.Args(); len(args) > 0 {
+		query = args[0]
+	}
 
 	// Alternate action: Get available releases from remote.
-	if args["check"] != false {
-		wf.TextErrors = true
+	if doCheck {
+		wf.Configure(aw.TextErrors(true))
 		log.Println("Checking for updates...")
 		if err := wf.CheckForUpdate(); err != nil {
 			wf.FatalError(err)
@@ -96,26 +141,34 @@ func run() {
 	// Script Filter
 	// ----------------------------------------------------------------
 
-	var query string
-	if args["<query>"] != nil {
-		query = args["<query>"].(string)
-	}
-
 	log.Printf("query=%s", query)
 
 	// Call self with "check" command if an update is due and a check
 	// job isn't already running.
-	if wf.UpdateCheckDue() && !aw.IsRunning(updateJobName) {
+	if wf.UpdateCheckDue() && !wf.IsRunning(updateJobName) {
 		log.Println("Running update check in background...")
 
-		cmd := exec.Command(os.Args[0], "check")
-		if err := aw.RunInBackground(updateJobName, cmd); err != nil {
+		cmd := exec.Command(os.Args[0], "-check")
+		if err := wf.RunInBackground(updateJobName, cmd); err != nil {
 			log.Printf("Error starting update check: %s", err)
 		}
 	}
 
 	// Only show update status if query is empty.
 	if query == "" && wf.UpdateAvailable() {
+		// Turn off UIDs to force this item to the top.
+		// If UIDs are enabled, Alfred will apply its "knowledge"
+		// to order the results based on your past usage.
+		wf.Configure(aw.SuppressUIDs(true))
+
+		// Notify user of update. As this item is invalid (Valid(false)),
+		// actioning it expands the query to the Autocomplete value.
+		// "workflow:update" triggers the updater Magic Action that
+		// is automatically registered when you configure Workflow with
+		// an Updater.
+		//
+		// If executed, the Magic Action downloads the latest version
+		// of the workflow and asks Alfred to install it.
 		wf.NewItem("Update available!").
 			Subtitle("↩ to install").
 			Autocomplete("workflow:update").
@@ -124,15 +177,17 @@ func run() {
 	}
 
 	// Script Filter results
-	for i := 1; i <= 20; i++ {
-		t := fmt.Sprintf("Item #%d", i)
-		wf.NewItem(t).
-			Arg(t).
-			Icon(aw.IconFavourite).
-			Valid(true)
+	for _, name := range items {
+		wf.NewItem(name).
+			Arg(name).
+			UID(name).
+			Valid(true).
+			Icon(aw.IconUser)
 	}
 
-	// Add an extra item to reset update status for demo purposes
+	// Add an extra item to reset update status for demo purposes.
+	// As with the update notification, this item triggers a Magic
+	// Action that deletes the cached list of releases.
 	wf.NewItem("Reset update status").
 		Autocomplete("workflow:delcache").
 		Icon(aw.IconTrash).

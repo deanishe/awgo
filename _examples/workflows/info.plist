@@ -3,14 +3,14 @@
 <plist version="1.0">
 <dict>
 	<key>bundleid</key>
-	<string>net.deanishe.awgo-example-update</string>
+	<string>net.deanishe.alfred.awgo.demo-caching</string>
 	<key>connections</key>
 	<dict>
-		<key>F3DFD0D4-B306-48DD-A915-34D3CF427B73</key>
+		<key>D61073F1-262D-482D-800D-A788FD7B9F69</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>09D5F8E4-239F-449C-955E-C52F9C6F1DF0</string>
+				<string>76AEA54C-6AD8-43B3-A8EB-7C693414C860</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -23,13 +23,32 @@
 	<key>createdby</key>
 	<string>Dean Jackson</string>
 	<key>description</key>
-	<string>Informs user when an update is available</string>
+	<string>Filter Alfred Workflows on GitHub</string>
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
-	<string>AwGo Demo: Self-updating</string>
+	<string>AwGo Demo: Workflows</string>
 	<key>objects</key>
 	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>browser</key>
+				<string></string>
+				<key>spaces</key>
+				<string></string>
+				<key>url</key>
+				<string>{query}</string>
+				<key>utf8</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.openurl</string>
+			<key>uid</key>
+			<string>76AEA54C-6AD8-43B3-A8EB-7C693414C860</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
 		<dict>
 			<key>config</key>
 			<dict>
@@ -44,27 +63,27 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>keyword</key>
-				<string>awupdate</string>
+				<string>workflows</string>
 				<key>queuedelaycustom</key>
 				<integer>3</integer>
 				<key>queuedelayimmediatelyinitially</key>
 				<true/>
 				<key>queuedelaymode</key>
-				<integer>0</integer>
+				<integer>1</integer>
 				<key>queuemode</key>
 				<integer>1</integer>
 				<key>runningsubtext</key>
-				<string></string>
+				<string>Loading repos…</string>
 				<key>script</key>
-				<string>./update search "$1"</string>
+				<string>./workflows "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
 				<string></string>
 				<key>subtext</key>
-				<string>Is an update for this workflow available?</string>
+				<string>GitHub repos tagged "alfred-workflow"</string>
 				<key>title</key>
-				<string>Check For Update</string>
+				<string>Alfred Workflows on GitHub</string>
 				<key>type</key>
 				<integer>0</integer>
 				<key>withspace</key>
@@ -73,56 +92,41 @@
 			<key>type</key>
 			<string>alfred.workflow.input.scriptfilter</string>
 			<key>uid</key>
-			<string>F3DFD0D4-B306-48DD-A915-34D3CF427B73</string>
+			<string>D61073F1-262D-482D-800D-A788FD7B9F69</string>
 			<key>version</key>
 			<integer>2</integer>
 		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>lastpathcomponent</key>
-				<false/>
-				<key>onlyshowifquerypopulated</key>
-				<true/>
-				<key>removeextension</key>
-				<false/>
-				<key>text</key>
-				<string>{query}</string>
-				<key>title</key>
-				<string>You chose…</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.output.notification</string>
-			<key>uid</key>
-			<string>09D5F8E4-239F-449C-955E-C52F9C6F1DF0</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
 	</array>
 	<key>readme</key>
-	<string>AwGo: GitHub update &amp; background process demo
-=============================================
+	<string>Awgo: Caching demo
+==================
 
-This workflow demonstrates best practices for updating your workflow.
+This workflow demonstrates how to use cached data for best-possible speed.
 
-The check for a new version is performed in the background, and a notification is only shown when the user query is empty.</string>
+It filters a list of Alfred workflows fetched from GitHub.
+
+Filtering is always performed against cached data (rather than querying the API), and the cached data are updated if missing or too old.</string>
 	<key>uidata</key>
 	<dict>
-		<key>09D5F8E4-239F-449C-955E-C52F9C6F1DF0</key>
-		<dict>
-			<key>xpos</key>
-			<integer>230</integer>
-			<key>ypos</key>
-			<integer>30</integer>
-		</dict>
-		<key>F3DFD0D4-B306-48DD-A915-34D3CF427B73</key>
+		<key>76AEA54C-6AD8-43B3-A8EB-7C693414C860</key>
 		<dict>
 			<key>note</key>
-			<string>Checks for updates in background, and shows an "Update available" message when a newer version is available.</string>
+			<string>Open actioned repo's webpage in your browser.</string>
 			<key>xpos</key>
-			<integer>30</integer>
+			<integer>270</integer>
 			<key>ypos</key>
-			<integer>30</integer>
+			<integer>60</integer>
+		</dict>
+		<key>D61073F1-262D-482D-800D-A788FD7B9F69</key>
+		<dict>
+			<key>note</key>
+			<string>Filter Alfred workflows from GitHub.
+
+Data are downloaded in the background and search is performed on the cached data.</string>
+			<key>xpos</key>
+			<integer>70</integer>
+			<key>ypos</key>
+			<integer>60</integer>
 		</dict>
 	</dict>
 	<key>version</key>

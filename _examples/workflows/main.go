@@ -5,7 +5,7 @@
 //
 
 /*
-Workflow workflows searches GitHub repos tagged with "alfred-workflow".
+Workflow workflows retrieves and filters GitHub repos tagged with "alfred-workflow".
 
 It demonstrates the use of the caching and background-process APIs to
 provide a responsive workflow by updating the datastore in the background.
@@ -20,10 +20,18 @@ This is a very useful idiom for workflows that don't need data that are
 absolutely bang up-to-date. The user still gets (potentially out-of-date)
 results, preserving the responsiveness of the workflow, and the latest data
 are shown as soon as they're available.
+
+This workflow, for example, needs several seconds to retrieve all the
+search results from GitHub, as there are multiple pages.
+
+NOTE: As the GitHub search is performed in a background process, the
+output is not visible in Alfred's debugger. Enter the query "workflow:log"
+to view the log file, where you can see the search progress.
 */
 package main
 
 import (
+	"flag"
 	"log"
 	"os"
 	"os/exec"
@@ -31,7 +39,6 @@ import (
 
 	"github.com/deanishe/awgo"
 	"github.com/deanishe/awgo/fuzzy"
-	"github.com/docopt/docopt-go"
 )
 
 var (
@@ -39,26 +46,20 @@ var (
 	maxResults  = 200               // Number of results sent to Alfred
 	minScore    = 10.0              // Minimum score for a result
 	maxCacheAge = 180 * time.Minute // How long to cache repo list for
-)
 
-var (
-	usage = `repos [options] [<query>]
+	// Command-line flags
+	doDownload bool
+	query      string
 
-Usage:
-	repos <query>
-	repos --download
-	repos -h|--version
-
-Options:
-    --download     download list of workflows to cache
-	-h, --help     show this message and exit
-	--version      show version number and exit
-`
+	// Workflow
 	sopts []fuzzy.Option
 	wf    *aw.Workflow
 )
 
 func init() {
+
+	flag.BoolVar(&doDownload, "download", false, "retrieve list of workflows from GitHub")
+
 	// Set some custom fuzzy search options
 	sopts = []fuzzy.Option{
 		fuzzy.AdjacencyBonus(10.0),
@@ -66,39 +67,34 @@ func init() {
 		fuzzy.MaxLeadingLetterPenalty(-3.0),
 		fuzzy.UnmatchedLetterPenalty(-0.5),
 	}
-	wf = aw.New(aw.HelpURL("http://www.deanishe.net/"), aw.MaxResults(maxResults), aw.SortOptions(sopts...))
+	wf = aw.New(aw.HelpURL("http://www.deanishe.net/"),
+		aw.MaxResults(maxResults),
+		aw.SortOptions(sopts...))
 }
 
 func run() {
-	var query string
 
-	// Version is read from the `alfred_workflow_version` environment variable,
-	// which Alfred sets to the value specified in info.plist.
-	args, err := docopt.Parse(usage, wf.Args(), true, wf.Version(), false)
-	if err != nil {
-		log.Fatalf("Error parsing CLI options : %v", err)
+	wf.Args() // call to handle any magic actions
+	flag.Parse()
+
+	if args := flag.Args(); len(args) > 0 {
+		query = args[0]
 	}
 
-	if v, ok := args["--download"].(bool); ok {
-		if v == true {
-			wf.TextErrors = true
-			log.Printf("[main] downloading repo list...")
-			repos, err := fetchRepos()
-			if err != nil {
-				wf.FatalError(err)
-			}
-			if err := wf.Cache.StoreJSON(cacheName, repos); err != nil {
-				wf.FatalError(err)
-			}
-			log.Printf("[main] downloaded repo list")
-			return
+	if doDownload {
+		wf.Configure(aw.TextErrors(true))
+		log.Printf("[main] downloading repo list...")
+		repos, err := fetchRepos()
+		if err != nil {
+			wf.FatalError(err)
 		}
+		if err := wf.Cache.StoreJSON(cacheName, repos); err != nil {
+			wf.FatalError(err)
+		}
+		log.Printf("[main] downloaded repo list")
+		return
 	}
 
-	// Docopt values are interface{} :(
-	if s, ok := args["<query>"].(string); ok {
-		query = s
-	}
 	log.Printf("[main] query=%s", query)
 
 	// Try to load repos
@@ -114,9 +110,9 @@ func run() {
 	// running.
 	if wf.Cache.Expired(cacheName, maxCacheAge) {
 		wf.Rerun(0.3)
-		if !aw.IsRunning("download") {
-			cmd := exec.Command(os.Args[0], "--download")
-			if err := aw.RunInBackground("download", cmd); err != nil {
+		if !wf.IsRunning("download") {
+			cmd := exec.Command(os.Args[0], "-download")
+			if err := wf.RunInBackground("download", cmd); err != nil {
 				wf.FatalError(err)
 			}
 		} else {

@@ -5,6 +5,7 @@
 //
 // Created on 2017-09-08
 //
+// TODO: Add example showing magic actions
 
 /*
 Package examples contains trivial, but complete, Alfred workflows

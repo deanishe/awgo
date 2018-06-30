@@ -15,6 +15,6 @@ struct (using e.g. the GitHub aw.Option) and use the Workflow methods
 CheckForUpdate(), UpdateAvailable() and InstallUpdate() to interact with
 the Updater.
 
-See ../examples/update for one possible way to use this API.
+See ../_examples/update for one possible way to use this API.
 */
 package update

@@ -6,12 +6,16 @@
 AwGo — A Go library for Alfred workflows
 ========================================
 
+[![Build Status][travis-icon]][travis-link]
+[![Coverage Status][coveralls-icon]][coveralls-link]
+[![Go Report Card][goreport-icon]][goreport-link]
+
 Full-featured library to build lightning-fast workflows in a jiffy.
 
 Features
 --------
 
-- Easy access to [Alfred context][context], such as data and cache directories.
+- Easy access to [Alfred configuration][config], such as data and cache directories.
 - Fluent API for generating [Alfred JSON feedback][feedback] for Script Filters.
 - Support for all applicable Alfred features up to v3.5.
 - [Fuzzy sorting/filtering][fuzzy] of results.
@@ -96,7 +100,7 @@ The icon is based on the [Go Gopher][gopher] by [Renee French][renee].
 [godoc]: https://godoc.org/github.com/deanishe/awgo
 [gopher]: https://blog.golang.org/gopher
 [renee]: http://reneefrench.blogspot.com
-[context]: https://godoc.org/github.com/deanishe/awgo#Context
+[config]: https://godoc.org/github.com/deanishe/awgo#Config
 [feedback]: https://godoc.org/github.com/deanishe/awgo#Feedback.NewItem
 [fuzzy]: https://godoc.org/github.com/deanishe/awgo/fuzzy
 [cache]: https://godoc.org/github.com/deanishe/awgo#hdr-Saving_and_caching_data
@@ -107,5 +111,12 @@ The icon is based on the [Go Gopher][gopher] by [Renee French][renee].
 [logging]: https://godoc.org/github.com/deanishe/awgo#hdr-Logging
 [magic]: https://godoc.org/github.com/deanishe/awgo#MagicAction
 [icons]: https://godoc.org/github.com/deanishe/awgo#Icon
-[examples-code]: https://github.com/deanishe/awgo/tree/master/examples
-[examples-docs]: https://godoc.org/github.com/deanishe/awgo/examples
+[examples-code]: https://github.com/deanishe/awgo/tree/master/_examples
+[examples-docs]: https://godoc.org/github.com/deanishe/awgo/_examples
+[travis-link]: https://travis-ci.org/deanishe/awgo
+[travis-icon]: https://travis-ci.org/deanishe/awgo.svg?branch=master
+[goreport-link]: https://goreportcard.com/report/github.com/deanishe/awgo
+[goreport-icon]: https://goreportcard.com/badge/github.com/deanishe/awgo
+[coveralls-icon]: https://coveralls.io/repos/github/deanishe/awgo/badge.svg?branch=master
+[coveralls-link]: https://coveralls.io/github/deanishe/awgo?branch=master
+

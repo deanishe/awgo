@@ -26,17 +26,21 @@ import (
 // Alfred only permits one modifier at a time.
 type ModKey string
 
-// Valid modifier keys
+// Valid modifier keys used to specify alternate actions in Script Filters.
 const (
 	ModCmd   ModKey = "cmd"   // Alternate action for ⌘↩
 	ModAlt   ModKey = "alt"   // Alternate action for ⌥↩
+	ModOpt   ModKey = "alt"   // Synonym for ModAlt
 	ModCtrl  ModKey = "ctrl"  // Alternate action for ^↩
 	ModShift ModKey = "shift" // Alternate action for ⇧↩
 	ModFn    ModKey = "fn"    // Alternate action for fn↩
 )
 
-// Item is a single Alfred result. Add them to a Feedback struct to
-// generate valid Alfred JSON.
+// Item is a single Alfred Script Filter result.
+// Together with Feedback & Modifier, Item generates Script Filter feedback
+// for Alfred.
+//
+// Create Items via NewItem(), so they are bound to their parent Feedback.
 type Item struct {
 	title        string
 	subtitle     *string
@@ -55,28 +59,27 @@ type Item struct {
 	noUID        bool // Suppress UID in JSON
 }
 
-// Title sets the title of the item in Alfred's results
+// Title sets the title of the item in Alfred's results.
 func (it *Item) Title(s string) *Item {
 	it.title = s
 	return it
 }
 
-// Subtitle sets the subtitle of the item in Alfred's results
+// Subtitle sets the subtitle of the item in Alfred's results.
 func (it *Item) Subtitle(s string) *Item {
 	it.subtitle = &s
 	return it
 }
 
-// Match sets Item's match field. If present, this field is preferred over
-// the item's title for fuzzy sorting via Feedback, and by Alfred's
-// "Alfred filters results" feature.
+// Match sets Item's match field for filtering.
+// If present, this field is preferred over the item's title for fuzzy sorting
+// via Feedback, and by Alfred's "Alfred filters results" feature.
 func (it *Item) Match(s string) *Item {
 	it.match = &s
 	return it
 }
 
-// Arg sets Item's arg, i.e. the value that is passed as {query} to the
-// next action in the workflow.
+// Arg sets Item's arg, the value passed as {query} to the next workflow action.
 func (it *Item) Arg(s string) *Item {
 	it.arg = &s
 	return it
@@ -84,6 +87,9 @@ func (it *Item) Arg(s string) *Item {
 
 // UID sets Item's unique ID, which is used by Alfred to remember your choices.
 // Use a blank string to force results to appear in the order you add them.
+//
+// You can also use the SuppressUIDs() Option to (temporarily) supress
+// output of UIDs.
 func (it *Item) UID(s string) *Item {
 	if it.noUID {
 		return it
@@ -92,8 +98,8 @@ func (it *Item) UID(s string) *Item {
 	return it
 }
 
-// Autocomplete sets what Alfred's query will expand to when the user TABs it (or hits
-// RETURN on a result where valid is false)
+// Autocomplete sets what Alfred's query expands to when the user TABs result.
+// (or hits RETURN on a result where valid is false)
 func (it *Item) Autocomplete(s string) *Item {
 	it.autocomplete = &s
 	return it
@@ -133,8 +139,10 @@ func (it *Item) Quicklook(s string) *Item {
 	return it
 }
 
-// Icon sets the icon for the Item. Can point to an image file, a filepath
-// of a file whose icon should be used, or a UTI.
+// Icon sets the icon for the Item.
+// Can point to an image file, a filepath of a file whose icon should be used,
+// or a UTI.
+//
 // See the documentation for Icon for more details.
 func (it *Item) Icon(icon *Icon) *Item {
 	it.icon = icon
@@ -155,7 +163,7 @@ func (it *Item) Var(k, v string) *Item {
 func (it *Item) NewModifier(key ModKey) *Modifier {
 	m, err := newModifier(key)
 	if err != nil {
-		wf.FatalError(err)
+		panic(err)
 	}
 
 	// Add Item variables to Modifier
@@ -183,8 +191,8 @@ func (it *Item) Vars() map[string]string {
 	return it.vars
 }
 
-// MarshalJSON serializes Item to Alfred 3's JSON format. You shouldn't
-// need to call this directly: use Feedback.Send() instead.
+// MarshalJSON serializes Item to Alfred 3's JSON format.
+// You shouldn't need to call this directly: use SendFeedback() instead.
 func (it *Item) MarshalJSON() ([]byte, error) {
 	var (
 		typ  string
@@ -302,7 +310,8 @@ func (m *Modifier) Vars() map[string]string {
 	return m.vars
 }
 
-// MarshalJSON implements the JSON serialization interface.
+// MarshalJSON serializes Item to Alfred 3's JSON format.
+// You shouldn't need to call this directly: use SendFeedback() instead.
 func (m *Modifier) MarshalJSON() ([]byte, error) {
 
 	return json.Marshal(&struct {
@@ -320,13 +329,13 @@ func (m *Modifier) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// Feedback contains Items. This is the top-level object for generating
-// Alfred JSON (i.e. serialise this and send it to Alfred).
+// Feedback represents the results for an Alfred Script Filter.
 //
-// Use NewFeedback() to create new (initialised) Feedback structs.
-//
+// Normally, you won't use this struct directly, but via the
+// package-level functions/Workflow methods NewItem(), SendFeedback(), etc.
 // It is important to use the constructor functions for Feedback, Item
-// and Modifier structs.
+// and Modifier structs so they are properly initialised and bound to
+// their parent.
 type Feedback struct {
 	Items  []*Item           // The results to be sent to Alfred.
 	NoUIDs bool              // If true, suppress Item UIDs.
@@ -416,6 +425,8 @@ func (fb *Feedback) MarshalJSON() ([]byte, error) {
 
 // Send generates JSON from this struct and sends it to Alfred
 // (by writing the JSON to STDOUT).
+//
+// You shouldn't need to call this directly: use SendFeedback() instead.
 func (fb *Feedback) Send() error {
 	if fb.sent {
 		log.Printf("Feedback already sent. Ignoring.")
@@ -439,8 +450,9 @@ func (fb *Feedback) Sort(query string, opts ...fuzzy.Option) []*fuzzy.Result {
 	return s.Sort(query)
 }
 
-// Filter fuzzy-sorts feedback Items against query and deletes Items that
-// don't match.
+// Filter fuzzy-sorts Items against query and deletes Items that don't match.
+// It returns a slice of Result structs, which contain the results of the
+// fuzzy sorting.
 func (fb *Feedback) Filter(query string, opts ...fuzzy.Option) []*fuzzy.Result {
 	var items []*Item
 	var res []*fuzzy.Result
@@ -456,10 +468,10 @@ func (fb *Feedback) Filter(query string, opts ...fuzzy.Option) []*fuzzy.Result {
 	return res
 }
 
-// SortKey implements fuzzy.Interface.
+// Keywords implements fuzzy.Sortable.
 //
-// Returns the match field for Item i. If Item's match is unset, returns Item's title instead.
-func (fb *Feedback) SortKey(i int) string {
+// Returns the match or title field for Item i.
+func (fb *Feedback) Keywords(i int) string {
 	it := fb.Items[i]
 	// Sort on title if match isn't set
 	if it.match != nil {
@@ -472,13 +484,13 @@ func (fb *Feedback) SortKey(i int) string {
 func (fb *Feedback) Len() int { return len(fb.Items) }
 
 // Less implements sort.Interface.
-func (fb *Feedback) Less(i, j int) bool { return fb.SortKey(i) < fb.SortKey(j) }
+func (fb *Feedback) Less(i, j int) bool { return fb.Keywords(i) < fb.Keywords(j) }
 
 // Swap implements sort.Interface.
 func (fb *Feedback) Swap(i, j int) { fb.Items[i], fb.Items[j] = fb.Items[j], fb.Items[i] }
 
-// ArgVars lets you set workflow variables from Run Script actions. It emits the
-// arg and variables you set in the format required by Alfred.
+// ArgVars lets you set workflow variables from Run Script actions.
+// It emits the arg and variables you set in the format required by Alfred.
 //
 // Use ArgVars.Send() to pass variables to downstream workflow elements.
 type ArgVars struct {
@@ -510,7 +522,8 @@ func (a *ArgVars) Var(k, v string) *ArgVars {
 
 // String returns a string representation.
 //
-// If any variables are set, JSON is returned. Otherwise, a plain string is returned.
+// If any variables are set, JSON is returned. Otherwise, a plain string
+// is returned.
 func (a *ArgVars) String() (string, error) {
 	if len(a.vars) == 0 {
 		if a.arg != nil {
@@ -526,7 +539,7 @@ func (a *ArgVars) String() (string, error) {
 	return string(data), nil
 }
 
-// Send outputs the set arg and variables to Alfred by printing a response to STDOUT.
+// Send outputs arg and variables to Alfred by printing a response to STDOUT.
 func (a *ArgVars) Send() error {
 	s, err := a.String()
 	if err != nil {
@@ -536,8 +549,8 @@ func (a *ArgVars) Send() error {
 	return err
 }
 
-// MarshalJSON serialises ArgVars to JSON. You probably don't need to call this:
-// use ArgVars.String() instead.
+// MarshalJSON serialises ArgVars to JSON.
+// You probably don't need to call this: use ArgVars.String() instead.
 func (a *ArgVars) MarshalJSON() ([]byte, error) {
 
 	// Return arg regardless of whether it's empty or not:

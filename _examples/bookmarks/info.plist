@@ -101,7 +101,7 @@
 	<string>AwGo: Search Safari bookmarks
 =============================
 
-This workflow demonstrates implementing fuzzy.Interface on your own structs.
+This workflow demonstrates implementing fuzzy.Sortable on your own structs.
 
 See file bookmarks.go.</string>
 	<key>uidata</key>
@@ -109,18 +109,18 @@ See file bookmarks.go.</string>
 		<key>1ECEC7CE-5E5D-4F07-A284-F5976DADCC2B</key>
 		<dict>
 			<key>xpos</key>
-			<integer>260</integer>
+			<integer>290</integer>
 			<key>ypos</key>
-			<integer>20</integer>
+			<integer>60</integer>
 		</dict>
 		<key>3BF10786-C7AA-4EAF-AF73-08CFB7CA918F</key>
 		<dict>
 			<key>note</key>
 			<string>Filter your Safari bookmarks</string>
 			<key>xpos</key>
-			<integer>40</integer>
+			<integer>70</integer>
 			<key>ypos</key>
-			<integer>20</integer>
+			<integer>60</integer>
 		</dict>
 	</dict>
 	<key>version</key>

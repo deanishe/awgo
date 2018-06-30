@@ -20,24 +20,30 @@ import (
 	"github.com/deanishe/awgo/util"
 )
 
-// AlreadyRunning is the error returned by RunInBackground if a job with
+// ErrJobExists is the error returned by RunInBackground if a job with
 // the given name is already running.
-type AlreadyRunning struct {
-	Name string
-	Pid  int
+type ErrJobExists struct {
+	Name string // Name of the job
+	Pid  int    // PID of the running job
 }
 
 // Error implements error interface.
-func (a AlreadyRunning) Error() string {
+func (a ErrJobExists) Error() string {
 	return fmt.Sprintf("Job '%s' already running with PID %d", a.Name, a.Pid)
 }
 
+// IsJobExists returns true if error is of type ErrJobExists.
+func IsJobExists(err error) bool {
+	_, ok := err.(ErrJobExists)
+	return ok
+}
+
 // RunInBackground executes cmd in the background. It returns an
-// AlreadyRunning error if a job of the same name is already running.
-func RunInBackground(jobName string, cmd *exec.Cmd) error {
-	if IsRunning(jobName) {
-		pid, _ := getPid(jobName)
-		return AlreadyRunning{jobName, pid}
+// ErrJobExists error if a job of the same name is already running.
+func (wf *Workflow) RunInBackground(jobName string, cmd *exec.Cmd) error {
+	if wf.IsRunning(jobName) {
+		pid, _ := wf.getPid(jobName)
+		return ErrJobExists{jobName, pid}
 	}
 
 	if cmd.SysProcAttr == nil {
@@ -48,20 +54,17 @@ func RunInBackground(jobName string, cmd *exec.Cmd) error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-	pid := cmd.Process.Pid
-	if err := savePid(jobName, pid); err != nil {
-		return err
-	}
-	return nil
+
+	return wf.savePid(jobName, cmd.Process.Pid)
 }
 
 // Kill stops a background job.
-func Kill(jobName string) error {
-	pid, err := getPid(jobName)
+func (wf *Workflow) Kill(jobName string) error {
+	pid, err := wf.getPid(jobName)
 	if err != nil {
 		return err
 	}
-	p := pidFile(jobName)
+	p := wf.pidFile(jobName)
 	if err = syscall.Kill(pid, syscall.SIGTERM); err != nil {
 		// Delete stale PID file
 		os.Remove(p)
@@ -72,31 +75,28 @@ func Kill(jobName string) error {
 }
 
 // IsRunning returns true if a job with name jobName is currently running.
-func IsRunning(jobName string) bool {
-	pid, err := getPid(jobName)
+func (wf *Workflow) IsRunning(jobName string) bool {
+	pid, err := wf.getPid(jobName)
 	if err != nil {
 		return false
 	}
 	if err = syscall.Kill(pid, 0); err != nil {
 		// Delete stale PID file
-		os.Remove(pidFile(jobName))
+		os.Remove(wf.pidFile(jobName))
 		return false
 	}
 	return true
 }
 
 // Save PID a job-specific file.
-func savePid(jobName string, pid int) error {
-	p := pidFile(jobName)
-	if err := ioutil.WriteFile(p, []byte(fmt.Sprintf("%d", pid)), 0600); err != nil {
-		return err
-	}
-	return nil
+func (wf *Workflow) savePid(jobName string, pid int) error {
+	p := wf.pidFile(jobName)
+	return ioutil.WriteFile(p, []byte(strconv.Itoa(pid)), 0600)
 }
 
 // Return PID for job.
-func getPid(jobName string) (int, error) {
-	p := pidFile(jobName)
+func (wf *Workflow) getPid(jobName string) (int, error) {
+	p := wf.pidFile(jobName)
 	data, err := ioutil.ReadFile(p)
 	if err != nil {
 		return 0, err
@@ -109,7 +109,7 @@ func getPid(jobName string) (int, error) {
 }
 
 // Path to PID file for job.
-func pidFile(jobName string) string {
-	dir := util.MustExist(filepath.Join(awCacheDir(), "jobs"))
+func (wf *Workflow) pidFile(jobName string) string {
+	dir := util.MustExist(filepath.Join(wf.awCacheDir(), "jobs"))
 	return filepath.Join(dir, jobName+".pid")
 }
