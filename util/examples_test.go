@@ -164,7 +164,9 @@ func ExampleRun() {
 
 	// Create a simple test script
 	filename := "test-script"
-	script := "#!/bin/bash\necho -n Happy Hour"
+	script := `#!/bin/bash
+	echo -n Happy Hour
+	`
 
 	// Make sure script is executable!
 	if err := ioutil.WriteFile(filename, []byte(script), 0700); err != nil {

@@ -12,7 +12,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -107,7 +106,7 @@ func (rs Runners) Run(filename string, args ...string) ([]byte, error) {
 		return nil, err
 	}
 	if fi.IsDir() {
-		return nil, fmt.Errorf("%s is a directory", filename)
+		return nil, ErrUnknownFileType
 	}
 
 	// See if a runner will accept file
