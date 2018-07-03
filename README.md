@@ -9,6 +9,7 @@ AwGo — A Go library for Alfred workflows
 [![Build Status][travis-icon]][travis-link]
 [![Coverage Status][coveralls-icon]][coveralls-link]
 [![Go Report Card][goreport-icon]][goreport-link]
+[![GoDoc][godoc-icon]][godoc-link]
 
 Full-featured library to build lightning-fast workflows in a jiffy.
 
@@ -135,4 +136,5 @@ The icon is based on the [Go Gopher][gopher] by [Renee French][renee].
 [goreport-icon]: https://goreportcard.com/badge/github.com/deanishe/awgo
 [coveralls-icon]: https://coveralls.io/repos/github/deanishe/awgo/badge.svg?branch=master
 [coveralls-link]: https://coveralls.io/github/deanishe/awgo?branch=master
-
+[godoc-icon]: https://godoc.org/github.com/deanishe/awgo?status.svg
+[godoc-link]: https://godoc.org/github.com/deanishe/awgo
