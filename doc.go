@@ -190,53 +190,53 @@ and in this case prepends filename:linenumber: to log messages.
 
 Workflow settings
 
-The Alfred struct provides an interface to the workflow's settings from
-the Workflow Environment Variables panel.
+The Config struct (which is included in Workflow as Workflow.Config) provides an
+interface to the workflow's settings from the Workflow Environment Variables panel.
 https://www.alfredapp.com/help/workflows/advanced/variables/#environment
 
 Alfred exports these settings as environment variables, and you can read them
-ad-hoc with the Alfred.Get*() methods, and save values back to Alfred with
-Alfred.SetConfig().
+ad-hoc with the Config.Get*() methods, and save values back to Alfred with
+Config.Set().
 
-Using Alfred.To() and Alfred.From(), you can "bind" your own structs to the
+Using Config.To() and Config.From(), you can "bind" your own structs to the
 settings in Alfred:
 
-	// Config will be populated
-	type Config struct {
+	// Options will be populated from workflow/environment variables
+	type Options struct {
 		Server   string `env:"HOSTNAME"`
 		Port     int    // use default: PORT
 		User     string `env:"USERNAME"`
 		Password string `env:"-"` // ignore
 	}
 
-	a := NewAlfred()
-	c := &Config{}
+	cfg := NewConfig()
+	opts := &Options{}
 
 	// Populate Config's fields from the corresponding environment variables.
-	if err := a.To(c); err != nil {
+	if err := cfg.To(opts); err != nil {
 		// handle error
 	}
 
 And to save a struct's fields to the workflow's settings in Alfred:
 
 	// Defaults
-	c = &Config{
+	opts = &Options{
 		Server:   "localhost",
 		Port:     6000,
 	}
 
-	// Save Config to Alfred
-	if err := a.From(c); err != nil {
+	// Save Options to Alfred
+	if err := cfg.From(opts); err != nil {
 		// handle error
 	}
 
-See the documentation for Alfred.To and Alfred.From for more information,
+See the documentation for Config.To and Config.From for more information,
 and _examples/settings for a demo workflow based on the API.
 
 
 Alfred actions
 
-The Alfred struct also provides methods for the rest of Alfred's AppleScript
+The Alfred struct provides methods for the rest of Alfred's AppleScript
 API. Amongst other things, you can use it to tell Alfred to open, to search
 for a query, or to browse/action files & directories.
 
