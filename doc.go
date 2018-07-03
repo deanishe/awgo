@@ -278,7 +278,7 @@ running checks for updates and other jobs that hit the network or take a
 significant amount of time to complete, allowing you to keep your Script
 Filters extremely responsive.
 
-See _examples/update for one possible way to use this API.
+See _examples/update and _examples/workflows for demonstrations of this API.
 
 */
 package aw
