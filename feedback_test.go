@@ -370,17 +370,20 @@ func TestFeedbackVars(t *testing.T) {
 		t.Fatalf("Wrong feedback JSON. Expected=%s, got=%s", want, got)
 	}
 
-	// Top-level vars are not inherited
+	// Top-level vars are inherited
 	it := fb.NewItem("title")
-	if it.Vars()["foo"] != "" {
-		t.Fatalf("Item var has wrong value. Expected='', Received=%v", it.Vars()["foo"])
+	if it.Vars()["foo"] != "bar" {
+		t.Fatalf("Item var has wrong value. Expected=bar, Received=%v", it.Vars()["foo"])
 	}
 
-	// Modifier inherits Item vars
-	it.Var("foo", "baz")
+	// Modifier inherits Item and top-level vars
+	it.Var("baz", "qux")
 	m := it.NewModifier("cmd")
-	if m.Vars()["foo"] != "baz" {
-		t.Fatalf("Modifier var has wrong value. Expected=baz, Received=%v", m.Vars()["foo"])
+	if m.Vars()["baz"] != "qux" {
+		t.Fatalf("Modifier var has wrong value. Expected=qux, Received=%v", m.Vars()["baz"])
+	}
+	if m.Vars()["foo"] != "bar" {
+		t.Fatalf("Modifier var has wrong value. Expected=bar, Received=%v", m.Vars()["foo"])
 	}
 }
 
