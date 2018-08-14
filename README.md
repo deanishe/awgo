@@ -6,6 +6,8 @@
 AwGo — A Go library for Alfred workflows
 ========================================
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/f82196519d984171b09366717361fa7b)](https://app.codacy.com/app/deanishe/awgo?utm_source=github.com&utm_medium=referral&utm_content=deanishe/awgo&utm_campaign=badger)
+
 [![Build Status][travis-icon]][travis-link]
 [![Coverage Status][coveralls-icon]][coveralls-link]
 [![Go Report Card][goreport-icon]][goreport-link]
