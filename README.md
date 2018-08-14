@@ -7,8 +7,9 @@ AwGo — A Go library for Alfred workflows
 ========================================
 
 [![Build Status][travis-icon]][travis-link]
-[![Coverage Status][coveralls-icon]][coveralls-link]
 [![Go Report Card][goreport-icon]][goreport-link]
+[![Codacy Badge][codacy-icon]][codacy-link]
+[![Coverage Status][coveralls-icon]][coveralls-link]
 [![GoDoc][godoc-icon]][godoc-link]
 
 Full-featured library to build lightning-fast workflows in a jiffy.
@@ -134,6 +135,8 @@ The icon is based on the [Go Gopher][gopher] by [Renee French][renee].
 [travis-icon]: https://travis-ci.org/deanishe/awgo.svg?branch=master
 [goreport-link]: https://goreportcard.com/report/github.com/deanishe/awgo
 [goreport-icon]: https://goreportcard.com/badge/github.com/deanishe/awgo
+[codacy-icon]: https://api.codacy.com/project/badge/Grade/e785f7b0e830468da6fa2856d62e59ab
+[codacy-link]: https://www.codacy.com/app/deanishe/awgo?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=deanishe/awgo&amp;utm_campaign=Badge_Grade
 [coveralls-icon]: https://coveralls.io/repos/github/deanishe/awgo/badge.svg?branch=master
 [coveralls-link]: https://coveralls.io/github/deanishe/awgo?branch=master
 [godoc-icon]: https://godoc.org/github.com/deanishe/awgo?status.svg
