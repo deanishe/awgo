@@ -1,3 +1,4 @@
+os: osx
 language: go
 
 go:
@@ -18,10 +19,9 @@ go:
 #   - $GOPATH/bin/goveralls -service=travis-ci
 
 before_install:
-  - sudo apt-get install zsh
   - go get github.com/mattn/goveralls
 
 script:
-  - ./run-tests.sh -ic
+  - ./run-tests.sh -ic ./...
   - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
 
