@@ -38,12 +38,11 @@ func defaultMagicActions(wf *Workflow) *MagicActions {
 MagicAction is a command that is called directly by AwGo (i.e.  your workflow
 code is not run) if its keyword is passed in a user query.
 
-To use Magic Actions, it's imperative that your workflow call
-Args()/Workflow.Args().
+To use Magic Actions, it's imperative that your workflow call Workflow.Args().
 
-Calls to Args()/Workflow.Args() check the workflow's arguments (os.Args[1:])
-for the magic prefix ("workflow:" by default), and hijack control
-of the workflow if found.
+Calls to Workflow.Args() check the workflow's arguments (os.Args[1:])
+for the magic prefix ("workflow:" by default), and hijack control of the
+workflow if found.
 
 If an exact keyword match is found (e.g. "workflow:log"), the corresponding
 action is executed, and the workflow exits.
@@ -85,7 +84,7 @@ Custom Actions
 To add custom MagicActions, you must register them with your Workflow
 *before* you call Workflow.Args()
 
-To do this, pass MagicAction implementors to Workflow.MagicActions.Register()
+To do this, configure Workflow with the AddMagic option.
 
 */
 type MagicAction interface {

@@ -56,9 +56,9 @@ The main features are:
 
 Usage
 
-Typically, you'd call your program's main entry point via Run(). This way, the
-library will rescue any panic, log the stack trace and show an error message to
-the user in Alfred.
+Typically, you'd call your program's main entry point via Workflow.Run().
+This way, the library will rescue any panic, log the stack trace and show an
+error message to the user in Alfred.
 
 	// script_filter.go
 
@@ -148,8 +148,8 @@ read from environment variables set by Alfred.
 
 You can change defaults by passing one or more Options to New(). If
 you do not want to use Alfred's environment variables, or they aren't set
-(i.e. you're not running the code in Alfred), you must pass an Env as
-the first Option to New() using CustomEnv().
+(i.e. you're not running the code in Alfred), use NewFromEnv() with a custom
+Env implementation.
 
 A Workflow can be re-configured later using its Configure() method.
 

@@ -65,7 +65,7 @@ var (
 //
 // Alfred can show icons based on image files, UTIs (e.g. "public.folder") or
 // can use the icon of a specific file (e.g. "/Applications/Safari.app"
-// to use Safari's icon.
+// to use Safari's icon).
 //
 // Type = "" (the default) will treat Value as the path to an image file.
 // Alfred supports (at least) PNG, ICNS, JPG, GIF.

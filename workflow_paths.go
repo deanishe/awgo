@@ -65,7 +65,7 @@ func (wf *Workflow) OpenData() error {
 	return exec.Command("open", wf.DataDir()).Run()
 }
 
-// ClearData deletes all files from the workflow's cache directory.
+// ClearData deletes all files from the workflow's data directory.
 func (wf *Workflow) ClearData() error {
 	return util.ClearDirectory(wf.DataDir())
 }
