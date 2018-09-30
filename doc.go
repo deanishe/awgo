@@ -8,11 +8,25 @@
 
 /*
 
-Package aw is a utility library/framework for Alfred 3 workflows
+Package aw is a "plug-and-play" development library/framework for Alfred 3
 https://www.alfredapp.com/
 
-It provides APIs for interacting with Alfred (e.g. Script Filter feedback) and
-the workflow environment (variables, caches, settings).
+It combines features for interacting with Alfred (feedback, settings,
+AppleScript API) with simple APIs for common workflow functionality
+(fuzzy search, caching, processes & updates) to make it easy to create
+a top-shelf workflow in very little time indeed.
+
+AwGo is an opinionated framework that expects to be used in a certain way in
+order to eliminate boilerplate. It *will* panic if not run in a valid,
+minimally Alfred-like environment. At a minimum the following environment
+variables should be set to meaningful values:
+
+    alfred_workflow_bundleid
+    alfred_workflow_cache
+    alfred_workflow_data
+
+    // And if you're using the update API
+    alfred_workflow_version
 
 NOTE: AwGo is currently in development. The API *will* change and should
 not be considered stable until v1.0. Until then, vendoring AwGo (e.g.

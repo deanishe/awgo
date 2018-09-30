@@ -41,6 +41,11 @@ func init() {
 // Each API has basic Store/Load functions plus a LoadOrStore function which
 // loads cached data if these exist and aren't too old, or retrieves new data
 // via the provided function, then caches and returns these.
+//
+// The `name` parameter passed to Load*/Store* methods is used as the filename
+// for on-disk cache, so make sure they're filesystem-safe, and consider
+// adding an appropriate extension to the name, e.g. use "name.txt" (or
+// "name.json" with LoadOrStoreJSON).
 type Cache struct {
 	Dir string // Directory to save data in
 }
@@ -279,8 +284,6 @@ func (s Session) LoadJSON(name string, v interface{}) error {
 
 // LoadOrStore loads data from cache if they exist. If data do not exist,
 // reload is called, and the resulting data are cached & returned.
-//
-// If maxAge is 0, any cached data are always returned.
 func (s Session) LoadOrStore(name string, reload func() ([]byte, error)) ([]byte, error) {
 	return s.cache.LoadOrStore(s.name(name), 0, reload)
 }
