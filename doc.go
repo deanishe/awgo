@@ -8,8 +8,8 @@
 
 /*
 
-Package aw is a "plug-and-play" development library/framework for Alfred 3
-https://www.alfredapp.com/
+Package aw is a "plug-and-play" workflow development library/framework for
+Alfred 3 (https://www.alfredapp.com/)
 
 It combines features for interacting with Alfred (feedback, settings,
 AppleScript API) with simple APIs for common workflow functionality

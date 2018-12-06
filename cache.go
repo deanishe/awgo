@@ -214,7 +214,7 @@ func (c Cache) path(name string) string { return filepath.Join(c.Dir, name) }
 // parameter. It is always `0`, i.e. cached data are always loaded regardless
 // of age as long as the session is valid.
 //
-// TODO: Embed Cache rather than wrapping it.
+// TODO: Embed Cache rather than wrapping it?
 type Session struct {
 	SessionID string
 	cache     *Cache

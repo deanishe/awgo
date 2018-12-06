@@ -305,7 +305,7 @@ func (cfg *Config) addScript(script, arg string) *Config {
 	return cfg
 }
 
-// Run a JavaScript that takes two arguments, a string and an object.
+// Add a JavaScript that takes two arguments, a string and an object.
 func (cfg *Config) addScriptOpts(script, name string, opts map[string]interface{}) *Config {
 
 	script = fmt.Sprintf(script, util.QuoteJS(name), util.QuoteJS(opts))

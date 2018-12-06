@@ -189,7 +189,7 @@ func RunCmd(cmd *exec.Cmd) ([]byte, error) {
 	return output, nil
 }
 
-// QuoteAS quotes a string for insertion into AppleScript code.
+// QuoteAS converts string to an AppleScript string literal for insertion into AppleScript code.
 // It wraps the value in quotation marks, so don't insert additional ones.
 func QuoteAS(s string) string {
 
@@ -225,7 +225,7 @@ func QuoteAS(s string) string {
 	return strings.Join(chars, "")
 }
 
-// QuoteJS quotes a value for insertion into JavaScript.
+// QuoteJS converts a value into JavaScript source code.
 // It calls json.Marshal(v), and returns an empty string if an error occurs.
 func QuoteJS(v interface{}) string {
 

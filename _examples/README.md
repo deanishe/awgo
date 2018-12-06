@@ -18,7 +18,7 @@ which will symlink the workflow to Alfred's workflow directory.
 
 ## bookmarks ##
 
-Custom implementation of [`fuzzy.Sortable`][fuzzy-if].
+Custom implementation of [`fuzzy.Sortable`][fuzzy-if], which enables fuzzy matching and sorting.
 
 Displays and filters a list of your Safari bookmarks.
 

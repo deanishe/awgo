@@ -41,9 +41,9 @@ func init() {
 // It is a superset of sort.Interface (i.e. your struct must also
 // implement sort.Interface).
 type Sortable interface {
+	sort.Interface
 	// Keywords returns the string to compare to the sort query
 	Keywords(i int) string
-	sort.Interface
 }
 
 // Result stores the result of a single fuzzy ranking.

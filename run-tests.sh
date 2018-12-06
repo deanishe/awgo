@@ -84,7 +84,7 @@ while getopts ":HchivV" opt; do
       verbose=true
       vopt='-v'
       ;;
-    V)
+    v)
       gopts+=(-v)
       verbose=true
       ;;
