@@ -114,7 +114,13 @@ export alfred_workflow_name="AwGo"
 
 cd "$root"
 
-go test $gopts "$@"
+[[ $#@ -eq 0 ]] && {
+  pkgs=./...
+} || {
+  pkgs="$@"
+}
+
+go test $gopts $pkgs
 st=$?
 
 cd -
