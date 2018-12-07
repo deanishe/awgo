@@ -35,11 +35,11 @@ var (
 		".applescript": []string{"/usr/bin/osascript"},
 		".js":          []string{"/usr/bin/osascript", "-l", "JavaScript"},
 	}
-)
 
-// Available runners in order they should be tried.
-// Executable and Script are added by init.
-var runners Runners
+	// Available runners in order they should be tried.
+	// Executable and Script are added by init.
+	runners Runners
+)
 
 func init() {
 

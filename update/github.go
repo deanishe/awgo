@@ -21,7 +21,7 @@ const (
 // Repo name should be of the form "username/repo", e.g. "deanishe/alfred-ssh".
 func GitHub(repo string) aw.Option {
 	return func(wf *aw.Workflow) aw.Option {
-		u, _ := New(wf, &gitHubReleaser{Repo: repo})
+		u, _ := New(wf, &gitHubReleaser{Repo: repo, fetch: getURL})
 		return aw.Update(u)(wf)
 	}
 }
@@ -33,6 +33,7 @@ func GitHub(repo string) aw.Option {
 type gitHubReleaser struct {
 	Repo     string     // Repo name in form username/repo
 	releases []*Release // GitHub releases for Repo
+	fetch    func(*url.URL) ([]byte, error)
 }
 
 // Releases implements Releaser. Returns a slice of available releases that
@@ -41,7 +42,7 @@ func (gh *gitHubReleaser) Releases() ([]*Release, error) {
 	if gh.releases == nil {
 		gh.releases = []*Release{}
 		// rels := []*Release{}
-		js, err := getURL(gh.url())
+		js, err := gh.fetch(gh.url())
 		if err != nil {
 			log.Printf("Error fetching GitHub releases: %s", err)
 			return nil, err

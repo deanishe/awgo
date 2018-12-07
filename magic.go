@@ -265,10 +265,7 @@ type helpMA struct {
 func (a helpMA) Keyword() string     { return "help" }
 func (a helpMA) Description() string { return "Open workflow help URL in default browser" }
 func (a helpMA) RunText() string     { return "Opening help in your browser…" }
-func (a helpMA) Run() error {
-	cmd := exec.Command("open", a.URL)
-	return cmd.Run()
-}
+func (a helpMA) Run() error          { return exec.Command("open", a.URL).Run() }
 
 // Updates the workflow if a newer release is available.
 type updateMA struct {
@@ -282,9 +279,11 @@ func (a updateMA) Run() error {
 	if err := a.updater.CheckForUpdate(); err != nil {
 		return err
 	}
+
 	if a.updater.UpdateAvailable() {
 		return a.updater.Install()
 	}
+
 	log.Println("No update available")
 	return nil
 }

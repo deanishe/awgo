@@ -5,6 +5,10 @@ package update
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"testing"
@@ -174,5 +178,62 @@ func TestUpdateInterval(t *testing.T) {
 	}
 	if err := clearUpdateCache(); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestHTTPClient(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "hello")
+	}))
+	defer ts.Close()
+
+	u, _ := url.Parse(ts.URL)
+	data, err := getURL(u)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ts.Close()
+
+	s := string(data)
+	if s != "hello\n" {
+		t.Errorf("Bad HTTP response. Expected=%q, Got=%q", "hello", s)
+	}
+
+	ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.NotFound(w, r)
+	}))
+	defer ts.Close()
+
+	u, _ = url.Parse(ts.URL)
+	data, err = getURL(u)
+	if err == nil {
+		t.Errorf("404 request succeeded")
+	}
+	ts.Close()
+
+	ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "contents")
+	}))
+	defer ts.Close()
+
+	u, _ = url.Parse(ts.URL)
+	f, err := ioutil.TempFile("", "awgo-*-test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+
+	err = download(u, f.Name())
+	if err != nil {
+		t.Errorf("Failed to download file: %v", err)
+	}
+
+	data, err = ioutil.ReadFile(f.Name())
+	if err != nil {
+		t.Errorf("Couldn't open downloaded file: %v", err)
+	}
+	s = string(data)
+	if s != "contents\n" {
+		t.Errorf("Bad download contents. Expected=%v, Got=%v", "contents\n", s)
 	}
 }

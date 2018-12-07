@@ -122,3 +122,36 @@ func TestPathExists(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestClearDirectory(t *testing.T) {
+	err := inTempDir(func(dir string) {
+		names := []string{"./root/one", "./root/two", "./root/three"}
+		for _, s := range names {
+			if err := os.MkdirAll(s, 0700); err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		for _, s := range names {
+			_, err := os.Stat(s)
+			if err != nil {
+				t.Error(err)
+			}
+		}
+
+		if err := ClearDirectory("./root"); err != nil {
+			t.Error(err)
+		}
+
+		for _, s := range names {
+			_, err := os.Stat(s)
+			if !os.IsNotExist(err) {
+				t.Errorf("file %q exists", s)
+			}
+		}
+
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
