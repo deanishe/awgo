@@ -21,23 +21,23 @@ const (
 // Repo name should be of the form "username/repo", e.g. "deanishe/alfred-ssh".
 func GitHub(repo string) aw.Option {
 	return func(wf *aw.Workflow) aw.Option {
-		u, _ := New(wf, &GitHubReleaser{Repo: repo})
+		u, _ := New(wf, &gitHubReleaser{Repo: repo})
 		return aw.Update(u)(wf)
 	}
 }
 
-// GitHubReleaser updates from a GitHub repo's releases. Repo should be in
+// gitHubReleaser updates from a GitHub repo's releases. Repo should be in
 // the form "username/reponame", e.g. "deanishe/alfred-ssh". Releases
 // are marked as pre-releases based on the "This is a pre-release"
 // checkbox on the website, *not* the version number/tag.
-type GitHubReleaser struct {
+type gitHubReleaser struct {
 	Repo     string     // Repo name in form username/repo
 	releases []*Release // GitHub releases for Repo
 }
 
 // Releases implements Releaser. Returns a slice of available releases that
 // contain an .alfredworkflow file.
-func (gh *GitHubReleaser) Releases() ([]*Release, error) {
+func (gh *gitHubReleaser) Releases() ([]*Release, error) {
 	if gh.releases == nil {
 		gh.releases = []*Release{}
 		// rels := []*Release{}
@@ -58,7 +58,7 @@ func (gh *GitHubReleaser) Releases() ([]*Release, error) {
 	return gh.releases, nil
 }
 
-func (gh *GitHubReleaser) url() *url.URL {
+func (gh *gitHubReleaser) url() *url.URL {
 	u, _ := url.Parse(fmt.Sprintf("%s%s/releases", ghBaseURL, gh.Repo))
 	return u
 }

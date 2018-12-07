@@ -632,8 +632,8 @@ func TestParseGH(t *testing.T) {
 }
 
 // makeGHReleaser creates a new GitHub Releaser and populates its release cache.
-func makeGHReleaser() *GitHubReleaser {
-	gh := &GitHubReleaser{Repo: "deanishe/nonexistent"}
+func makeGHReleaser() *gitHubReleaser {
+	gh := &gitHubReleaser{Repo: "deanishe/nonexistent"}
 	// Avoid network
 	rels, _ := parseGitHubReleases([]byte(ghReleasesJSON))
 	gh.releases = rels
