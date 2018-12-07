@@ -205,7 +205,7 @@ func TestHTTPClient(t *testing.T) {
 	defer ts.Close()
 
 	u, _ = url.Parse(ts.URL)
-	data, err = getURL(u)
+	_, err = getURL(u)
 	if err == nil {
 		t.Errorf("404 request succeeded")
 	}

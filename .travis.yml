@@ -4,24 +4,12 @@ language: go
 go:
   - "1.x"
 
-# before_install:
-#   - go get github.com/mattn/goveralls
-
-# env:
-#   global:
-#     - alfred_workflow_bundleid=net.deanishe.awgo
-#     - alfred_workflow_cache=./testenv/cache
-#     - alfred_workflow_data=./testenv/data
-#     - alfred_workflow_version=0.14
-#     - alfred_workflow_name=AwGo
-
-# script:
-#   - $GOPATH/bin/goveralls -service=travis-ci
-
 before_install:
   - go get github.com/mattn/goveralls
+  - go get github.com/schrej/godacov
 
 script:
   - ./run-tests.sh -ic ./...
   - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
+  - $GOPATH/bin/godacov -t $CODACY_TOKEN -r ./coverage.out -c $TRAVIS_COMMIT
 
