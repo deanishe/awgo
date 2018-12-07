@@ -1,10 +1,5 @@
-//
-// Copyright (c) 2016 Dean Jackson <deanishe@deanishe.net>
-//
-// MIT Licence. See http://opensource.org/licenses/MIT
-//
-// Created on 2016-11-05
-//
+// Copyright (c) 2018 Dean Jackson <deanishe@deanishe.net>
+// MIT Licence - http://opensource.org/licenses/MIT
 
 /*
 Workflow update is an example of how to use AwGo's update API.

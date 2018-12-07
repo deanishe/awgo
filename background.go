@@ -1,10 +1,5 @@
-//
-// Copyright (c) 2016 Dean Jackson <deanishe@deanishe.net>
-//
-// MIT Licence. See http://opensource.org/licenses/MIT
-//
-// Created on 2016-11-08
-//
+// Copyright (c) 2018 Dean Jackson <deanishe@deanishe.net>
+// MIT Licence - http://opensource.org/licenses/MIT
 
 package aw
 
@@ -88,16 +83,14 @@ func (wf *Workflow) IsRunning(jobName string) bool {
 	return true
 }
 
-// Save PID a job-specific file.
+// Save PID to a job-specific file.
 func (wf *Workflow) savePid(jobName string, pid int) error {
-	p := wf.pidFile(jobName)
-	return ioutil.WriteFile(p, []byte(strconv.Itoa(pid)), 0600)
+	return ioutil.WriteFile(wf.pidFile(jobName), []byte(strconv.Itoa(pid)), 0600)
 }
 
 // Return PID for job.
 func (wf *Workflow) getPid(jobName string) (int, error) {
-	p := wf.pidFile(jobName)
-	data, err := ioutil.ReadFile(p)
+	data, err := ioutil.ReadFile(wf.pidFile(jobName))
 	if err != nil {
 		return 0, err
 	}

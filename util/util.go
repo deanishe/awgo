@@ -1,8 +1,5 @@
-//
-// Copyright (c) 2016 Dean Jackson <deanishe@deanishe.net>
-//
-// MIT Licence. See http://opensource.org/licenses/MIT
-//
+// Copyright (c) 2018 Dean Jackson <deanishe@deanishe.net>
+// MIT Licence - http://opensource.org/licenses/MIT
 
 /*
 

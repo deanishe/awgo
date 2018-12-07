@@ -1,10 +1,5 @@
-//
 // Copyright (c) 2018 Dean Jackson <deanishe@deanishe.net>
-//
-// MIT Licence. See http://opensource.org/licenses/MIT
-//
-// Created on 2018-02-12
-//
+// MIT Licence - http://opensource.org/licenses/MIT
 
 /*
 Workflow settings demonstrates binding a struct to Alfred's settings.

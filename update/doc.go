@@ -1,3 +1,6 @@
+// Copyright (c) 2018 Dean Jackson <deanishe@deanishe.net>
+// MIT Licence - http://opensource.org/licenses/MIT
+
 /*
 Package update implements an API for fetching updates to workflows from remote servers.
 
