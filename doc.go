@@ -45,7 +45,7 @@ of AwGo and useful workflow idioms.
 
 Features
 
-As of AwGo 0.14, all applicable features of Alfred 3.6 are supported.
+As of AwGo 0.15, all applicable features of Alfred 3.7 are supported.
 
 The main features are:
 

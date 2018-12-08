@@ -7,7 +7,7 @@ export alfred_workflow_cache="$HOME/Library/Caches/com.runningwithcrayons.Alfred
 export alfred_workflow_data="$HOME/Library/Application Support/Alfred 3/Workflow Data/net.deanishe.awgo"
 
 # Expected by ExampleNew
-export alfred_workflow_version="0.14"
+export alfred_workflow_version="0.15"
 export alfred_workflow_name="AwGo"
 
 # export alfred_debug="1"

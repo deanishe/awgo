@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	tVersion                  = "0.14"
+	tVersion                  = "0.15"
 	tName                     = "AwGo"
 	tBundleID                 = "net.deanishe.awgo"
 	tUID                      = "user.workflow.4B0E9731-E139-4179-BC50-D7FFF82B269A"
@@ -69,7 +69,7 @@ var (
 	<key>webaddress</key>
 	<string>https://github.com/deanishe/awgo</string>
     <key>version</key>
-    <string>0.14</string>
+    <string>0.15</string>
 	<key>variables</key>
 	<dict>
 		<key>exported_var</key>

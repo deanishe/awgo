@@ -109,15 +109,15 @@ export alfred_workflow_cache="${testdir}/cache"
 export alfred_workflow_data="${testdir}/data"
 
 # Expected by ExampleNew
-export alfred_workflow_version="0.14"
+export alfred_workflow_version="0.15"
 export alfred_workflow_name="AwGo"
 
 cd "$root"
 
 [[ $#@ -eq 0 ]] && {
-  pkgs=./...
+  pkgs=(go list ./...)
 } || {
-  pkgs="$@"
+  pkgs=($@)
 }
 
 go test $gopts $pkgs

@@ -82,7 +82,6 @@ argv):
 ./program "$1"
 ```
 
-
 Documentation
 -------------
 
@@ -93,16 +92,32 @@ show how to use AwGo. Use one as a template to get your own workflow up and
 running quickly.
 
 
-Running/testing
----------------
+Requirements
+------------
 
-The library, and therefore the unit tests, rely on being run in an Alfred-like
-environment, as they pull configuration options from environment variables
-(which are set by Alfred).
+The library (and therefore the unit tests) rely on being run in a minimally
+Alfred-like environment, as they pull configuration options from the environment
+variables set by Alfred.
 
-As such, you must `source` the `env.sh` script in the project root or run unit
-tests via the `run-tests.sh` script (which also sets up an appropriate
-environment before calling `go test`).
+This means that if you want to run AwGo-based code outside Alfred, e.g. in your
+shell, you must set at least the following environment variables to meaningful
+values, or the library will panic:
+
+- `alfred_workflow_bundleid`
+- `alfred_workflow_cache`
+- `alfred_workflow_data`
+
+And if you're using the update API, also:
+
+- `alfred_workflow_version`
+
+
+Development
+-----------
+
+To create a sufficiently Alfred-like environment, you can `source` the `env.sh`
+script in the project root or run unit tests via the `run-tests.sh` script
+(which also sets up an appropriate environment before calling `go test`).
 
 
 Licensing & thanks

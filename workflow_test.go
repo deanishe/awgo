@@ -154,7 +154,7 @@ func ExampleNew() {
 	// Output:
 	// AwGo
 	// net.deanishe.awgo
-	// 0.14
+	// 0.15
 }
 
 // Pass one or more Options to New() to configure the created Workflow.
