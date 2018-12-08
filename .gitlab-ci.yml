@@ -1,4 +1,4 @@
-image: go:1.11
+image: golang:1.11
 
 stages:
   - test
