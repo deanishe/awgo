@@ -10,6 +10,6 @@ before_install:
 
 script:
   - ./run-tests.sh -ic ./...
-  - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
-  - $GOPATH/bin/godacov -t $CODACY_TOKEN -r ./coverage.out -c $TRAVIS_COMMIT
+  - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci; exit 0
+  - $GOPATH/bin/godacov -t $CODACY_TOKEN -r ./coverage.out -c $TRAVIS_COMMIT; exit 0
 
