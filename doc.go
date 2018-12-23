@@ -221,7 +221,7 @@ settings in Alfred:
 	cfg := NewConfig()
 	opts := &Options{}
 
-	// Populate Config's fields from the corresponding environment variables.
+	// Populate Options from the corresponding environment variables.
 	if err := cfg.To(opts); err != nil {
 		// handle error
 	}
@@ -266,14 +266,16 @@ Workflow has three caches tied to different directories:
     Workflow.Cache    // Cache pointing to workflow's cache directory
     Workflow.Session  // Session pointing to cache directory tied to session ID
 
-These all share the same API. The difference is in when the data go away.
+These all share (almost) the same API. The difference is in when the data go
+away.
 
 Data saved with Session are deleted after the user closes Alfred or starts
 using a different workflow. The Cache directory is in a system cache
-directory, so may be deleted by the system or "System Maintenance" tools.
+directory, so may be deleted by the system or "system maintenance" tools.
 
 The Data directory lives with Alfred's application data and would not
 normally be deleted.
+
 
 Scripts and background jobs
 
