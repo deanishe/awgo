@@ -38,7 +38,7 @@ func init() {
 // via the provided function, then caches and returns these.
 //
 // The `name` parameter passed to Load*/Store* methods is used as the filename
-// for on-disk cache, so make sure they're filesystem-safe, and consider
+// for the on-disk cache, so make sure it's filesystem-safe, and consider
 // adding an appropriate extension to the name, e.g. use "name.txt" (or
 // "name.json" with LoadOrStoreJSON).
 type Cache struct {
@@ -52,7 +52,7 @@ func NewCache(dir string) *Cache {
 	return &Cache{dir}
 }
 
-// Store saves data under the given name. If data is nil, the file is deleted.
+// Store saves data under the given name. If data is nil, the cache is deleted.
 func (c Cache) Store(name string, data []byte) error {
 	p := c.path(name)
 	if data == nil {
@@ -90,7 +90,7 @@ func (c Cache) Load(name string) ([]byte, error) {
 	return ioutil.ReadFile(p)
 }
 
-// LoadJSON unmarshals a cache into v.
+// LoadJSON unmarshals named cache into v.
 func (c Cache) LoadJSON(name string, v interface{}) error {
 	p := c.path(name)
 	data, err := ioutil.ReadFile(p)
@@ -100,9 +100,9 @@ func (c Cache) LoadJSON(name string, v interface{}) error {
 	return json.Unmarshal(data, v)
 }
 
-// LoadOrStore loads data from cache if they exist and are newer than maxAge. If
-// data do not exist or are older than maxAge, reload is called, and the returned
-// data are cached & returned.
+// LoadOrStore loads data from cache if they exist and are newer than maxAge.
+// If data do not exist or are older than maxAge, the reload function is
+// called, and the returned data are save to the cache and also returned.
 //
 // If maxAge is 0, any cached data are always returned.
 func (c Cache) LoadOrStore(name string, maxAge time.Duration, reload func() ([]byte, error)) ([]byte, error) {
@@ -128,9 +128,9 @@ func (c Cache) LoadOrStore(name string, maxAge time.Duration, reload func() ([]b
 }
 
 // LoadOrStoreJSON loads JSON-serialised data from cache if they exist and are
-// newer than maxAge. If the data do not exist or are older than maxAge, reload
-// is called, and the returned data are marshalled to JSON and cached, and
-// unmarshalled into v.
+// newer than maxAge. If the data do not exist or are older than maxAge, the
+// reload function is called, and the data it returns are marshalled to JSON &
+// cached, and also unmarshalled into v.
 //
 // If maxAge is 0, any cached data are loaded regardless of age.
 func (c Cache) LoadOrStoreJSON(name string, maxAge time.Duration, reload func() (interface{}, error), v interface{}) error {
