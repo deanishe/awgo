@@ -70,7 +70,7 @@ var (
 // Type = IconTypeFileIcon will treat Value as the path to a file or
 // directory and use that file's icon, e.g:
 //
-//    icon := &Icon{"/Applications/Mail.app", IconTypeFileIcon}
+//    icon := &aw.Icon{"/Applications/Mail.app", aw.IconTypeFileIcon}
 //
 // will display Mail.app's icon.
 //

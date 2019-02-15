@@ -326,11 +326,10 @@ func (m *Modifier) MarshalJSON() ([]byte, error) {
 
 // Feedback represents the results for an Alfred Script Filter.
 //
-// Normally, you won't use this struct directly, but via the
-// package-level functions/Workflow methods NewItem(), SendFeedback(), etc.
-// It is important to use the constructor functions for Feedback, Item
-// and Modifier structs so they are properly initialised and bound to
-// their parent.
+// Normally, you won't use this struct directly, but via the Workflow methods
+// NewItem(), SendFeedback(), etc. It is important to use the constructor
+// functions for Feedback, Item and Modifier structs so they are properly
+// initialised and bound to their parent.
 type Feedback struct {
 	Items  []*Item           // The results to be sent to Alfred.
 	NoUIDs bool              // If true, suppress Item UIDs.
@@ -396,11 +395,11 @@ func (fb *Feedback) NewItem(title string) *Item {
 }
 
 // NewFileItem adds and returns a pointer to a new item pre-populated from path.
-// Title and Autocomplete are the base name of the file;
-// Subtitle is the path to the file (using "~" for $HOME);
-// Valid is true;
-// UID and Arg are set to path;
-// Type is "file"; and
+// Title and Autocomplete are the base name of the file,
+// Subtitle is the path to the file (using "~" for $HOME),
+// Valid is true,
+// UID and Arg are set to path,
+// Type is "file", and
 // Icon is the icon of the file at path.
 func (fb *Feedback) NewFileItem(path string) *Item {
 	t := filepath.Base(path)

@@ -92,7 +92,8 @@ type Workflow struct {
 	Updater Updater
 
 	// MagicActions contains the magic actions registered for this workflow.
-	// It is set to DefaultMagicActions by default.
+	// Several built-in actions are registered by default. See the docs for
+	// MagicAction for details.
 	MagicActions *MagicActions
 
 	logPrefix   string         // Written to debugger to force a newline
@@ -198,9 +199,7 @@ func (wf *Workflow) initializeLogging() {
 	}
 
 	// Open log file
-	file, err := os.OpenFile(wf.LogFile(),
-		os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
-
+	file, err := os.OpenFile(wf.LogFile(), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 	if err != nil {
 		wf.Fatal(fmt.Sprintf("Couldn't open log file %s : %v",
 			wf.LogFile(), err))
