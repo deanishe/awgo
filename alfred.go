@@ -5,9 +5,23 @@ package aw
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/deanishe/awgo/util"
+)
+
+
+// JXA scripts to call Alfred.
+const (
+	scriptSearch    = "Application(%s).search(%s);"
+	scriptAction    = "Application(%s).action(%s);"
+	scriptBrowse    = "Application(%s).browse(%s);"
+	scriptSetTheme  = "Application(%s).setTheme(%s);"
+	scriptTrigger   = "Application(%s).runTrigger(%s, %s);"
+	scriptSetConfig = "Application(%s).setConfiguration(%s, %s);"
+	scriptRmConfig  = "Application(%s).removeConfiguration(%s, %s);"
 )
 
 /*
@@ -28,6 +42,10 @@ various modes or call External Triggers.
 */
 type Alfred struct {
 	Env
+	// For testing. Set to true to save JXA script to lastScript
+	// instead of running it.
+	noRunScripts bool
+	lastScript string
 }
 
 // NewAlfred creates a new Alfred from the environment.
@@ -44,13 +62,12 @@ func NewAlfred(env ...Env) *Alfred {
 		e = sysEnv{}
 	}
 
-	return &Alfred{e}
+	return &Alfred{Env: e}
 }
 
 // Search runs Alfred with the given query. Use an empty query to just open Alfred.
 func (a *Alfred) Search(query string) error {
-	_, err := util.RunJS(fmt.Sprintf(scriptSearch, util.QuoteJS(query)))
-	return err
+	return a.runScript(scriptSearch, query)
 }
 
 // Browse tells Alfred to open path in navigation mode.
@@ -62,14 +79,12 @@ func (a *Alfred) Browse(path string) error {
 		return err
 	}
 
-	_, err = util.RunJS(fmt.Sprintf(scriptBrowse, util.QuoteJS(path)))
-	return err
+	return a.runScript(scriptBrowse, path)
 }
 
 // SetTheme tells Alfred to use the specified theme.
 func (a *Alfred) SetTheme(name string) error {
-	_, err := util.RunJS(fmt.Sprintf(scriptSetTheme, util.QuoteJS(name)))
-	return err
+	return a.runScript(scriptSetTheme, name)
 }
 
 // Action tells Alfred to show File Actions for path(s).
@@ -91,8 +106,7 @@ func (a *Alfred) Action(path ...string) error {
 		paths = append(paths, p)
 	}
 
-	_, err := util.RunJS(fmt.Sprintf(scriptAction, util.QuoteJS(paths)))
-	return err
+	return a.runScript(scriptAction, paths)
 }
 
 // RunTrigger runs an External Trigger in the given workflow. Query may be empty.
@@ -117,19 +131,30 @@ func (a *Alfred) RunTrigger(name, query string, bundleID ...string) error {
 		opts["withArgument"] = query
 	}
 
-	_, err := util.RunJS(fmt.Sprintf(scriptTrigger, util.QuoteJS(name), util.QuoteJS(opts)))
+	return a.runScript(scriptTrigger, name, opts)
+}
+
+func (a *Alfred) runScript(script string, arg ...interface{}) error {
+	quoted := []interface{}{util.QuoteJS(scriptAppName())}
+	for _, v := range arg {
+		quoted = append(quoted, util.QuoteJS(v))
+	}
+	script = fmt.Sprintf(script, quoted...)
+
+	if a.noRunScripts {
+		a.lastScript = script
+		return nil
+	}
+
+	_, err := util.RunJS(script)
 	return err
 }
 
-// JXA scripts to call Alfred
-var (
-	// Simple scripts require one or no string
-	scriptSearch   = "Application('Alfred 3').search(%s)"
-	scriptAction   = "Application('Alfred 3').action(%s)"
-	scriptBrowse   = "Application('Alfred 3').browse(%s)"
-	scriptSetTheme = "Application('Alfred 3').setTheme(%s)"
-	// These scripts require a string and an object of options
-	scriptTrigger   = "Application('Alfred 3').runTrigger(%s, %s)"
-	scriptSetConfig = "Application('Alfred 3').setConfiguration(%s, %s)"
-	scriptRmConfig  = "Application('Alfred 3').removeConfiguration(%s, %s)"
-)
+// Name of JXA Application for running Alfred
+func scriptAppName() string {
+	if strings.HasPrefix(os.Getenv(EnvVarAlfredVersion), "3") {
+		return "Alfred 3"
+	}
+	return "com.runningwithcrayons.Alfred"
+}
+

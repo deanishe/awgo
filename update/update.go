@@ -211,7 +211,11 @@ func (u *Updater) cachePath(filename string) string {
 }
 
 // clearCache removes the update cache.
-func (u *Updater) clearCache() { util.ClearDirectory(u.cachePath("")) }
+func (u *Updater) clearCache() {
+	if err := util.ClearDirectory(u.cachePath("")); err != nil {
+		log.Printf("[ERROR] clear cache: %v", err)
+	}
+}
 
 // cacheLastCheck saves time to cachepath.
 func (u *Updater) cacheLastCheck() {

@@ -26,7 +26,6 @@ type testHost struct {
 
 // The default values for the bind test environment.
 var (
-	testID                 = "uid34"
 	testHostname           = "test.example.com"
 	testOnline             = true
 	testPort         uint  = 3000

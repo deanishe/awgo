@@ -86,7 +86,10 @@ func NewConfig(env ...Env) *Config {
 	} else {
 		e = sysEnv{}
 	}
-	return &Config{e, []string{}, nil}
+	return &Config{
+		Env:     e,
+		scripts: []string{},
+	}
 }
 
 // Get returns the value for envvar "key".
@@ -229,7 +232,7 @@ func (cfg *Config) Set(key, value string, export bool, bundleID ...string) *Conf
 		"exportable": export,
 	}
 
-	return cfg.addScriptOpts(scriptSetConfig, key, opts)
+	return cfg.addScript(scriptSetConfig, key, opts)
 }
 
 // Unset removes a workflow variable from info.plist.
@@ -244,7 +247,7 @@ func (cfg *Config) Unset(key string, bundleID ...string) *Config {
 		"inWorkflow": bid,
 	}
 
-	return cfg.addScriptOpts(scriptRmConfig, key, opts)
+	return cfg.addScript(scriptRmConfig, key, opts)
 }
 
 // Do calls Alfred and runs the accumulated actions.
@@ -291,19 +294,10 @@ func (cfg *Config) getBundleID(bundleID ...string) string {
 	return bid
 }
 
-// Add a JavaScript that takes a single argument.
-func (cfg *Config) addScript(script, arg string) *Config {
-
-	script = fmt.Sprintf(script, util.QuoteJS(arg))
-	cfg.scripts = append(cfg.scripts, script)
-
-	return cfg
-}
-
 // Add a JavaScript that takes two arguments, a string and an object.
-func (cfg *Config) addScriptOpts(script, name string, opts map[string]interface{}) *Config {
+func (cfg *Config) addScript(script, name string, opts map[string]interface{}) *Config {
 
-	script = fmt.Sprintf(script, util.QuoteJS(name), util.QuoteJS(opts))
+	script = fmt.Sprintf(script, util.QuoteJS(scriptAppName()), util.QuoteJS(name), util.QuoteJS(opts))
 	cfg.scripts = append(cfg.scripts, script)
 
 	return cfg

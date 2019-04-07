@@ -1,6 +1,6 @@
 
 <div align="center">
-    <img src="./Icon.png" alt="AwGo Logo" title="AwGo Logo">
+    <img src="https://raw.githubusercontent.com/deanishe/alfred-safari-assistant/master/icons/icon.png" alt="AwGo Logo" title="AwGo Logo">
 </div>
 
 AwGo — A Go library for Alfred workflows

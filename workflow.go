@@ -18,7 +18,7 @@ import (
 )
 
 // AwGoVersion is the semantic version number of this library.
-const AwGoVersion = "0.15.0"
+const AwGoVersion = "0.16.0-beta"
 
 // Default Workflow settings. Can be changed with the corresponding Options.
 //
@@ -303,7 +303,9 @@ func (wf *Workflow) Run(fn func()) {
 	wf.Add(1)
 	go func() {
 		defer wf.Done()
-		wf.Session.Clear(false)
+		if err := wf.Session.Clear(false); err != nil {
+			log.Printf("[ERROR] clear session: %v", err)
+		}
 	}()
 
 	// Catch any `panic` and display an error in Alfred.

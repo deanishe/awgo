@@ -9,8 +9,8 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/DHowett/go-plist"
 	"github.com/deanishe/awgo/fuzzy"
+	"howett.net/plist"
 )
 
 var (

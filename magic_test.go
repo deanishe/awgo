@@ -10,12 +10,20 @@ import (
 
 // Mock magic action
 type testMA struct {
-	keyCalled, descCalled, runTextCalled, runCalled bool
-	returnError                                     bool
+	keyCalled     bool
+	descCalled    bool
+	runTextCalled bool
+	runCalled     bool
+	returnError   bool
+
+	keyword string
 }
 
 func (a *testMA) Keyword() string {
 	a.keyCalled = true
+	if a.keyword != "" {
+		return a.keyword
+	}
 	return "test"
 }
 func (a *testMA) Description() string {
@@ -155,5 +163,36 @@ func TestMagicActions(t *testing.T) {
 
 	if err := ta.ValidateRun(); err != nil {
 		t.Errorf("Bad MagicAction: %v", err)
+	}
+}
+
+// Test automatically-added updateMA.
+func TestMagicUpdate(t *testing.T) {
+
+	u := &mockUpdater{}
+	// Workflow automatically adds a MagicAction to call the Updater
+	wf := New(Update(u))
+	ma := wf.MagicActions
+
+	// Incomplete keyword = search query
+	_, v := ma.handleArgs([]string{"workflow:upda"}, DefaultMagicPrefix)
+	if !v {
+		t.Errorf("Bad handled. Expected=%v, Got=%v", true, v)
+	}
+
+	// Keyword of update MA
+	_, v = ma.handleArgs([]string{"workflow:update"}, DefaultMagicPrefix)
+	if !v {
+		t.Errorf("Bad handled. Expected=%v, Got=%v", true, v)
+	}
+
+	if !u.checkForUpdateCalled {
+		t.Errorf("Bad update. CheckForUpdate not called")
+	}
+	if !u.updateAvailableCalled {
+		t.Errorf("Bad update. UpdateAvailable not called")
+	}
+	if !u.installCalled {
+		t.Errorf("Bad update. Install not called")
 	}
 }

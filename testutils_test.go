@@ -9,10 +9,13 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
+
+	"github.com/deanishe/awgo/util"
 )
 
 var (
-	tVersion                  = "0.15"
+	tVersion                  = "1.2.0"
 	tName                     = "AwGo"
 	tBundleID                 = "net.deanishe.awgo"
 	tUID                      = "user.workflow.4B0E9731-E139-4179-BC50-D7FFF82B269A"
@@ -85,6 +88,15 @@ var (
 </plist>
 `
 )
+
+// create a temporary directory, call function fn, delete the directory.
+func withTempDir(fn func(dir string)) {
+	root := os.TempDir()
+	p := filepath.Join(root, fmt.Sprintf("awgo-%d.%d", os.Getpid(), time.Now().Nanosecond()))
+	util.MustExist(p)
+	defer os.RemoveAll(p)
+	fn(p)
+}
 
 // Call function with a test environment.
 func withTestEnv(fun func(e MapEnv)) {

@@ -58,7 +58,9 @@ func ExamplePathExists() {
 	fmt.Println(PathExists(name))
 
 	// Create the file
-	ioutil.WriteFile(name, []byte("test"), 0600)
+	if err := ioutil.WriteFile(name, []byte("test"), 0600); err != nil {
+		panic(err)
+	}
 
 	// Now it exists
 	fmt.Println(PathExists(name))

@@ -30,7 +30,9 @@ func (v *versioned) Version() string { return v.version }
 func (v *versioned) CacheDir() string {
 	if v.dir == "" {
 		v.dir = filepath.Join(os.TempDir(), fmt.Sprintf("aw-%d", os.Getpid()))
-		os.MkdirAll(v.dir, 0700)
+		if err := os.MkdirAll(v.dir, 0700); err != nil {
+			panic(err)
+		}
 	}
 	return v.dir
 }

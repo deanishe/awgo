@@ -173,13 +173,30 @@ func (it *Item) NewModifier(key ModKey) *Modifier {
 }
 
 // SetModifier sets a Modifier for a modifier key.
-func (it *Item) SetModifier(m *Modifier) error {
+func (it *Item) SetModifier(m *Modifier) {
 	if it.mods == nil {
 		it.mods = map[ModKey]*Modifier{}
 	}
 	it.mods[m.Key] = m
-	return nil
 }
+
+// Cmd returns an initialised Modifier bound to this Item and the CMD (⌘) key.
+func (it *Item) Cmd() *Modifier { return it.NewModifier(ModCmd) }
+
+// Alt returns an initialised Modifier bound to this Item and the ALT/OPT (⌥) key.
+func (it *Item) Alt() *Modifier { return it.NewModifier(ModAlt) }
+
+// Opt is a synonym for Alt().
+func (it *Item) Opt() *Modifier { return it.Alt() }
+
+// Ctrl returns an initialised Modifier bound to this Item and the CTRL (^) key.
+func (it *Item) Ctrl() *Modifier { return it.NewModifier(ModCtrl) }
+
+// Shift returns an initialised Modifier bound to this Item and the SHIFT (⇧) key.
+func (it *Item) Shift() *Modifier { return it.NewModifier(ModShift) }
+
+// Fn returns an initialised Modifier bound to this Item and the fn key.
+func (it *Item) Fn() *Modifier { return it.NewModifier(ModFn) }
 
 // Vars returns the Item's workflow variables.
 func (it *Item) Vars() map[string]string {
@@ -256,13 +273,12 @@ type itemText struct {
 // after creating the Modifier are not inherited.
 type Modifier struct {
 	// The modifier key. May be any of ValidModifiers.
-	Key         ModKey
-	arg         *string
-	subtitle    *string
-	subtitleSet bool
-	valid       bool
-	icon        *Icon
-	vars        map[string]string
+	Key      ModKey
+	arg      *string
+	subtitle *string
+	valid    bool
+	icon     *Icon
+	vars     map[string]string
 }
 
 // newModifier creates a Modifier, validating key.

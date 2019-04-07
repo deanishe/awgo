@@ -103,16 +103,10 @@ $cover && gopts+=(-coverprofile="$covfile")
 command mkdir $vopt -p "${testdir}"/{data,cache}
 $mkip && touch $vopt "$iplist"
 
-# Absolute bare-minimum for AwGo to function...
-export alfred_workflow_bundleid="net.deanishe.awgo"
-export alfred_workflow_cache="${testdir}/cache"
-export alfred_workflow_data="${testdir}/data"
-
-# Expected by ExampleNew
-export alfred_workflow_version="0.15"
-export alfred_workflow_name="AwGo"
-
 cd "$root"
+source "env.sh"
+export alfred_workflow_data="${testdir}/data"
+export alfred_workflow_cache="${testdir}/cache"
 
 [[ $#@ -eq 0 ]] && {
   pkgs=(go list ./...)
@@ -134,7 +128,9 @@ test -f "$iplist" && command rm $vopt -f "$iplist"
 
 success "tests passed"
 
-$opencover && go tool cover -html="$covfile"
+$opencover && {
+  go tool cover -html="$covfile"
+}
 
 exit 0
 

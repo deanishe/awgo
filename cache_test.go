@@ -7,25 +7,15 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/deanishe/awgo/util"
 )
 
-// WithTempDir creates a temporary directory, calls function fn, then deletes the directory.
-func WithTempDir(fn func(dir string)) {
-	root := os.TempDir()
-	p := filepath.Join(root, fmt.Sprintf("awgo-%d.%d", os.Getpid(), time.Now().Nanosecond()))
-	util.MustExist(p)
-	defer os.RemoveAll(p)
-	fn(p)
-}
-
 // TestStoreAndLoad checks that data are stored and loaded correctly
 func TestStoreAndLoad(t *testing.T) {
-	WithTempDir(func(dir string) {
+	withTempDir(func(dir string) {
 		c := NewCache(dir)
 		s := "this is a test"
 		n := "test.txt"
@@ -111,7 +101,7 @@ func TestLoadOrStore(t *testing.T) {
 		return []byte(s), nil
 	}
 
-	WithTempDir(func(dir string) {
+	withTempDir(func(dir string) {
 		c := NewCache(dir)
 		n := "test.txt"
 		maxAge := time.Duration(time.Second * 1)
@@ -203,7 +193,7 @@ func (td *TestData) Eq(other *TestData) bool {
 
 // TestStoreJSON round-trips data through the JSON caching API.
 func TestStoreJSON(t *testing.T) {
-	WithTempDir(func(dir string) {
+	withTempDir(func(dir string) {
 		n := "test.json"
 		c := NewCache(dir)
 		p := c.path(n)
@@ -258,7 +248,7 @@ func TestLoadOrStoreJSON(t *testing.T) {
 		return &TestData{"one", "two"}, nil
 	}
 
-	WithTempDir(func(dir string) {
+	withTempDir(func(dir string) {
 		n := "test.json"
 		c := NewCache(dir)
 		maxAge := time.Duration(time.Second * 1)
@@ -350,7 +340,7 @@ func TestBadReloadError(t *testing.T) {
 		return nil, fmt.Errorf("an error")
 	}
 
-	WithTempDir(func(dir string) {
+	withTempDir(func(dir string) {
 		c := NewCache(dir)
 		n := "test"
 		if _, err := c.LoadOrStore(n, 0, reloadB); err == nil {
@@ -365,7 +355,7 @@ func TestBadReloadError(t *testing.T) {
 
 // TestSession tests session-scoped caching.
 func TestSession(t *testing.T) {
-	WithTempDir(func(dir string) {
+	withTempDir(func(dir string) {
 		sid := NewSessionID()
 		s := NewSession(dir, sid)
 		data := []byte("this is a test")
@@ -409,12 +399,12 @@ func TestSession(t *testing.T) {
 		}
 
 		// Clear session
-		s.Clear(false) // Leave current session data
+		_ = s.Clear(false) // Leave current session data
 		if !util.PathExists(p) {
 			t.Errorf("cache file does not exist: %s", p)
 		}
 		// Clear this session's data, too
-		s.Clear(true)
+		_ = s.Clear(true)
 		if util.PathExists(p) {
 			t.Errorf("cache file exists: %s", p)
 		}
@@ -428,14 +418,14 @@ func TestSession(t *testing.T) {
 		sid1 := NewSessionID()
 		sid2 := NewSessionID()
 		s = NewSession(dir, sid1)
-		s.Store(n, data)
+		_ = s.Store(n, data)
 
 		if !s.Exists(n) {
 			t.Errorf("cached data do not exist: %s", n)
 		}
 
 		s = NewSession(dir, sid2)
-		s.Clear(false)
+		_ = s.Clear(false)
 
 		if s.Exists(n) {
 			t.Errorf("expired data still exist: %s", n)

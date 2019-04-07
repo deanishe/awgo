@@ -65,7 +65,7 @@ func Timed(start time.Time, title string) {
 func MustExist(dirpath string) string {
 	err := os.MkdirAll(dirpath, 0700)
 	if err != nil {
-		panic(fmt.Sprintf("Couldn't create directory `%s` : %v", dirpath, err))
+		panic(fmt.Sprintf("couldn't create directory `%s` : %v", dirpath, err))
 	}
 	return dirpath
 }

@@ -48,7 +48,7 @@ func ExampleCache() {
 	}
 
 	v2 := time.Time{}
-	v2.UnmarshalText(data)
+	_ = v2.UnmarshalText(data)
 
 	// Values are equal
 	fmt.Println(value.Equal(v2)) // -> true

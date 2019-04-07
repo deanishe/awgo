@@ -154,7 +154,7 @@ func ExampleNew() {
 	// Output:
 	// AwGo
 	// net.deanishe.awgo
-	// 0.15
+	// 1.2.0
 }
 
 // Pass one or more Options to New() to configure the created Workflow.
@@ -211,11 +211,43 @@ func ExampleWorkflow_Configure() {
 	// 0
 }
 
+func ExampleWorkflow_Warn() {
+	wf := New()
+	// Add some items
+	wf.NewItem("Item One").
+		Subtitle("Subtitle one")
+	wf.NewItem("Item Two").
+		Subtitle("Subtitle two")
+
+	// Delete existing items, add a warning, then
+	// immediately send feedback
+	wf.Warn("Bad Items", "Those items are boring")
+
+	// Output:
+	// {
+	//   "variables": {
+	//     "AW_SESSION_ID": "test-session-id"
+	//   },
+	//   "items": [
+	//     {
+	//       "title": "Bad Items",
+	//       "subtitle": "Those items are boring",
+	//       "valid": false,
+	//       "icon": {
+	//         "path": "/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/AlertCautionIcon.icns"
+	//       }
+	//     }
+	//   ]
+	// }
+}
+
 func ExampleArgVars() {
 	// Set workflow variables from Alfred's Run Script Action
 	av := NewArgVars()
 	av.Arg("baz")        // Set output (i.e. next action's {query}) to "baz"
 	av.Var("foo", "bar") // Set workflow variable "foo" to "bar"
-	av.Send()
+	if err := av.Send(); err != nil {
+		panic(err)
+	}
 	// Output: {"alfredworkflow":{"arg":"baz","variables":{"foo":"bar"}}}
 }

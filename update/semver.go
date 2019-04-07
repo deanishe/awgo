@@ -11,9 +11,7 @@ import (
 )
 
 const (
-	letters  string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-"
-	numbers         = "0123456789"
-	alphanum        = letters + numbers
+	numbers = "0123456789"
 )
 
 // SemVers implements sort.Interface for SemVer.
