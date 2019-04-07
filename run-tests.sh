@@ -1,13 +1,16 @@
 #!/usr/bin/env zsh
 
-# URL of icon generator
 root="$( cd "$( dirname "$0" )"; pwd )"
 testdir="${root}/testenv"
 iplist="${root}/info.plist"
 covfile="${root}/coverage.out"
+covjson="${root}/coverage.json"
+covhtml="${root}/coverage.html"
 
 verbose=false
+runtests=true
 opencover=false
+usegocov=false
 cover=false
 mkip=false
 vopt=
@@ -16,6 +19,12 @@ gopts=()
 # log <arg>... | Echo arguments to STDERR
 log() {
   echo "$@" >&2
+}
+
+# installed <prog> | Check whether program is installed
+installed() {
+  hash "$1" &>/dev/null
+  return $?
 }
 
 # info <arg>.. | Write args to STDERR if VERBOSE is true
@@ -54,11 +63,14 @@ run-tests.sh [options] [<module>...]
 Run unit tests in a workflow-like environment.
 
 Usage:
-    run-tests.sh [-v|-V] [-c] [-i] [-H]
+    run-tests.sh [-v|-V] [-c] [-i] [-g] [-H]
+    run-tests.sh [-g] -r
     run-tests.sh -h
 
 Options:
     -c      Write coverage report
+    -r      Just open coverage report
+    -g      Use gocov for coverage report
     -i      Create a dummy info.plist
     -H      Open HTML coverage report
     -h      Show this help message and exit
@@ -67,10 +79,13 @@ Options:
 EOF
 }
 
-while getopts ":HchivV" opt; do
+while getopts ":HcghirvV" opt; do
   case $opt in
     c)
       cover=true
+      ;;
+    g)
+      usegocov=true
       ;;
     H)
       opencover=true
@@ -78,6 +93,10 @@ while getopts ":HchivV" opt; do
       ;;
     i)
       mkip=true
+      ;;
+    r)
+      opencover=true
+      runtests=false
       ;;
     V)
       gopts+=(-v)
@@ -105,6 +124,7 @@ $mkip && touch $vopt "$iplist"
 
 cd "$root"
 source "env.sh"
+export alfred_version=
 export alfred_workflow_data="${testdir}/data"
 export alfred_workflow_cache="${testdir}/cache"
 
@@ -114,23 +134,41 @@ export alfred_workflow_cache="${testdir}/cache"
   pkgs=($@)
 }
 
-go test $gopts $pkgs
-st=$?
+st=0
+$runtests && {
+  go test $gopts $pkgs
+  st=$?
+
+  [[ $st -eq 0 ]] && {
+    success "tests passed"
+  }
+  command rm $vopt -rf "$testdir"/*
+}
+
+test -f "$iplist" && command rm $vopt -f "$iplist"
 
 cd -
 
-command rm $vopt -rf "$testdir"/*
-test -f "$iplist" && command rm $vopt -f "$iplist"
-
-[[ st -eq 0 ]] || {
-  fail "go test failed with $st"
+[[ $st -ne 0 ]] && {
+  fail "tests failed"
 }
-
-success "tests passed"
 
 $opencover && {
-  go tool cover -html="$covfile"
+  $usegocov && {
+    gocov convert "$covfile" > "$covjson"
+    gocov-html > "$covhtml" < "$covjson"
+    open "$covhtml"
+  } || {
+    go tool cover -html="$covfile"
+  }
 }
+
+# $cover && installed gocov && {
+#   gocov convert "$covfile" > "$covjson"
+#   installed gocov-html && {
+#     gocov-html > "$covhtml" < "$covjson"
+#   }
+# }
 
 exit 0
 

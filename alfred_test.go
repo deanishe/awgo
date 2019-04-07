@@ -15,6 +15,9 @@ func TestAlfred(t *testing.T) {
 		x   string
 		err error
 	)
+
+	defer os.Setenv("alfred_version", os.Getenv("alfred_version"))
+	os.Setenv("alfred_version", "")
 	a.noRunScripts = true
 
 	x = `Application("com.runningwithcrayons.Alfred").search("");`
@@ -66,7 +69,6 @@ func TestAlfred(t *testing.T) {
 	}
 
 	os.Setenv("alfred_version", "3.8.1")
-	defer os.Setenv("alfred_version", "")
 	x = `Application("Alfred 3").search("");`
 	if err = a.Search(""); err != nil {
 		t.Error(err)

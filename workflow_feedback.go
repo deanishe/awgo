@@ -6,8 +6,10 @@ package aw
 import (
 	"fmt"
 	"log"
+	"path/filepath"
 
 	"github.com/deanishe/awgo/fuzzy"
+	"github.com/deanishe/awgo/util"
 )
 
 // --------------------------------------------------------------------
@@ -38,16 +40,30 @@ func (wf *Workflow) NewItem(title string) *Item {
 	return wf.Feedback.NewItem(title)
 }
 
-// NewFileItem adds and returns a new feedback Item pre-populated from path.
-// See Feedback.NewFileItem() for more information.
+// NewFileItem adds and returns a new Item pre-populated from path.
+// Title and Autocomplete are the base name of the file,
+// Subtitle is the path to the file (using "~" for $HOME),
+// Valid is true,
+// UID and Arg are set to path,
+// Type is "file", and
+// Icon is the icon of the file at path.
 func (wf *Workflow) NewFileItem(path string) *Item {
-	return wf.Feedback.NewFileItem(path)
+	name := filepath.Base(path)
+	it := wf.NewItem(name)
+	it.Subtitle(util.PrettyPath(path)).
+		Arg(path).
+		Valid(true).
+		UID(path).
+		Autocomplete(name).
+		IsFile(true).
+		Icon(&Icon{path, "fileicon"})
+
+	return it
 }
 
 // NewWarningItem adds and returns a new Feedback Item with the system
 // warning icon (exclamation mark on yellow triangle).
 func (wf *Workflow) NewWarningItem(title, subtitle string) *Item {
-
 	return wf.Feedback.NewItem(title).
 		Subtitle(subtitle).
 		Icon(IconWarning)

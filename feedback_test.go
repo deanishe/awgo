@@ -5,47 +5,8 @@ package aw
 
 import (
 	"encoding/json"
-	"os"
-	"path/filepath"
-	"strings"
 	"testing"
 )
-
-func TestNewFileItem(t *testing.T) {
-
-	var (
-		wf      = New()
-		ipPath  = filepath.Join(wf.Dir(), "info.plist")
-		ipShort = strings.Replace(ipPath, os.Getenv("HOME"), "~", -1)
-
-		fb = Feedback{}
-		it = fb.NewFileItem(ipPath)
-	)
-
-	if it.title != "info.plist" {
-		t.Fatalf("Incorrect title: %v", it.title)
-	}
-
-	if *it.subtitle != ipShort {
-		t.Fatalf("Incorrect subtitle: %v", *it.subtitle)
-	}
-
-	if *it.uid != ipPath {
-		t.Fatalf("Incorrect UID: %v", *it.uid)
-	}
-
-	if it.file != true {
-		t.Fatalf("Incorrect file: %v", it.file)
-	}
-
-	if it.icon.Type != "fileicon" {
-		t.Fatalf("Incorrect type: %v", it.icon.Type)
-	}
-
-	if it.icon.Value != ipPath {
-		t.Fatalf("Incorrect Value: %v", it.icon.Value)
-	}
-}
 
 func TestSetIcon(t *testing.T) {
 	it := Item{}

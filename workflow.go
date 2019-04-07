@@ -128,8 +128,8 @@ type Workflow struct {
 // custom environment, use NewFromEnv().
 func New(opts ...Option) *Workflow { return NewFromEnv(nil, opts...) }
 
-// NewFromEnv creates a new Workflows from a custom Env, instead of
-// reading its configuration from Alfred's environment variables.
+// NewFromEnv creates a new Workflows from the specified Env.
+// If env is nil, the system environment is used.
 func NewFromEnv(env Env, opts ...Option) *Workflow {
 
 	if env == nil {

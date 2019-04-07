@@ -8,10 +8,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 
 	"github.com/deanishe/awgo/fuzzy"
-	"github.com/deanishe/awgo/util"
 )
 
 // ModKey is a modifier key pressed by the user to run an alternate
@@ -407,26 +405,6 @@ func (fb *Feedback) NewItem(title string) *Item {
 	}
 
 	fb.Items = append(fb.Items, it)
-	return it
-}
-
-// NewFileItem adds and returns a pointer to a new item pre-populated from path.
-// Title and Autocomplete are the base name of the file,
-// Subtitle is the path to the file (using "~" for $HOME),
-// Valid is true,
-// UID and Arg are set to path,
-// Type is "file", and
-// Icon is the icon of the file at path.
-func (fb *Feedback) NewFileItem(path string) *Item {
-	t := filepath.Base(path)
-	it := fb.NewItem(t)
-	it.Subtitle(util.PrettyPath(path)).
-		Arg(path).
-		Valid(true).
-		UID(path).
-		Autocomplete(t).
-		IsFile(true).
-		Icon(&Icon{path, "fileicon"})
 	return it
 }
 
