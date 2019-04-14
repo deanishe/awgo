@@ -4,87 +4,16 @@
 package util
 
 import (
-	"io/ioutil"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 )
 
-// Scripts in various language that write $1 to STDOUT.
-var testScripts = []struct {
-	name, script string
-}{
-	{"python.py", "import sys; print(sys.argv[1])"},
-	{"python_exe", `#!/usr/bin/python
-import sys
-print(sys.argv[1])`},
-
-	{"bash.sh", `echo "$1"`},
-	{"bash_exe", `#!/bin/bash
-echo "$1"`},
-
-	{"applescript.scpt", `on run(argv)
-	return first item of argv
-end run`},
-	{"applescript.applescript", `on run(argv)
-	return first item of argv
-end run`},
-	{"jxa.js", `function run(argv) { return argv[0]; }`},
-}
-
-// Files that should be ignored
-var invalidFiles = []struct {
-	name, content string
-}{
-	{"word.doc", "blah"},
-	{"plain.txt", "hello!"},
-	{"non-executable", "dummy"},
-	{"perl.pl", "$$@£@..21!55-"},
-}
-
-// Create and execute function in a directory containing testScripts.
-func withTestScripts(fun func(names []string)) {
-
-	err := inTempDir(func(dir string) {
-
-		names := []string{}
-
-		// Create test scripts
-		for _, ts := range testScripts {
-
-			names = append(names, ts.name)
-
-			perms := os.FileMode(0600)
-
-			// Make scripts w/o extensions executable
-			if filepath.Ext(ts.name) == "" {
-				perms = 0700
-			}
-			if err := ioutil.WriteFile(ts.name, []byte(ts.script), perms); err != nil {
-				panic(err)
-			}
-		}
-
-		for _, ts := range invalidFiles {
-
-			names = append(names, ts.name)
-
-			if err := ioutil.WriteFile(ts.name, []byte(ts.content), 0600); err != nil {
-				panic(err)
-			}
-		}
-
-		// Execute function
-		fun(names)
-	})
-
-	if err != nil {
-		panic(err)
-	}
-}
-
 func TestExecutableRunnerCanRun(t *testing.T) {
+	t.Parallel()
+
 	data := []struct {
 		in string
 		x  bool
@@ -106,95 +35,117 @@ func TestExecutableRunnerCanRun(t *testing.T) {
 	r := ExecRunner{}
 
 	for _, td := range data {
-		v := r.CanRun(td.in)
-		if v != td.x {
-			t.Errorf("Bad CanRun for %#v. Expected=%v, Got=%v", td.in, td.x, v)
-		}
+		td := td // capture variable
+		t.Run(fmt.Sprintf("CanRunExecutable(%s)", td.in), func(t *testing.T) {
+			t.Parallel()
+			v := r.CanRun(td.in)
+			if v != td.x {
+				t.Errorf("Bad CanRun for %#v. Expected=%v, Got=%v", td.in, td.x, v)
+			}
+		})
 	}
 }
 
 func TestScriptRunnerCanRun(t *testing.T) {
+	t.Parallel()
 
-	withTestScripts(func(names []string) {
+	tests := []struct {
+		in    string
+		valid bool
+	}{
+		{"testdata/applescript.applescript", true},
+		{"testdata/applescript.scpt", true},
+		{"testdata/bash.sh", true},
+		{"testdata/jxa.js", true},
+		{"testdata/python.py", true},
+		// ScriptRunner can't run executables
+		{"testdata/bash_exe", false},
+		{"testdata/python_exe", false},
+		// Not scripts
+		{"testdata/non-executable", false},
+		{"testdata/non-existent", false},
+		{"testdata/plain.txt", false},
+		{"testdata/perl.pl", false},
+	}
 
-		invalid := map[string]bool{}
-		for _, ts := range invalidFiles {
-			invalid[ts.name] = true
-		}
-		for _, ts := range testScripts { // can't run extension-less files
-			if strings.Index(ts.name, ".") < 0 {
-				invalid[ts.name] = true
+	r := ScriptRunner{DefaultInterpreters}
+	for _, td := range tests {
+		td := td // capture variable
+		t.Run(fmt.Sprintf("CanRunScript(%s)", td.in), func(t *testing.T) {
+			t.Parallel()
+			v := r.CanRun(td.in)
+			if v != td.valid {
+				t.Errorf("Expected=%v, Got=%v", td.valid, v)
 			}
-		}
-
-		r := ScriptRunner{DefaultInterpreters}
-
-		for _, name := range names {
-
-			v := r.CanRun(name)
-			if v && invalid[name] {
-				t.Errorf("Invalid accepted: %s", name)
-			}
-			if !v && !invalid[name] {
-				t.Errorf("Valid rejected: %s", name)
-			}
-		}
-
-	})
-
+		})
+	}
 }
 
 func TestRun(t *testing.T) {
+	t.Parallel()
 
-	withTestScripts(func(names []string) {
+	scripts := []string{
+		"testdata/applescript.applescript",
+		"testdata/applescript.scpt",
+		"testdata/bash.sh",
+		"testdata/bash_exe",
+		"testdata/jxa.js",
+		"testdata/python.py",
+		"testdata/python_exe",
+	}
 
-		invalid := map[string]bool{}
-		for _, ts := range invalidFiles {
-			invalid[ts.name] = true
-		}
-
-		var good, bad int
-		// Execute scripts and compare output
-		for _, name := range names {
-
-			out, err := Run(name, name)
+	for _, script := range scripts {
+		script := script // capture variable
+		t.Run(fmt.Sprintf("Run(%s)", script), func(t *testing.T) {
+			t.Parallel()
+			x := filepath.Base(script)
+			out, err := Run(script, x)
 			if err != nil {
-
-				if err == ErrUnknownFileType {
-					if !invalid[name] {
-						t.Errorf("Failed to run valid script (%s): %v", name, err)
-						continue
-					}
-					// correctly rejected
-					bad++
-					continue
-				}
-
-				t.Fatalf("Error running %v: %v", name, err)
+				t.Errorf("failed: %v", err)
 			}
-
-			s := strings.TrimSpace(string(out))
-			if s != name {
-				t.Errorf("Bad output. Expected=%v, Got=%v", name, s)
-			} else {
-				good++
+			v := strings.TrimSpace(string(out))
+			if v != x {
+				t.Errorf("Bad output. Expected=%v, Got=%v", x, v)
 			}
+		})
+	}
+}
 
-		}
+func TestNoRun(t *testing.T) {
+	t.Parallel()
 
-		if good != len(testScripts) {
-			t.Errorf("Bad script count. Expected=%v, Got=%v", len(testScripts), good)
-		}
+	tests := []struct {
+		in      string
+		unknown bool
+		missing bool
+	}{
+		{"testdata/non-executable", true, false},
+		{"testdata/non-existent", false, true},
+		{"testdata/plain.txt", true, false},
+		{"testdata/perl.pl", true, false},
+	}
 
-		if bad != len(invalidFiles) {
-			t.Errorf("Bad invalid file count. Expected=%v, Got=%v", len(invalidFiles), bad)
-		}
-
-	})
+	for _, td := range tests {
+		td := td // capture variable
+		t.Run(fmt.Sprintf("NoRun(%s)", td.in), func(t *testing.T) {
+			t.Parallel()
+			_, err := Run(td.in, "blah")
+			if err == nil {
+				t.Errorf("Ran bad script %q", td.in)
+			}
+			if td.unknown && err != ErrUnknownFileType {
+				t.Errorf("Unknown file recognised %q. Expected=%v, Got=%v", td.in, ErrUnknownFileType, err)
+			}
+			if td.missing && !os.IsNotExist(err) {
+				t.Errorf("Missing file found %q. Expected=ErrNotExist, Got=%v", td.in, err)
+			}
+		})
+	}
 }
 
 // TestNewScriptRunner verifies that ScriptRunner accepts the correct filetypes.
 func TestNewScriptRunner(t *testing.T) {
+	t.Parallel()
 
 	data := []struct {
 		good, bad int
@@ -212,16 +163,26 @@ func TestNewScriptRunner(t *testing.T) {
 		}},
 	}
 
-	withTestScripts(func(names []string) {
+	scripts := []string{
+		"testdata/applescript.applescript",
+		"testdata/applescript.scpt",
+		"testdata/bash.sh",
+		"testdata/bash_exe",
+		"testdata/jxa.js",
+		"testdata/python.py",
+		"testdata/python_exe",
+	}
 
-		for _, td := range data {
+	for i, td := range data {
+		td := td // capture variable
+		t.Run(fmt.Sprintf("ScriptRunner(%d)", i), func(t *testing.T) {
+			t.Parallel()
 
 			r := NewScriptRunner(td.m)
 			var good, bad int
 
-			for _, ts := range testScripts {
-
-				if v := r.CanRun(ts.name); v {
+			for _, script := range scripts {
+				if v := r.CanRun(script); v {
 					good++
 				} else {
 					bad++
@@ -234,14 +195,13 @@ func TestNewScriptRunner(t *testing.T) {
 			if bad != td.bad {
 				t.Errorf("Bad bad. Expected=%d, Got=%d", td.bad, bad)
 			}
-		}
-
-	})
-
+		})
+	}
 }
 
 // TestQuoteJS verifies QuoteJS quoting.
 func TestQuoteJS(t *testing.T) {
+	t.Parallel()
 
 	data := []struct {
 		in  interface{}

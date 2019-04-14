@@ -12,6 +12,8 @@ import (
 )
 
 func TestItemHelpers(t *testing.T) {
+	t.Parallel()
+
 	var (
 		wf   = New()
 		data []byte
@@ -42,6 +44,7 @@ func TestItemHelpers(t *testing.T) {
 }
 
 func TestNewFileItem(t *testing.T) {
+	t.Parallel()
 
 	var (
 		wf      = New()

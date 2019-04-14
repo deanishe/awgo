@@ -15,6 +15,8 @@ import (
 
 // TestStoreAndLoad checks that data are stored and loaded correctly
 func TestStoreAndLoad(t *testing.T) {
+	t.Parallel()
+
 	withTempDir(func(dir string) {
 		c := NewCache(dir)
 		s := "this is a test"
@@ -94,6 +96,8 @@ func TestStoreAndLoad(t *testing.T) {
 
 // TestLoadOrStore tests LoadOrStore API.
 func TestLoadOrStore(t *testing.T) {
+	t.Parallel()
+
 	s := "this is a test"
 	var reloadCalled bool
 	reload := func() ([]byte, error) {
@@ -193,6 +197,8 @@ func (td *TestData) Eq(other *TestData) bool {
 
 // TestStoreJSON round-trips data through the JSON caching API.
 func TestStoreJSON(t *testing.T) {
+	t.Parallel()
+
 	withTempDir(func(dir string) {
 		n := "test.json"
 		c := NewCache(dir)
@@ -240,6 +246,8 @@ func TestStoreJSON(t *testing.T) {
 
 // TestLoadOrStoreJSON tests JSON serialisation.
 func TestLoadOrStoreJSON(t *testing.T) {
+	t.Parallel()
+
 	var reloadCalled bool
 	var a, b *TestData
 
@@ -332,6 +340,8 @@ func TestLoadOrStoreJSON(t *testing.T) {
 
 // TestBadReloadError checks reload funcs that return errors
 func TestBadReloadError(t *testing.T) {
+	t.Parallel()
+
 	reloadB := func() ([]byte, error) {
 		return nil, fmt.Errorf("an error")
 	}
@@ -355,6 +365,8 @@ func TestBadReloadError(t *testing.T) {
 
 // TestSession tests session-scoped caching.
 func TestSession(t *testing.T) {
+	t.Parallel()
+
 	withTempDir(func(dir string) {
 		sid := NewSessionID()
 		s := NewSession(dir, sid)

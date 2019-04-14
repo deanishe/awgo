@@ -5,10 +5,13 @@ package aw
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 )
 
 func TestSetIcon(t *testing.T) {
+	t.Parallel()
+
 	it := Item{}
 	it.Icon(&Icon{"first", "fileicon"})
 	if it.icon.Value != "first" {
@@ -26,166 +29,10 @@ func p(s string) *string {
 	return v
 }
 
-var marshalItemTests = []struct {
-	Item         *Item
-	ExpectedJSON string
-}{
-	// Minimal item
-	{Item: &Item{title: "title"},
-		ExpectedJSON: `{"title":"title","valid":false}`},
-	// With UID
-	{Item: &Item{title: "title", uid: p("xxx-yyy")},
-		ExpectedJSON: `{"title":"title","uid":"xxx-yyy","valid":false}`},
-	// With autocomplete
-	{Item: &Item{title: "title", autocomplete: p("xxx-yyy")},
-		ExpectedJSON: `{"title":"title","autocomplete":"xxx-yyy","valid":false}`},
-	// With empty autocomplete
-	{Item: &Item{title: "title", autocomplete: p("")},
-		ExpectedJSON: `{"title":"title","autocomplete":"","valid":false}`},
-	// With subtitle
-	{Item: &Item{title: "title", subtitle: p("subtitle")},
-		ExpectedJSON: `{"title":"title","subtitle":"subtitle","valid":false}`},
-	// Alternate subtitle
-	{Item: &Item{title: "title", subtitle: p("subtitle"),
-		mods: map[ModKey]*Modifier{
-			"cmd": &Modifier{
-				Key:      "cmd",
-				subtitle: p("command sub")}}},
-		ExpectedJSON: `{"title":"title","subtitle":"subtitle",` +
-			`"valid":false,"mods":{"cmd":{"subtitle":"command sub"}}}`},
-	// Valid item
-	{Item: &Item{title: "title", valid: true},
-		ExpectedJSON: `{"title":"title","valid":true}`},
-	// With arg
-	{Item: &Item{title: "title", arg: p("arg1")},
-		ExpectedJSON: `{"title":"title","arg":"arg1","valid":false}`},
-	// Empty arg
-	{Item: &Item{title: "title", arg: p("")},
-		ExpectedJSON: `{"title":"title","arg":"","valid":false}`},
-	// Arg contains escapes
-	{Item: &Item{title: "title", arg: p("\x00arg\x00")},
-		ExpectedJSON: `{"title":"title","arg":"\u0000arg\u0000","valid":false}`},
-	// Valid with arg
-	{Item: &Item{title: "title", arg: p("arg1"), valid: true},
-		ExpectedJSON: `{"title":"title","arg":"arg1","valid":true}`},
-	// With icon
-	{Item: &Item{title: "title",
-		icon: &Icon{Value: "icon.png", Type: ""}},
-		ExpectedJSON: `{"title":"title","valid":false,"icon":{"path":"icon.png"}}`},
-	// With file icon
-	{Item: &Item{title: "title",
-		icon: &Icon{Value: "icon.png", Type: "fileicon"}},
-		ExpectedJSON: `{"title":"title","valid":false,"icon":{"path":"icon.png","type":"fileicon"}}`},
-	// With filetype icon
-	{Item: &Item{title: "title",
-		icon: &Icon{Value: "public.folder", Type: "filetype"}},
-		ExpectedJSON: `{"title":"title","valid":false,"icon":{"path":"public.folder","type":"filetype"}}`},
-	// With type = file
-	{Item: &Item{title: "title", file: true},
-		ExpectedJSON: `{"title":"title","valid":false,"type":"file"}`},
-	// With copy text
-	{Item: &Item{title: "title", copytext: p("copy")},
-		ExpectedJSON: `{"title":"title","valid":false,"text":{"copy":"copy"}}`},
-	// With large text
-	{Item: &Item{title: "title", largetype: p("large")},
-		ExpectedJSON: `{"title":"title","valid":false,"text":{"largetype":"large"}}`},
-	// With copy and large text
-	{Item: &Item{title: "title", copytext: p("copy"), largetype: p("large")},
-		ExpectedJSON: `{"title":"title","valid":false,"text":{"copy":"copy","largetype":"large"}}`},
-	// With arg and variable
-	{Item: &Item{title: "title", arg: p("value"), vars: map[string]string{"foo": "bar"}},
-		ExpectedJSON: `{"title":"title","arg":"value","valid":false,"variables":{"foo":"bar"}}`},
-	// With match
-	{Item: &Item{title: "title", match: p("one two three")},
-		ExpectedJSON: `{"title":"title","match":"one two three","valid":false}`},
-}
-
-var marshalModifierTests = []struct {
-	Mod          *Modifier
-	ExpectedJSON string
-}{
-	// Empty item
-	{Mod: &Modifier{},
-		ExpectedJSON: `{}`},
-	// With arg
-	{Mod: &Modifier{arg: p("title")},
-		ExpectedJSON: `{"arg":"title"}`},
-	// Empty arg
-	{Mod: &Modifier{arg: p("")},
-		ExpectedJSON: `{"arg":""}`},
-	// With subtitle
-	{Mod: &Modifier{subtitle: p("sub here")},
-		ExpectedJSON: `{"subtitle":"sub here"}`},
-	// valid
-	{Mod: &Modifier{valid: true},
-		ExpectedJSON: `{"valid":true}`},
-	// icon
-	{Mod: &Modifier{icon: &Icon{"icon.png", ""}},
-		ExpectedJSON: `{"icon":{"path":"icon.png"}}`},
-	// With all
-	{Mod: &Modifier{
-		arg:      p("title"),
-		subtitle: p("sub here"),
-		valid:    true,
-	},
-		ExpectedJSON: `{"arg":"title","subtitle":"sub here","valid":true}`},
-	// With variable
-	{Mod: &Modifier{
-		arg:      p("title"),
-		subtitle: p("sub here"),
-		valid:    true,
-		vars:     map[string]string{"foo": "bar"},
-	},
-		ExpectedJSON: `{"arg":"title","subtitle":"sub here","valid":true,"variables":{"foo":"bar"}}`},
-}
-
-var marshalArgTests = []struct {
-	Arg          *ArgVars
-	ExpectedJSON string
-}{
-	// Empty
-	{Arg: &ArgVars{},
-		ExpectedJSON: `""`},
-	// With arg
-	{Arg: &ArgVars{arg: p("title")},
-		ExpectedJSON: `"title"`},
-	// With non-ASCII arg
-	{Arg: &ArgVars{arg: p("fübär")},
-		ExpectedJSON: `"fübär"`},
-	// With escapes
-	{Arg: &ArgVars{arg: p("\x00")},
-		ExpectedJSON: `"\u0000"`},
-	// With variable
-	{Arg: &ArgVars{vars: map[string]string{"foo": "bar"}},
-		ExpectedJSON: `{"alfredworkflow":{"variables":{"foo":"bar"}}}`},
-	// Multiple variables
-	{Arg: &ArgVars{vars: map[string]string{"foo": "bar", "ducky": "fuzz"}},
-		ExpectedJSON: `{"alfredworkflow":{"variables":{"ducky":"fuzz","foo":"bar"}}}`},
-	// Multiple variables and arg
-	{Arg: &ArgVars{arg: p("title"), vars: map[string]string{"foo": "bar", "ducky": "fuzz"}},
-		ExpectedJSON: `{"alfredworkflow":{"arg":"title","variables":{"ducky":"fuzz","foo":"bar"}}}`},
-}
-
-var stringifyArgTests = []struct {
-	Arg            *ArgVars
-	ExpectedString string
-}{
-	// Empty
-	{Arg: &ArgVars{},
-		ExpectedString: ""},
-	// With arg
-	{Arg: &ArgVars{arg: p("title")},
-		ExpectedString: "title"},
-	// With non-ASCII
-	{Arg: &ArgVars{arg: p("fübär")},
-		ExpectedString: "fübär"},
-	// With escapes
-	{Arg: &ArgVars{arg: p("\x00")},
-		ExpectedString: "\x00"},
-}
-
 // TestEmpty asserts feedback is empty.
 func TestEmpty(t *testing.T) {
+	t.Parallel()
+
 	fb := NewFeedback()
 	if !fb.IsEmpty() {
 		t.Errorf("Feedback not empty.")
@@ -197,62 +44,235 @@ func TestEmpty(t *testing.T) {
 }
 
 func TestMarshalItem(t *testing.T) {
-	for i, test := range marshalItemTests {
-		// log.Printf("#%d: %v", i, test.Item)
-		data, err := json.Marshal(test.Item)
-		if err != nil {
-			t.Errorf("#%d: marshal(%v): %v", i, test.Item, err)
-			continue
-		}
+	t.Parallel()
 
-		if got, want := string(data), test.ExpectedJSON; got != want {
-			t.Fatalf("#%d: got: %v wanted: %v", i, got, want)
-		}
+	tests := []struct {
+		in *Item
+		x  string
+	}{
+		// Minimal item
+		{in: &Item{title: "title"},
+			x: `{"title":"title","valid":false}`},
+		// With UID
+		{in: &Item{title: "title", uid: p("xxx-yyy")},
+			x: `{"title":"title","uid":"xxx-yyy","valid":false}`},
+		// With autocomplete
+		{in: &Item{title: "title", autocomplete: p("xxx-yyy")},
+			x: `{"title":"title","autocomplete":"xxx-yyy","valid":false}`},
+		// With empty autocomplete
+		{in: &Item{title: "title", autocomplete: p("")},
+			x: `{"title":"title","autocomplete":"","valid":false}`},
+		// With subtitle
+		{in: &Item{title: "title", subtitle: p("subtitle")},
+			x: `{"title":"title","subtitle":"subtitle","valid":false}`},
+		// Alternate subtitle
+		{in: &Item{title: "title", subtitle: p("subtitle"),
+			mods: map[ModKey]*Modifier{
+				"cmd": &Modifier{
+					Key:      "cmd",
+					subtitle: p("command sub")}}},
+			x: `{"title":"title","subtitle":"subtitle",` +
+				`"valid":false,"mods":{"cmd":{"subtitle":"command sub"}}}`},
+		// Valid item
+		{in: &Item{title: "title", valid: true},
+			x: `{"title":"title","valid":true}`},
+		// With arg
+		{in: &Item{title: "title", arg: p("arg1")},
+			x: `{"title":"title","arg":"arg1","valid":false}`},
+		// Empty arg
+		{in: &Item{title: "title", arg: p("")},
+			x: `{"title":"title","arg":"","valid":false}`},
+		// Arg contains escapes
+		{in: &Item{title: "title", arg: p("\x00arg\x00")},
+			x: `{"title":"title","arg":"\u0000arg\u0000","valid":false}`},
+		// Valid with arg
+		{in: &Item{title: "title", arg: p("arg1"), valid: true},
+			x: `{"title":"title","arg":"arg1","valid":true}`},
+		// With icon
+		{in: &Item{title: "title",
+			icon: &Icon{Value: "icon.png", Type: ""}},
+			x: `{"title":"title","valid":false,"icon":{"path":"icon.png"}}`},
+		// With file icon
+		{in: &Item{title: "title",
+			icon: &Icon{Value: "icon.png", Type: "fileicon"}},
+			x: `{"title":"title","valid":false,"icon":{"path":"icon.png","type":"fileicon"}}`},
+		// With filetype icon
+		{in: &Item{title: "title",
+			icon: &Icon{Value: "public.folder", Type: "filetype"}},
+			x: `{"title":"title","valid":false,"icon":{"path":"public.folder","type":"filetype"}}`},
+		// With type = file
+		{in: &Item{title: "title", file: true},
+			x: `{"title":"title","valid":false,"type":"file"}`},
+		// With copy text
+		{in: &Item{title: "title", copytext: p("copy")},
+			x: `{"title":"title","valid":false,"text":{"copy":"copy"}}`},
+		// With large text
+		{in: &Item{title: "title", largetype: p("large")},
+			x: `{"title":"title","valid":false,"text":{"largetype":"large"}}`},
+		// With copy and large text
+		{in: &Item{title: "title", copytext: p("copy"), largetype: p("large")},
+			x: `{"title":"title","valid":false,"text":{"copy":"copy","largetype":"large"}}`},
+		// With arg and variable
+		{in: &Item{title: "title", arg: p("value"), vars: map[string]string{"foo": "bar"}},
+			x: `{"title":"title","arg":"value","valid":false,"variables":{"foo":"bar"}}`},
+		// With match
+		{in: &Item{title: "title", match: p("one two three")},
+			x: `{"title":"title","match":"one two three","valid":false}`},
+	}
+
+	for _, td := range tests {
+		td := td // capture variable
+		t.Run(fmt.Sprintf("MarshalItem(%#v)", td.in), func(t *testing.T) {
+			t.Parallel()
+			data, err := json.Marshal(td.in)
+			if err != nil {
+				t.Fatalf("[ERROR] %v", err)
+			}
+
+			if v := string(data); v != td.x {
+				t.Errorf("Expected=%v, Got=%v", td.x, v)
+			}
+		})
 	}
 }
 
 func TestMarshalModifier(t *testing.T) {
-	for i, test := range marshalModifierTests {
-		data, err := json.Marshal(test.Mod)
-		if err != nil {
-			t.Errorf("#%d: marshal(%v): %v", i, test.Mod, err)
-			continue
-		}
+	t.Parallel()
 
-		if got, want := string(data), test.ExpectedJSON; got != want {
-			t.Fatalf("#%d: got: %v wanted: %v", i, got, want)
-		}
+	tests := []struct {
+		in *Modifier
+		x  string
+	}{
+		// Empty item
+		{in: &Modifier{}, x: `{}`},
+		// With arg
+		{in: &Modifier{arg: p("title")}, x: `{"arg":"title"}`},
+		// Empty arg
+		{in: &Modifier{arg: p("")}, x: `{"arg":""}`},
+		// With subtitle
+		{in: &Modifier{subtitle: p("sub here")}, x: `{"subtitle":"sub here"}`},
+		// valid
+		{in: &Modifier{valid: true}, x: `{"valid":true}`},
+		// icon
+		{in: &Modifier{icon: &Icon{"icon.png", ""}}, x: `{"icon":{"path":"icon.png"}}`},
+		// With all
+		{in: &Modifier{
+			arg:      p("title"),
+			subtitle: p("sub here"),
+			valid:    true,
+		},
+			x: `{"arg":"title","subtitle":"sub here","valid":true}`},
+		// With variable
+		{in: &Modifier{
+			arg:      p("title"),
+			subtitle: p("sub here"),
+			valid:    true,
+			vars:     map[string]string{"foo": "bar"},
+		},
+			x: `{"arg":"title","subtitle":"sub here","valid":true,"variables":{"foo":"bar"}}`},
+	}
+
+	for _, td := range tests {
+		td := td // capture variable
+		t.Run(fmt.Sprintf("MarshalModifier(%#v)", td.in), func(t *testing.T) {
+			t.Parallel()
+			data, err := json.Marshal(td.in)
+			if err != nil {
+				t.Fatalf("[ERROR] %v", err)
+			}
+
+			if v := string(data); v != td.x {
+				t.Errorf("Expected=%v, Got=%v", td.x, v)
+			}
+		})
 	}
 }
 
 func TestMarshalArg(t *testing.T) {
-	for i, test := range marshalArgTests {
-		data, err := json.Marshal(test.Arg)
-		if err != nil {
-			t.Errorf("#%d: marshal(%v): %v", i, test.Arg, err)
-			continue
-		}
+	t.Parallel()
 
-		if got, want := string(data), test.ExpectedJSON; got != want {
-			t.Errorf("#%d: got: %v wanted: %v", i, got, want)
-		}
+	var tests = []struct {
+		in *ArgVars
+		x  string
+	}{
+		// Empty
+		{in: &ArgVars{},
+			x: `""`},
+		// With arg
+		{in: &ArgVars{arg: p("title")},
+			x: `"title"`},
+		// With non-ASCII arg
+		{in: &ArgVars{arg: p("fübär")},
+			x: `"fübär"`},
+		// With escapes
+		{in: &ArgVars{arg: p("\x00")},
+			x: `"\u0000"`},
+		// With variable
+		{in: &ArgVars{vars: map[string]string{"foo": "bar"}},
+			x: `{"alfredworkflow":{"variables":{"foo":"bar"}}}`},
+		// Multiple variables
+		{in: &ArgVars{vars: map[string]string{"foo": "bar", "ducky": "fuzz"}},
+			x: `{"alfredworkflow":{"variables":{"ducky":"fuzz","foo":"bar"}}}`},
+		// Multiple variables and arg
+		{in: &ArgVars{arg: p("title"), vars: map[string]string{"foo": "bar", "ducky": "fuzz"}},
+			x: `{"alfredworkflow":{"arg":"title","variables":{"ducky":"fuzz","foo":"bar"}}}`},
+	}
+
+	for _, td := range tests {
+		td := td // capture variable
+		t.Run(fmt.Sprintf("MarshalArgVar(%#v)", td.in), func(t *testing.T) {
+			t.Parallel()
+			data, err := json.Marshal(td.in)
+			if err != nil {
+				t.Fatalf("[ERROR] %v", err)
+			}
+
+			if v := string(data); v != td.x {
+				t.Errorf("Expected=%v, Got=%v", td.x, v)
+			}
+		})
 	}
 }
 
 func TestStringifyArg(t *testing.T) {
-	for i, test := range stringifyArgTests {
-		s, err := test.Arg.String()
-		if err != nil {
-			t.Errorf("#%d: string(%v): %v", i, test.Arg, err)
-			continue
-		}
-		if got, want := s, test.ExpectedString; got != want {
-			t.Errorf("#%d: got: %v wanted: %v", i, got, want)
-		}
+	t.Parallel()
+
+	tests := []struct {
+		in *ArgVars
+		x  string
+	}{
+		// Empty
+		{in: &ArgVars{},
+			x: ""},
+		// With arg
+		{in: &ArgVars{arg: p("title")},
+			x: "title"},
+		// With non-ASCII
+		{in: &ArgVars{arg: p("fübär")},
+			x: "fübär"},
+		// With escapes
+		{in: &ArgVars{arg: p("\x00")},
+			x: "\x00"},
+	}
+
+	for _, td := range tests {
+		td := td // capture variable
+		t.Run(fmt.Sprintf("StringifyArg(%#v)", td.in), func(t *testing.T) {
+			t.Parallel()
+			v, err := td.in.String()
+			if err != nil {
+				t.Fatalf("[ERROR] %v", err)
+			}
+			if v != td.x {
+				t.Errorf("Expected=%q, Got=%q", td.x, v)
+			}
+		})
 	}
 }
 
 func TestMarshalFeedback(t *testing.T) {
+	t.Parallel()
+
 	// Empty feedback
 	fb := NewFeedback()
 	want := `{"items":[]}`
@@ -284,6 +304,8 @@ func TestMarshalFeedback(t *testing.T) {
 // TestModifiersInheritVars tests that Modifiers inherit variables from their
 // parent Item
 func TestModifiersInheritVars(t *testing.T) {
+	t.Parallel()
+
 	fb := NewFeedback()
 	it := fb.NewItem("title")
 	it.Var("foo", "bar")
@@ -296,6 +318,8 @@ func TestModifiersInheritVars(t *testing.T) {
 
 // TestFeedbackRerun verifies that rerun is properly set.
 func TestFeedbackRerun(t *testing.T) {
+	t.Parallel()
+
 	fb := NewFeedback()
 
 	fb.Rerun(1.5)
@@ -312,6 +336,8 @@ func TestFeedbackRerun(t *testing.T) {
 
 // TestFeedbackVars tests if vars are properly inherited by Items and Modifiers
 func TestFeedbackVars(t *testing.T) {
+	t.Parallel()
+
 	fb := NewFeedback()
 
 	fb.Var("foo", "bar")
@@ -347,6 +373,7 @@ func TestFeedbackVars(t *testing.T) {
 
 // TestSortFeedback sorts Feedback.Items
 func TestSortFeedback(t *testing.T) {
+
 	for _, td := range feedbackTitles {
 		fb := NewFeedback()
 		for _, s := range td.in {

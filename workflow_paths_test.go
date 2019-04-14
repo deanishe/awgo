@@ -9,9 +9,14 @@ import (
 )
 
 func TestReset(t *testing.T) {
+	t.Parallel()
+
 	withTestWf(func(wf *Workflow) {
 		s := wf.Dir()
-		x, _ := os.Getwd()
+		x, err := os.Getwd()
+		if err != nil {
+			t.Fatalf("[ERROR] %v", err)
+		}
 		if s != x {
 			t.Errorf("Bad Dir. Expected=%v, Got=%v", x, s)
 		}

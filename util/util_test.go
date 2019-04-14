@@ -21,9 +21,8 @@ func inTempDir(fun func(dir string)) error {
 	if err != nil {
 		return err
 	}
-
-	dir, err = filepath.EvalSymlinks(dir)
-	if err != nil {
+	// TempDir() returns a symlink on my macOS :(
+	if dir, err = filepath.EvalSymlinks(dir); err != nil {
 		return err
 	}
 

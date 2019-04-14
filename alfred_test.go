@@ -9,6 +9,7 @@ import (
 )
 
 func TestAlfred(t *testing.T) {
+	t.Parallel()
 
 	var (
 		a   = NewAlfred()

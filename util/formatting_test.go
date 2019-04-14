@@ -16,6 +16,8 @@ type padTest struct {
 
 // TestPadLeft tests PadLeft
 func TestPadLeft(t *testing.T) {
+	t.Parallel()
+
 	var padLeftTests = []padTest{
 		// Simple cases
 		padTest{"wow", "-", 5, "--wow"},
@@ -34,6 +36,7 @@ func TestPadLeft(t *testing.T) {
 
 // TestPadRight tests PadRight
 func TestPadRight(t *testing.T) {
+	t.Parallel()
 
 	var padRightTests = []padTest{
 		// Simple cases
@@ -53,6 +56,7 @@ func TestPadRight(t *testing.T) {
 
 // TestPad tests Pad
 func TestPad(t *testing.T) {
+	t.Parallel()
 
 	var padTests = []padTest{
 		// Simple cases

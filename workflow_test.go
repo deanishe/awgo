@@ -69,7 +69,7 @@ func TestOptions(t *testing.T) {
 			func(wf *Workflow) bool { return wf.textErrors == true },
 			"Set TextErrors"},
 		{
-			AddMagic(&testMA{}),
+			AddMagic(&mockMA{}),
 			func(wf *Workflow) bool { return wf.MagicActions.actions["test"] != nil },
 			"Add Magic"},
 		{

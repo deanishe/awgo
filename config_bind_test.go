@@ -101,6 +101,7 @@ func bindTestEnv() MapEnv {
 
 // TestExtract verifies extraction of struct fields and tags.
 func TestExtract(t *testing.T) {
+	t.Parallel()
 
 	cfg := NewConfig()
 	th := &testHost{}
@@ -157,6 +158,7 @@ func TestExtract(t *testing.T) {
 
 // TestConfigTo verifies that a struct is correctly populated from a Config.
 func TestConfigTo(t *testing.T) {
+	t.Parallel()
 
 	h := &testHost{}
 	e := bindTestEnv()
@@ -202,6 +204,7 @@ func TestConfigTo(t *testing.T) {
 
 // TestConfigFrom verifies that a bindDest is correctly populated from a (tagged) struct.
 func TestConfigFrom(t *testing.T) {
+	t.Parallel()
 
 	e := MapEnv{
 		"ID":           "",
@@ -300,6 +303,7 @@ func TestConfigFrom(t *testing.T) {
 
 // TestVarName tests the envvar name algorithm.
 func TestVarName(t *testing.T) {
+	t.Parallel()
 	data := []struct {
 		in, out string
 	}{
@@ -313,11 +317,14 @@ func TestVarName(t *testing.T) {
 	}
 
 	for _, td := range data {
-		v := EnvVarForField(td.in)
-		if v != td.out {
-			t.Errorf("Bad VarName (%s). Expected=%v, Got=%v",
-				td.in, td.out, v)
-		}
+		td := td // capture variable
+		t.Run(fmt.Sprintf("VarName(%s)", td.in), func(t *testing.T) {
+			t.Parallel()
+			v := EnvVarForField(td.in)
+			if v != td.out {
+				t.Errorf("Expected=%v, Got=%v", td.out, v)
+			}
+		})
 	}
 }
 
@@ -409,6 +416,7 @@ func ExampleEnvVarForField() {
 
 // Verify zero and non-zero values returned by isZeroValue.
 func TestIsZeroValue(t *testing.T) {
+	t.Parallel()
 
 	zero := struct {
 		String     string
@@ -454,37 +462,45 @@ func TestIsZeroValue(t *testing.T) {
 		Map:      map[string]string{},
 	}
 
-	rv := reflect.ValueOf(zero)
-	typ := rv.Type()
+	t.Run("isZeroValueStruct", func(t *testing.T) {
+		t.Parallel()
+		rv := reflect.ValueOf(zero)
+		typ := rv.Type()
 
-	for i := 0; i < rv.NumField(); i++ {
+		for i := 0; i < rv.NumField(); i++ {
 
-		field := typ.Field(i)
-		value := rv.Field(i)
+			field := typ.Field(i)
+			value := rv.Field(i)
 
-		v := isZeroValue(value)
-		if v != true {
-			t.Errorf("Bad %s. Expected=true, Got=false", field.Name)
+			v := isZeroValue(value)
+			if v != true {
+				t.Errorf("Bad %s. Expected=true, Got=false", field.Name)
+			}
 		}
-	}
+	})
 
-	rv = reflect.ValueOf(nonzero)
-	typ = rv.Type()
+	t.Run("isZeroValueStruct", func(t *testing.T) {
+		t.Parallel()
+		rv := reflect.ValueOf(nonzero)
+		typ := rv.Type()
 
-	for i := 0; i < rv.NumField(); i++ {
+		for i := 0; i < rv.NumField(); i++ {
 
-		field := typ.Field(i)
-		value := rv.Field(i)
+			field := typ.Field(i)
+			value := rv.Field(i)
 
-		v := isZeroValue(value)
-		if v == true {
-			t.Errorf("Bad %s. Expected=false, Got=true", field.Name)
+			v := isZeroValue(value)
+			if v == true {
+				t.Errorf("Bad %s. Expected=false, Got=true", field.Name)
+			}
 		}
-	}
+	})
 }
 
 // Verify *string* zero values for other types, e.g. "0" is zero value for int.
 func TestIsZeroString(t *testing.T) {
+	t.Parallel()
+
 	data := []struct {
 		in   string
 		kind reflect.Kind
@@ -545,18 +561,23 @@ func TestIsZeroString(t *testing.T) {
 	}
 
 	for _, td := range data {
-
-		v := isZeroString(td.in, td.kind)
-		if v != td.x {
-			t.Errorf("Bad ZeroString (%s). Expected=%v, Got=%v", td.in, td.x, v)
-		}
+		td := td // capture variable
+		t.Run(fmt.Sprintf("isZeroString(%s)", td.in), func(t *testing.T) {
+			t.Parallel()
+			v := isZeroString(td.in, td.kind)
+			if v != td.x {
+				t.Errorf("Expected=%v, Got=%v", td.x, v)
+			}
+		})
 	}
 }
 
 func TestIsCamelCase(t *testing.T) {
+	t.Parallel()
+
 	data := []struct {
-		s string
-		v bool
+		in string
+		x  bool
 	}{
 		{"", false},
 		{"URL", false},
@@ -573,18 +594,23 @@ func TestIsCamelCase(t *testing.T) {
 	}
 
 	for _, td := range data {
-		b := isCamelCase(td.s)
-		if b != td.v {
-			t.Errorf("Bad CamelCase (%s). Expected=%v, Got=%v", td.s, td.v, b)
-		}
-
+		td := td // capture variable
+		t.Run(fmt.Sprintf("isCamelCase(%q)", td.in), func(t *testing.T) {
+			t.Parallel()
+			v := isCamelCase(td.in)
+			if v != td.x {
+				t.Errorf("Expected=%v, Got=%v", td.x, v)
+			}
+		})
 	}
 }
 
 func TestSplitCamelCase(t *testing.T) {
-	data := []struct {
-		in  string
-		out string
+	t.Parallel()
+
+	tests := []struct {
+		in string
+		x  string
 	}{
 		{"", ""},
 		{"HomeAddress", "HOME_ADDRESS"},
@@ -600,20 +626,24 @@ func TestSplitCamelCase(t *testing.T) {
 		{"URLEncoding", "URL_ENCODING"},
 	}
 
-	for _, td := range data {
-		s := splitCamelCase(td.in)
-		if s != td.out {
-			t.Errorf("Bad SplitCamel (%s). Expected=%v, Got=%v", td.in, td.out, s)
-		}
-
+	for _, td := range tests {
+		td := td // capture variable
+		t.Run(fmt.Sprintf("splitCamelCase(%q)", td.in), func(t *testing.T) {
+			t.Parallel()
+			s := splitCamelCase(td.in)
+			if s != td.x {
+				t.Errorf("Expected=%q, Got=%q", td.x, s)
+			}
+		})
 	}
 }
 
 func TestIsBindable(t *testing.T) {
+	t.Parallel()
 
-	data := []struct {
-		k reflect.Kind
-		x bool
+	tests := []struct {
+		in reflect.Kind
+		x  bool
 	}{
 		{reflect.Ptr, false},
 		{reflect.Map, false},
@@ -635,10 +665,14 @@ func TestIsBindable(t *testing.T) {
 		{reflect.Float64, true},
 	}
 
-	for _, td := range data {
-		v := isBindable(td.k)
-		if v != td.x {
-			t.Errorf("Bad Bindable for %v. Expected=%v, Got=%v", td.k, td.x, v)
-		}
+	for _, td := range tests {
+		td := td // capture variable
+		t.Run(fmt.Sprintf("IsBindable(%v)", td.in), func(t *testing.T) {
+			t.Parallel()
+			v := isBindable(td.in)
+			if v != td.x {
+				t.Errorf("Bad Bindable for %v. Expected=%v, Got=%v", td.in, td.x, v)
+			}
+		})
 	}
 }

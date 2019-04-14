@@ -12,6 +12,8 @@ import (
 )
 
 func TestParseGH(t *testing.T) {
+	t.Parallel()
+
 	ghr := &gitHubReleaser{Repo: "deanishe/alfred-workflow-dummy", fetch: func(URL *url.URL) ([]byte, error) {
 		return []byte(ghReleasesEmptyJSON), nil
 	}}
@@ -42,54 +44,52 @@ func makeGHReleaser() *gitHubReleaser {
 }
 
 func TestGHUpdater(t *testing.T) {
-	v := &versioned{version: "0.2.2"}
-	defer v.Clean()
-	gh := makeGHReleaser()
+	t.Parallel()
 
-	// There are 4 valid releases (one prerelease)
-	rels, err := gh.Releases()
-	if err != nil {
-		t.Fatalf("Error retrieving GH releases: %s", err)
-	}
-	if len(rels) != 4 {
-		t.Fatalf("Found %d valid releases, not 4.", len(rels))
-	}
+	withVersioned("0.2.2", func(v *versioned) {
 
-	// v6.0 is available
-	if err := clearUpdateCache(); err != nil {
-		t.Fatal(err)
-	}
-	u, err := New(v, gh)
-	if err != nil {
-		t.Fatalf("Error creating updater: %s", err)
-	}
-	u.CurrentVersion = mustVersion("2")
+		gh := makeGHReleaser()
 
-	// Update releases
-	if err := u.CheckForUpdate(); err != nil {
-		t.Fatalf("Couldn't retrieve releases: %s", err)
-	}
+		// There are 4 valid releases (one prerelease)
+		rels, err := gh.Releases()
+		if err != nil {
+			t.Fatalf("Error retrieving GH releases: %s", err)
+		}
+		if len(rels) != 4 {
+			t.Fatalf("Found %d valid releases, not 4.", len(rels))
+		}
 
-	if !u.UpdateAvailable() {
-		t.Fatal("No update found")
-	}
-	// v6.0 is the latest stable version
-	u.CurrentVersion = mustVersion("6")
-	if u.UpdateAvailable() {
-		t.Fatal("Unexpectedly found update")
-	}
-	// Prerelease v7.1.0-beta is newer
-	u.Prereleases = true
-	if !u.UpdateAvailable() {
-		t.Fatal("No update found")
-	}
-	if err := clearUpdateCache(); err != nil {
-		t.Fatal(err)
-	}
+		u, err := New(v, gh)
+		if err != nil {
+			t.Fatalf("Error creating updater: %s", err)
+		}
+		u.CurrentVersion = mustVersion("2")
+
+		// Update releases
+		if err := u.CheckForUpdate(); err != nil {
+			t.Fatalf("Couldn't retrieve releases: %s", err)
+		}
+
+		if !u.UpdateAvailable() {
+			t.Fatal("No update found")
+		}
+		// v6.0 is the latest stable version
+		u.CurrentVersion = mustVersion("6")
+		if u.UpdateAvailable() {
+			t.Fatal("Unexpectedly found update")
+		}
+		// Prerelease v7.1.0-beta is newer
+		u.Prereleases = true
+		if !u.UpdateAvailable() {
+			t.Fatal("No update found")
+		}
+	})
 }
 
 // TestUpdates ensures an unconfigured workflow doesn't think it can update
 func TestUpdates(t *testing.T) {
+	t.Parallel()
+
 	wf := aw.New()
 	if err := wf.ClearCache(); err != nil {
 		t.Fatal(fmt.Sprintf("couldn't clear cache: %v", err))

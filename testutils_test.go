@@ -9,9 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"time"
-
-	"github.com/deanishe/awgo/util"
 )
 
 var (
@@ -91,9 +88,13 @@ var (
 
 // create a temporary directory, call function fn, delete the directory.
 func withTempDir(fn func(dir string)) {
-	root := os.TempDir()
-	p := filepath.Join(root, fmt.Sprintf("awgo-%d.%d", os.Getpid(), time.Now().Nanosecond()))
-	util.MustExist(p)
+	p, err := ioutil.TempDir("", "awgo-")
+	if err != nil {
+		panic(err)
+	}
+	if p, err = filepath.EvalSymlinks(p); err != nil {
+		panic(err)
+	}
 	defer os.RemoveAll(p)
 	fn(p)
 }
@@ -130,13 +131,15 @@ func withTestWf(fun func(wf *Workflow)) {
 			err         error
 		)
 
-		curdir, err = os.Getwd()
-		if err != nil {
+		if curdir, err = os.Getwd(); err != nil {
 			panic(err)
 		}
 
-		dir, err = ioutil.TempDir("", "awgo-")
-		if err != nil {
+		if dir, err = ioutil.TempDir("", "awgo-"); err != nil {
+			panic(err)
+		}
+		// TempDir() returns a symlink on my macOS :(
+		if dir, err = filepath.EvalSymlinks(dir); err != nil {
 			panic(err)
 		}
 
@@ -145,12 +148,6 @@ func withTestWf(fun func(wf *Workflow)) {
 				panic(err)
 			}
 		}()
-
-		// TempDir() returns a symlink on my macOS :(
-		dir, err = filepath.EvalSymlinks(dir)
-		if err != nil {
-			panic(err)
-		}
 
 		var (
 			wfdir    = filepath.Join(dir, "workflow")
@@ -178,7 +175,6 @@ func withTestWf(fun func(wf *Workflow)) {
 		if err := os.Chdir(wfdir); err != nil {
 			panic(err)
 		}
-
 		defer func() {
 			if err := os.Chdir(curdir); err != nil {
 				panic(err)
@@ -189,11 +185,11 @@ func withTestWf(fun func(wf *Workflow)) {
 		var wf = NewFromEnv(e)
 		fun(wf)
 	})
-
 }
 
 // TestWithTestWf verifies the withTestEnv helper.
 func TestWithTestWf(t *testing.T) {
+	t.Parallel()
 
 	withTestWf(func(wf *Workflow) {
 
@@ -201,6 +197,7 @@ func TestWithTestWf(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+
 		cd := filepath.Join(wd, "../cache")
 		dd := filepath.Join(wd, "../data")
 

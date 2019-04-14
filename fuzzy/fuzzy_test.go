@@ -5,61 +5,27 @@ package fuzzy
 
 import "testing"
 
-var simpleHostnames = []string{
-	"www.example.com",
-	"one.example.com",
-	"two.example.com",
-	"www.google.com",
-	"www.amazon.de",
-	// Contains "two"
-	"www.two.co.uk",
-}
-
-var firstTestData = []struct {
-	q     string
-	in    []string
-	first string
-}{
-	{"one", simpleHostnames, "one.example.com"},
-	{"two", simpleHostnames, "two.example.com"},
-	{"oec", simpleHostnames, "one.example.com"},
-	{"am", simpleHostnames, "www.amazon.de"},
-	{"example", simpleHostnames, "one.example.com"},
-	{"wex", simpleHostnames, "www.example.com"},
-	{"tuk", simpleHostnames, "www.two.co.uk"},
-}
-
-var rankTestData = []struct {
-	q   string
-	in  []string
-	out []string
-}{
-	{
-		q:   "got",
-		in:  []string{"go and throw", "baby got back", "game of thrones"},
-		out: []string{"game of thrones", "go and throw", "baby got back"},
-	},
-	{
-		q:   "ruto",
-		in:  []string{"Router", "Wolf // ruTorrent"},
-		out: []string{"Wolf // ruTorrent", "Router"},
-	},
-}
-
-var matchNoMatchData = []struct {
-	q string
-	s string
-	m bool
-}{
-	{"ruto", "Router", false},
-	{"ruto", "ruTorrent", true},
-	{"GoT", "Game of Thrones", true},
-	{"GoT", "Game of Phones", false},
-}
-
 // TestSortStrings tests that strings are sorted correctly.
 func TestSortStrings(t *testing.T) {
-	for _, td := range rankTestData {
+
+	tests := []struct {
+		q   string
+		in  []string
+		out []string
+	}{
+		{
+			q:   "got",
+			in:  []string{"go and throw", "baby got back", "game of thrones"},
+			out: []string{"game of thrones", "go and throw", "baby got back"},
+		},
+		{
+			q:   "ruto",
+			in:  []string{"Router", "Wolf // ruTorrent"},
+			out: []string{"Wolf // ruTorrent", "Router"},
+		},
+	}
+
+	for _, td := range tests {
 		// t.Logf("query=%#v, in=%#v, expected=%#v", td.q, td.in, td.out)
 		data := td.in[:]
 		SortStrings(data, td.q)
@@ -73,7 +39,19 @@ func TestSortStrings(t *testing.T) {
 
 // TestMatchNoMatch tests queries and strings for match status.
 func TestMatchNoMatch(t *testing.T) {
-	for _, td := range matchNoMatchData {
+
+	tests := []struct {
+		q string
+		s string
+		m bool
+	}{
+		{"ruto", "Router", false},
+		{"ruto", "ruTorrent", true},
+		{"GoT", "Game of Thrones", true},
+		{"GoT", "Game of Phones", false},
+	}
+
+	for _, td := range tests {
 		data := []string{td.s}
 		r := SortStrings(data, td.q)
 		if r[0].Match != td.m {
@@ -84,7 +62,32 @@ func TestMatchNoMatch(t *testing.T) {
 
 // TestFirstMatch tests the expected matching result is first.
 func TestFirstMatch(t *testing.T) {
-	for _, td := range firstTestData {
+
+	simpleHostnames := []string{
+		"www.example.com",
+		"one.example.com",
+		"two.example.com",
+		"www.google.com",
+		"www.amazon.de",
+		// Contains "two"
+		"www.two.co.uk",
+	}
+
+	tests := []struct {
+		q     string
+		in    []string
+		first string
+	}{
+		{"one", simpleHostnames, "one.example.com"},
+		{"two", simpleHostnames, "two.example.com"},
+		{"oec", simpleHostnames, "one.example.com"},
+		{"am", simpleHostnames, "www.amazon.de"},
+		{"example", simpleHostnames, "one.example.com"},
+		{"wex", simpleHostnames, "www.example.com"},
+		{"tuk", simpleHostnames, "www.two.co.uk"},
+	}
+
+	for _, td := range tests {
 		data := td.in[:]
 		r := SortStrings(data, td.q)
 		for i, s := range data {
@@ -101,6 +104,7 @@ func TestFirstMatch(t *testing.T) {
 
 // TestStripDiacritics
 func TestStripDiacritics(t *testing.T) {
+
 	// Non-ASCII query and data
 	if r := Match("fün", "fün"); r.Match == false {
 		t.Fatalf("fün != fün (diacritic stripping on): %+v", r)

@@ -12,6 +12,8 @@ import (
 )
 
 func TestParseGitea(t *testing.T) {
+	t.Parallel()
+
 	gr := &giteaReleaser{Repo: "deanishe/alfred-workflow-dummy", fetch: func(URL *url.URL) ([]byte, error) {
 		return []byte(giteaReleasesEmptyJSON), nil
 	}}
@@ -42,6 +44,8 @@ func makeGiteaReleaser() *giteaReleaser {
 }
 
 func TestGiteaURL(t *testing.T) {
+	t.Parallel()
+
 	var (
 		gr = &giteaReleaser{Repo: "git.deanishe.net/deanishe/nonexistent"}
 		x  = "https://git.deanishe.net/deanishe/nonexistent/releases"
@@ -53,56 +57,53 @@ func TestGiteaURL(t *testing.T) {
 }
 
 func TestGiteaUpdater(t *testing.T) {
-	v := &versioned{version: "0.2.2"}
-	defer v.Clean()
-	gr := makeGiteaReleaser()
+	t.Parallel()
 
-	// There are 4 valid releases (one prerelease)
-	rs, err := gr.Releases()
-	if err != nil {
-		t.Fatalf("Error retrieving Gitea releases: %s", err)
-	}
-	if len(rs) != 4 {
-		t.Fatalf("Found %d valid releases, not 4.", len(rs))
-	}
+	withVersioned("0.2.2", func(v *versioned) {
 
-	// v6.0 is available
-	if err := clearUpdateCache(); err != nil {
-		t.Fatal(err)
-	}
-	u, err := New(v, gr)
-	if err != nil {
-		t.Fatalf("Error creating updater: %s", err)
-	}
-	u.CurrentVersion = mustVersion("2")
+		gr := makeGiteaReleaser()
 
-	// Update releases
-	if err := u.CheckForUpdate(); err != nil {
-		t.Fatalf("Couldn't retrieve releases: %s", err)
-	}
+		// There are 4 valid releases (one prerelease)
+		rs, err := gr.Releases()
+		if err != nil {
+			t.Fatalf("Error retrieving Gitea releases: %s", err)
+		}
+		if len(rs) != 4 {
+			t.Fatalf("Found %d valid releases, not 4.", len(rs))
+		}
 
-	if !u.UpdateAvailable() {
-		t.Fatal("No update found")
-	}
-	// v6.0 is the latest stable version
-	u.CurrentVersion = mustVersion("6")
-	if u.UpdateAvailable() {
-		t.Fatal("Unexpectedly found update")
-	}
-	// Prerelease v7.1.0-beta is newer
-	u.Prereleases = true
-	if !u.UpdateAvailable() {
-		t.Fatal("No update found")
-	}
-	if err := clearUpdateCache(); err != nil {
-		t.Fatal(err)
-	}
+		// v6.0 is available
+		u, err := New(v, gr)
+		if err != nil {
+			t.Fatalf("Error creating updater: %s", err)
+		}
+		u.CurrentVersion = mustVersion("2")
+
+		// Update releases
+		if err := u.CheckForUpdate(); err != nil {
+			t.Fatalf("Couldn't retrieve releases: %s", err)
+		}
+
+		if !u.UpdateAvailable() {
+			t.Fatal("No update found")
+		}
+		// v6.0 is the latest stable version
+		u.CurrentVersion = mustVersion("6")
+		if u.UpdateAvailable() {
+			t.Fatal("Unexpectedly found update")
+		}
+		// Prerelease v7.1.0-beta is newer
+		u.Prereleases = true
+		if !u.UpdateAvailable() {
+			t.Fatal("No update found")
+		}
+	})
 }
 
 // Configure Workflow to update from a Gitea repo.
 func ExampleGitea() {
 	// Set source repo using Gitea Option
-	wf := aw.New(Gitea("git.deanishe.net/alfred-ssh"))
+	wf := aw.New(Gitea("git.deanishe.net/deanishe/alfred-ssh"))
 	// Is a check for a newer version due?
 	fmt.Println(wf.UpdateCheckDue())
 	// Output:

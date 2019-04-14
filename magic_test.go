@@ -9,7 +9,7 @@ import (
 )
 
 // Mock magic action
-type testMA struct {
+type mockMA struct {
 	keyCalled     bool
 	descCalled    bool
 	runTextCalled bool
@@ -19,22 +19,22 @@ type testMA struct {
 	keyword string
 }
 
-func (a *testMA) Keyword() string {
+func (a *mockMA) Keyword() string {
 	a.keyCalled = true
 	if a.keyword != "" {
 		return a.keyword
 	}
 	return "test"
 }
-func (a *testMA) Description() string {
+func (a *mockMA) Description() string {
 	a.descCalled = true
 	return "Just a test"
 }
-func (a *testMA) RunText() string {
+func (a *mockMA) RunText() string {
 	a.runTextCalled = true
 	return "Performing test…"
 }
-func (a *testMA) Run() error {
+func (a *mockMA) Run() error {
 	a.runCalled = true
 	if a.returnError {
 		return errors.New("requested error")
@@ -44,7 +44,7 @@ func (a *testMA) Run() error {
 
 // Returns an error if the MA wasn't "shown".
 // That means MagicActions didn't show a list of actions.
-func (a *testMA) ValidateShown() error {
+func (a *mockMA) ValidateShown() error {
 
 	if !a.keyCalled {
 		return errors.New("Keyword() not called")
@@ -66,7 +66,7 @@ func (a *testMA) ValidateShown() error {
 }
 
 // Returns an error if the MA wasn't run.
-func (a *testMA) ValidateRun() error {
+func (a *mockMA) ValidateRun() error {
 
 	if !a.keyCalled {
 		return errors.New("Keyword() not called")
@@ -91,7 +91,7 @@ func (a *testMA) ValidateRun() error {
 func TestNonMagicArgs(t *testing.T) {
 
 	data := []struct {
-		in, out []string
+		in, x []string
 	}{
 		{[]string{"a", "b", "c"}, []string{"a", "b", "c"}},
 	}
@@ -107,14 +107,15 @@ func TestNonMagicArgs(t *testing.T) {
 			t.Error("handled")
 		}
 
-		if !slicesEqual(args, td.out) {
-			t.Errorf("not equal. Expected=%v, Got=%v", td.out, args)
+		if !slicesEqual(args, td.x) {
+			t.Errorf("not equal. Expected=%v, Got=%v", td.x, args)
 		}
 	}
 
 }
 
 func TestMagicDefaults(t *testing.T) {
+
 	wf := New()
 	ma := wf.MagicActions
 
@@ -126,10 +127,11 @@ func TestMagicDefaults(t *testing.T) {
 }
 
 func TestMagicActions(t *testing.T) {
+	t.Parallel()
 
 	wf := New()
 	ma := wf.MagicActions
-	ta := &testMA{}
+	ta := &mockMA{}
 
 	ma.Register(ta)
 	// Incomplete keyword = search query
@@ -152,7 +154,7 @@ func TestMagicActions(t *testing.T) {
 	}
 
 	// Register a new action
-	ta = &testMA{}
+	ta = &mockMA{}
 	ma.Register(ta)
 
 	// Keyword of test MA
@@ -168,6 +170,7 @@ func TestMagicActions(t *testing.T) {
 
 // Test automatically-added updateMA.
 func TestMagicUpdate(t *testing.T) {
+	t.Parallel()
 
 	u := &mockUpdater{}
 	// Workflow automatically adds a MagicAction to call the Updater

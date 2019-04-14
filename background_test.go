@@ -12,6 +12,7 @@ import (
 
 // TestRunInBackground ensures background jobs work.
 func TestRunInBackground(t *testing.T) {
+	t.Parallel()
 
 	wf := New()
 

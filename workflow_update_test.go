@@ -60,6 +60,8 @@ func (d *mockUpdater) Install() error {
 
 // Test that Workflow API responses match configured Updater's.
 func TestWorkflowUpdater(t *testing.T) {
+	t.Parallel()
+
 	wf := New()
 	// false/fail when Updater is unset
 	if wf.UpdateCheckDue() {

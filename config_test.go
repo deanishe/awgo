@@ -12,6 +12,7 @@ import (
 
 // TestConfigEnv verifies that Config holds the expected values.
 func TestConfigEnv(t *testing.T) {
+	t.Parallel()
 
 	data := []struct {
 		name, x, key string
@@ -39,14 +40,19 @@ func TestConfigEnv(t *testing.T) {
 	}
 
 	for _, td := range data {
-		s := cfg.Get(td.key)
-		if s != td.x {
-			t.Errorf("Bad %s. Expected=%v, Got=%v", td.name, td.x, s)
-		}
+		td := td // capture variable
+		t.Run(fmt.Sprintf("Config.Get(%v)", td.name), func(t *testing.T) {
+			t.Parallel()
+			s := cfg.Get(td.key)
+			if s != td.x {
+				t.Errorf("Expected=%v, Got=%v", td.x, s)
+			}
+		})
 	}
 }
 
 func TestGet(t *testing.T) {
+	t.Parallel()
 	env := MapEnv{
 		"key":   "value",
 		"key2":  "value2",
@@ -75,23 +81,27 @@ func TestGet(t *testing.T) {
 
 	// Verify env is the same
 	for k, x := range env {
-		v := cfg.Get(k)
-		if v != x {
-			t.Errorf("Bad '%s'. Expected=%v, Got=%v", k, x, v)
-		}
+		t.Run(fmt.Sprintf("Config.Get(%q)", k), func(t *testing.T) {
+			v := cfg.Get(k)
+			if v != x {
+				t.Errorf("Expected=%v, Got=%v", x, v)
+			}
+		})
 	}
 
 	// Test Get
 	for _, td := range data {
-		v := cfg.Get(td.key, td.fb...)
-		if v != td.out {
-			t.Errorf("Bad '%s'. Expected=%v, Got=%v", td.key, td.out, v)
-		}
-
+		t.Run(fmt.Sprintf("Config.Get(%q)", td.key), func(t *testing.T) {
+			v := cfg.Get(td.key, td.fb...)
+			if v != td.out {
+				t.Errorf("Expected=%v, Got=%v", td.out, v)
+			}
+		})
 	}
 }
 
 func TestGetInt(t *testing.T) {
+	t.Parallel()
 	env := MapEnv{
 		"one":   "1",
 		"two":   "2",
@@ -128,15 +138,17 @@ func TestGetInt(t *testing.T) {
 	cfg := NewConfig(env)
 	// Test GetInt
 	for _, td := range data {
-		v := cfg.GetInt(td.key, td.fb...)
-		if v != td.out {
-			t.Errorf("Bad '%s'. Expected=%v, Got=%v", td.key, td.out, v)
-		}
-
+		t.Run(fmt.Sprintf("Config.GetInt(%v)", td.key), func(t *testing.T) {
+			v := cfg.GetInt(td.key, td.fb...)
+			if v != td.out {
+				t.Errorf("Expected=%v, Got=%v", td.out, v)
+			}
+		})
 	}
 }
 
 func TestGetFloat(t *testing.T) {
+	t.Parallel()
 	env := MapEnv{
 		"one.three": "1.3",
 		"two":       "2.0",
@@ -169,15 +181,17 @@ func TestGetFloat(t *testing.T) {
 	cfg := NewConfig(env)
 	// Test GetFloat
 	for _, td := range data {
-		v := cfg.GetFloat(td.key, td.fb...)
-		if v != td.out {
-			t.Errorf("Bad '%s'. Expected=%v, Got=%v", td.key, td.out, v)
-		}
-
+		t.Run(fmt.Sprintf("Config.GetFloat(%v)", td.key), func(t *testing.T) {
+			v := cfg.GetFloat(td.key, td.fb...)
+			if v != td.out {
+				t.Errorf("Expected=%v, Got=%v", td.out, v)
+			}
+		})
 	}
 }
 
 func TestGetDuration(t *testing.T) {
+	t.Parallel()
 	env := MapEnv{
 		"5mins": "5m",
 		"1hour": "1h",
@@ -212,15 +226,17 @@ func TestGetDuration(t *testing.T) {
 
 	// Test GetDuration
 	for _, td := range data {
-		v := cfg.GetDuration(td.key, td.fb...)
-		if v != td.out {
-			t.Errorf("Bad '%s'. Expected=%v, Got=%v", td.key, td.out, v)
-		}
-
+		t.Run(fmt.Sprintf("Config.GetDuration(%v)", td.key), func(t *testing.T) {
+			v := cfg.GetDuration(td.key, td.fb...)
+			if v != td.out {
+				t.Errorf("Expected=%v, Got=%v", td.out, v)
+			}
+		})
 	}
 }
 
 func TestGetBool(t *testing.T) {
+	t.Parallel()
 	env := MapEnv{
 		"empty": "",
 		"t":     "t",
@@ -259,15 +275,17 @@ func TestGetBool(t *testing.T) {
 
 	// Test GetBool
 	for _, td := range data {
-		v := cfg.GetBool(td.key, td.fb...)
-		if v != td.out {
-			t.Errorf("Bad '%s'. Expected=%v, Got=%v", td.key, td.out, v)
-		}
-
+		t.Run(fmt.Sprintf("Config.GetBool(%v)", td.key), func(t *testing.T) {
+			v := cfg.GetBool(td.key, td.fb...)
+			if v != td.out {
+				t.Errorf("Expected=%v, Got=%v", td.out, v)
+			}
+		})
 	}
 }
 
 func TestStringify(t *testing.T) {
+	t.Parallel()
 	data := []struct {
 		in  interface{}
 		out string
@@ -284,11 +302,12 @@ func TestStringify(t *testing.T) {
 	}
 
 	for _, td := range data {
-		s := stringify(td.in)
-		if s != td.out {
-			t.Errorf("Bad String for %#v. Expected=%v, Got=%v", td.in, td.out, s)
-		}
-
+		t.Run(fmt.Sprintf("stringify(%#v)", td.in), func(t *testing.T) {
+			s := stringify(td.in)
+			if s != td.out {
+				t.Errorf("Expected=%v, Got=%v", td.out, s)
+			}
+		})
 	}
 }
 

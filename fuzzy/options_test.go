@@ -4,6 +4,8 @@ import "testing"
 
 // Test option round-tripping.
 func TestOptions(t *testing.T) {
+	t.Parallel()
+
 	var (
 		adj        = 1.1
 		sepBonus   = 1.2

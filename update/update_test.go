@@ -10,7 +10,6 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
-	"path/filepath"
 	"testing"
 	"time"
 )
@@ -29,8 +28,8 @@ type versioned struct {
 func (v *versioned) Version() string { return v.version }
 func (v *versioned) CacheDir() string {
 	if v.dir == "" {
-		v.dir = filepath.Join(os.TempDir(), fmt.Sprintf("aw-%d", os.Getpid()))
-		if err := os.MkdirAll(v.dir, 0700); err != nil {
+		var err error
+		if v.dir, err = ioutil.TempDir("", "aw-"); err != nil {
 			panic(err)
 		}
 	}
@@ -51,6 +50,12 @@ var (
 	tr, trPre *testReleaser
 )
 
+func withVersioned(version string, fn func(v *versioned)) {
+	v := &versioned{version: version}
+	defer v.Clean()
+	fn(v)
+}
+
 func init() {
 	tr = &testReleaser{
 		releases: []*Release{
@@ -70,120 +75,110 @@ func init() {
 	}
 }
 
-func clearUpdateCache() error {
-	v := &versioned{version: "0.2.2"}
-	defer v.Clean()
-	u, err := New(v, testReleaser{})
-	if err != nil {
-		return fmt.Errorf("Error creating updater: %s", err)
-	}
-	u.clearCache()
-	return nil
-}
+// func clearUpdateCache() error {
+// 	v := &versioned{version: "0.2.2"}
+// 	defer v.Clean()
+// 	u, err := New(v, testReleaser{})
+// 	if err != nil {
+// 		return fmt.Errorf("Error creating updater: %s", err)
+// 	}
+// 	u.clearCache()
+// 	return nil
+// }
 
 func TestUpdater(t *testing.T) {
-	if err := clearUpdateCache(); err != nil {
-		t.Fatal(err)
-	}
-	v := &versioned{version: "0.2.2"}
-	defer v.Clean()
-	u, err := New(v, tr)
-	if err != nil {
-		t.Fatalf("Error creating updater: %s", err)
-	}
-	if err := u.CheckForUpdate(); err != nil {
-		t.Fatalf("Error getting releases: %s", err)
-	}
-	u.CurrentVersion = mustVersion("1")
-	if u.UpdateAvailable() {
-		t.Fatal("Bad update #1")
-	}
-	u.CurrentVersion = mustVersion("0.5")
-	if u.UpdateAvailable() {
-		t.Fatal("Bad update #2")
-	}
-	u.CurrentVersion = mustVersion("0.4.5")
-	if u.UpdateAvailable() {
-		t.Fatal("Bad update #3")
-	}
-	u.Prereleases = true
-	u.CurrentVersion = mustVersion("0.4.5")
-	if !u.UpdateAvailable() {
-		t.Fatal("Bad update #4")
-	}
-	if err := clearUpdateCache(); err != nil {
-		t.Fatal(err)
-	}
+	t.Parallel()
+
+	withVersioned("0.2.2", func(v *versioned) {
+		u, err := New(v, tr)
+		if err != nil {
+			t.Fatalf("Error creating updater: %s", err)
+		}
+		if err := u.CheckForUpdate(); err != nil {
+			t.Fatalf("Error getting releases: %s", err)
+		}
+		u.CurrentVersion = mustVersion("1")
+		if u.UpdateAvailable() {
+			t.Fatal("Bad update #1")
+		}
+		u.CurrentVersion = mustVersion("0.5")
+		if u.UpdateAvailable() {
+			t.Fatal("Bad update #2")
+		}
+		u.CurrentVersion = mustVersion("0.4.5")
+		if u.UpdateAvailable() {
+			t.Fatal("Bad update #3")
+		}
+		u.Prereleases = true
+		u.CurrentVersion = mustVersion("0.4.5")
+		if !u.UpdateAvailable() {
+			t.Fatal("Bad update #4")
+		}
+	})
 }
 
 // TestUpdaterPreOnly tests that updater works with only pre-releases available
 func TestUpdaterPreOnly(t *testing.T) {
-	if err := clearUpdateCache(); err != nil {
-		t.Fatal(err)
-	}
-	v := &versioned{version: "0.2.2"}
-	defer v.Clean()
-	u, err := New(v, trPre)
-	if err != nil {
-		t.Fatalf("Error creating updater: %s", err)
-	}
-	if err := u.CheckForUpdate(); err != nil {
-		t.Fatalf("Error getting releases: %s", err)
-	}
-	u.CurrentVersion = mustVersion("1")
-	if u.UpdateAvailable() {
-		t.Fatal("Bad update #1")
-	}
-	u.Prereleases = true
-	u.CurrentVersion = mustVersion("0.4.5")
-	if !u.UpdateAvailable() {
-		t.Fatal("Bad update #2")
-	}
-	if err := clearUpdateCache(); err != nil {
-		t.Fatal(err)
-	}
+	t.Parallel()
+
+	withVersioned("0.2.2", func(v *versioned) {
+		u, err := New(v, trPre)
+		if err != nil {
+			t.Fatalf("Error creating updater: %s", err)
+		}
+		if err := u.CheckForUpdate(); err != nil {
+			t.Fatalf("Error getting releases: %s", err)
+		}
+		u.CurrentVersion = mustVersion("1")
+		if u.UpdateAvailable() {
+			t.Fatal("Bad update #1")
+		}
+		u.Prereleases = true
+		u.CurrentVersion = mustVersion("0.4.5")
+		if !u.UpdateAvailable() {
+			t.Fatal("Bad update #2")
+		}
+	})
 }
 
 // TestUpdateInterval tests caching of LastCheck.
 func TestUpdateInterval(t *testing.T) {
-	if err := clearUpdateCache(); err != nil {
-		t.Fatal(err)
-	}
-	v := &versioned{version: "0.2.2"}
-	defer v.Clean()
-	u, err := New(v, testReleaser{})
-	if err != nil {
-		t.Fatalf("Error creating updater: %s", err)
-	}
+	t.Parallel()
 
-	// UpdateInterval is set
-	if !u.LastCheck.IsZero() {
-		t.Fatalf("LastCheck is not zero.")
-	}
-	if !u.CheckDue() {
-		t.Fatalf("Update is not due.")
-	}
-	// LastCheck is updated
-	if err := u.CheckForUpdate(); err != nil {
-		t.Fatalf("Error fetching releases: %s", err)
-	}
-	if u.LastCheck.IsZero() {
-		t.Fatalf("LastCheck is zero.")
-	}
-	if u.CheckDue() {
-		t.Fatalf("Update is due.")
-	}
-	// Changing UpdateInterval
-	u.UpdateInterval(time.Duration(1 * time.Nanosecond))
-	if !u.CheckDue() {
-		t.Fatalf("Update is not due.")
-	}
-	if err := clearUpdateCache(); err != nil {
-		t.Fatal(err)
-	}
+	withVersioned("0.2.2", func(v *versioned) {
+		u, err := New(v, testReleaser{})
+		if err != nil {
+			t.Fatalf("Error creating updater: %s", err)
+		}
+
+		// UpdateInterval is set
+		if !u.LastCheck.IsZero() {
+			t.Fatalf("LastCheck is not zero.")
+		}
+		if !u.CheckDue() {
+			t.Fatalf("Update is not due.")
+		}
+		// LastCheck is updated
+		if err := u.CheckForUpdate(); err != nil {
+			t.Fatalf("Error fetching releases: %s", err)
+		}
+		if u.LastCheck.IsZero() {
+			t.Fatalf("LastCheck is zero.")
+		}
+		if u.CheckDue() {
+			t.Fatalf("Update is due.")
+		}
+		// Changing UpdateInterval
+		u.UpdateInterval(time.Duration(1 * time.Nanosecond))
+		if !u.CheckDue() {
+			t.Fatalf("Update is not due.")
+		}
+	})
 }
 
 func TestHTTPClient(t *testing.T) {
+	t.Parallel()
+
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "hello")
 	}))
