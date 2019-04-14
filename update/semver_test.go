@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func TestValidity(t *testing.T) {
+func TestVersionValid(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -70,8 +70,8 @@ func TestValidity(t *testing.T) {
 	}
 }
 
-// TestVersionComparison compares versions strings
-func TestVersionComparison(t *testing.T) {
+// TestVersionCompare compares versions strings
+func TestVersionCompare(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -103,7 +103,7 @@ func TestVersionComparison(t *testing.T) {
 
 	for _, td := range tests {
 		td := td // capture variable
-		t.Run(fmt.Sprintf("SemVer.Compare(%q vs %q)", td.v1, td.v2), func(t *testing.T) {
+		t.Run(fmt.Sprintf("%q vs %q", td.v1, td.v2), func(t *testing.T) {
 			t.Parallel()
 			v1, err1 := NewSemVer(td.v1)
 			v2, err2 := NewSemVer(td.v2)
@@ -169,7 +169,7 @@ func TestVersionSorting(t *testing.T) {
 	for _, td := range tests {
 
 		td := td // capture variable
-		t.Run(fmt.Sprintf("SortSemVer(%#v)", td.in), func(t *testing.T) {
+		t.Run(fmt.Sprintf("%#v", td.in), func(t *testing.T) {
 			t.Parallel()
 			vin := []SemVer{}
 			out := []string{}

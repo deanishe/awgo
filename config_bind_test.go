@@ -415,7 +415,7 @@ func ExampleEnvVarForField() {
 }
 
 // Verify zero and non-zero values returned by isZeroValue.
-func TestIsZeroValue(t *testing.T) {
+func TestZeroValue(t *testing.T) {
 	t.Parallel()
 
 	zero := struct {
@@ -498,7 +498,7 @@ func TestIsZeroValue(t *testing.T) {
 }
 
 // Verify *string* zero values for other types, e.g. "0" is zero value for int.
-func TestIsZeroString(t *testing.T) {
+func TestZeroString(t *testing.T) {
 	t.Parallel()
 
 	data := []struct {
@@ -562,7 +562,7 @@ func TestIsZeroString(t *testing.T) {
 
 	for _, td := range data {
 		td := td // capture variable
-		t.Run(fmt.Sprintf("isZeroString(%s)", td.in), func(t *testing.T) {
+		t.Run(fmt.Sprintf("%q", td.in), func(t *testing.T) {
 			t.Parallel()
 			v := isZeroString(td.in, td.kind)
 			if v != td.x {

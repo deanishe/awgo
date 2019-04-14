@@ -23,7 +23,7 @@
 	<key>webaddress</key>
 	<string>https://github.com/deanishe/awgo</string>
     <key>version</key>
-    <string>0.16.0</string>
+    <string>0.16.1</string>
 	<key>variables</key>
 	<dict>
 		<key>exported_var</key>

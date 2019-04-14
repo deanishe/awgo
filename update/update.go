@@ -170,16 +170,23 @@ func (u *Updater) CheckDue() bool {
 // CheckForUpdate fetches the list of releases from remote (via Releaser)
 // and caches it locally.
 func (u *Updater) CheckForUpdate() error {
-	u.clearCache()
+	// If update fails, don't try again for at least an hour
+	t := time.Now().Add(-u.updateInterval).Add(time.Hour)
 	rels, err := u.Releaser.Releases()
 	if err != nil {
+		u.LastCheck = t
+		u.cacheLastCheck()
 		return err
 	}
 	u.releases = rels
 	data, err := json.Marshal(u.releases)
 	if err != nil {
+		u.LastCheck = t
+		u.cacheLastCheck()
 		return err
 	}
+
+	u.clearCache()
 	if err := ioutil.WriteFile(u.pathReleases, data, 0600); err != nil {
 		return err
 	}

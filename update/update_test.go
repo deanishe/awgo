@@ -4,6 +4,7 @@
 package update
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -46,6 +47,12 @@ func (r testReleaser) Releases() ([]*Release, error) {
 	return r.releases, nil
 }
 
+type testFailReleaser struct{}
+
+func (r testFailReleaser) Releases() ([]*Release, error) {
+	return nil, errors.New("failed")
+}
+
 var (
 	tr, trPre *testReleaser
 )
@@ -74,17 +81,6 @@ func init() {
 		},
 	}
 }
-
-// func clearUpdateCache() error {
-// 	v := &versioned{version: "0.2.2"}
-// 	defer v.Clean()
-// 	u, err := New(v, testReleaser{})
-// 	if err != nil {
-// 		return fmt.Errorf("Error creating updater: %s", err)
-// 	}
-// 	u.clearCache()
-// 	return nil
-// }
 
 func TestUpdater(t *testing.T) {
 	t.Parallel()
@@ -144,7 +140,12 @@ func TestUpdaterPreOnly(t *testing.T) {
 // TestUpdateInterval tests caching of LastCheck.
 func TestUpdateInterval(t *testing.T) {
 	t.Parallel()
+	t.Run("UpdateIntervalOnSuccess", testUpdateIntervalSuccess)
+	t.Run("UpdateIntervalOnFailure", testUpdateIntervalFail)
+}
 
+func testUpdateIntervalSuccess(t *testing.T) {
+	t.Parallel()
 	withVersioned("0.2.2", func(v *versioned) {
 		u, err := New(v, testReleaser{})
 		if err != nil {
@@ -176,61 +177,106 @@ func TestUpdateInterval(t *testing.T) {
 	})
 }
 
+func testUpdateIntervalFail(t *testing.T) {
+	t.Parallel()
+	withVersioned("0.2.2", func(v *versioned) {
+		u, err := New(v, testFailReleaser{})
+		if err != nil {
+			t.Fatalf("Error creating updater: %s", err)
+		}
+
+		// UpdateInterval is set
+		if !u.LastCheck.IsZero() {
+			t.Fatal("LastCheck is not zero.")
+		}
+		if !u.CheckDue() {
+			t.Fatal("Update is not due.")
+		}
+		// LastCheck is updated
+		if err := u.CheckForUpdate(); err == nil {
+			t.Fatal("Fetch succeeded")
+		}
+		if u.LastCheck.IsZero() {
+			t.Fatalf("LastCheck is zero.")
+		}
+		if u.CheckDue() {
+			t.Fatalf("Update is due.")
+		}
+		// Changing UpdateInterval
+		u.UpdateInterval(time.Duration(1 * time.Nanosecond))
+		if !u.CheckDue() {
+			t.Fatalf("Update is not due.")
+		}
+	})
+}
+
 func TestHTTPClient(t *testing.T) {
 	t.Parallel()
 
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "hello")
-	}))
-	defer ts.Close()
+	t.Run("HTTP(hello)", func(t *testing.T) {
+		t.Parallel()
 
-	u, _ := url.Parse(ts.URL)
-	data, err := getURL(u)
-	if err != nil {
-		t.Fatal(err)
-	}
-	ts.Close()
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintln(w, "hello")
+		}))
+		defer ts.Close()
 
-	s := string(data)
-	if s != "hello\n" {
-		t.Errorf("Bad HTTP response. Expected=%q, Got=%q", "hello", s)
-	}
+		u, _ := url.Parse(ts.URL)
+		data, err := getURL(u)
+		if err != nil {
+			t.Fatal(err)
+		}
+		ts.Close()
 
-	ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.NotFound(w, r)
-	}))
-	defer ts.Close()
+		s := string(data)
+		if s != "hello\n" {
+			t.Errorf("Expected=%q, Got=%q", "hello", s)
+		}
+	})
 
-	u, _ = url.Parse(ts.URL)
-	_, err = getURL(u)
-	if err == nil {
-		t.Errorf("404 request succeeded")
-	}
-	ts.Close()
+	t.Run("HTTP(404)", func(t *testing.T) {
+		t.Parallel()
 
-	ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "contents")
-	}))
-	defer ts.Close()
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			http.NotFound(w, r)
+		}))
+		defer ts.Close()
 
-	u, _ = url.Parse(ts.URL)
-	f, err := ioutil.TempFile("", "awgo-*-test")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer f.Close()
+		u, _ := url.Parse(ts.URL)
+		_, err := getURL(u)
+		if err == nil {
+			t.Errorf("404 request succeeded")
+		}
+		ts.Close()
+	})
 
-	err = download(u, f.Name())
-	if err != nil {
-		t.Errorf("Failed to download file: %v", err)
-	}
+	t.Run("HTTP(download)", func(t *testing.T) {
+		t.Parallel()
 
-	data, err = ioutil.ReadFile(f.Name())
-	if err != nil {
-		t.Errorf("Couldn't open downloaded file: %v", err)
-	}
-	s = string(data)
-	if s != "contents\n" {
-		t.Errorf("Bad download contents. Expected=%v, Got=%v", "contents\n", s)
-	}
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintln(w, "contents")
+		}))
+		defer ts.Close()
+
+		u, _ := url.Parse(ts.URL)
+		f, err := ioutil.TempFile("", "awgo-*-test")
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+
+		err = download(u, f.Name())
+		if err != nil {
+			t.Fatalf("[ERROR] download: %v", err)
+		}
+
+		data, err := ioutil.ReadFile(f.Name())
+		if err != nil {
+			t.Fatalf("[ERROR] open file: %v", err)
+		}
+		s := string(data)
+		if s != "contents\n" {
+			t.Errorf("Expected=%q, Got=%q", "contents\n", s)
+		}
+	})
 }

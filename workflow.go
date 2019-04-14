@@ -18,7 +18,7 @@ import (
 )
 
 // AwGoVersion is the semantic version number of this library.
-const AwGoVersion = "0.16.0"
+const AwGoVersion = "0.16.1"
 
 // Default Workflow settings. Can be changed with the corresponding Options.
 //

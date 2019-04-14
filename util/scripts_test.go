@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-func TestExecutableRunnerCanRun(t *testing.T) {
+func TestExecutableRunner(t *testing.T) {
 	t.Parallel()
 
 	data := []struct {
@@ -36,7 +36,7 @@ func TestExecutableRunnerCanRun(t *testing.T) {
 
 	for _, td := range data {
 		td := td // capture variable
-		t.Run(fmt.Sprintf("CanRunExecutable(%s)", td.in), func(t *testing.T) {
+		t.Run(fmt.Sprintf("CanRun(%s)", td.in), func(t *testing.T) {
 			t.Parallel()
 			v := r.CanRun(td.in)
 			if v != td.x {
@@ -46,7 +46,7 @@ func TestExecutableRunnerCanRun(t *testing.T) {
 	}
 }
 
-func TestScriptRunnerCanRun(t *testing.T) {
+func TestScriptRunner(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -71,7 +71,7 @@ func TestScriptRunnerCanRun(t *testing.T) {
 	r := ScriptRunner{DefaultInterpreters}
 	for _, td := range tests {
 		td := td // capture variable
-		t.Run(fmt.Sprintf("CanRunScript(%s)", td.in), func(t *testing.T) {
+		t.Run(fmt.Sprintf("CanRun(%s)", td.in), func(t *testing.T) {
 			t.Parallel()
 			v := r.CanRun(td.in)
 			if v != td.valid {
@@ -127,7 +127,7 @@ func TestNoRun(t *testing.T) {
 
 	for _, td := range tests {
 		td := td // capture variable
-		t.Run(fmt.Sprintf("NoRun(%s)", td.in), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Run(%s)", td.in), func(t *testing.T) {
 			t.Parallel()
 			_, err := Run(td.in, "blah")
 			if err == nil {

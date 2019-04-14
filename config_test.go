@@ -275,7 +275,7 @@ func TestGetBool(t *testing.T) {
 
 	// Test GetBool
 	for _, td := range data {
-		t.Run(fmt.Sprintf("Config.GetBool(%v)", td.key), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Config.GetBool(%q)", td.key), func(t *testing.T) {
 			v := cfg.GetBool(td.key, td.fb...)
 			if v != td.out {
 				t.Errorf("Expected=%v, Got=%v", td.out, v)

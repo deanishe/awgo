@@ -120,9 +120,9 @@ func TestMarshalItem(t *testing.T) {
 			x: `{"title":"title","match":"one two three","valid":false}`},
 	}
 
-	for _, td := range tests {
+	for i, td := range tests {
 		td := td // capture variable
-		t.Run(fmt.Sprintf("MarshalItem(%#v)", td.in), func(t *testing.T) {
+		t.Run(fmt.Sprintf("MarshalItem(%d)", i), func(t *testing.T) {
 			t.Parallel()
 			data, err := json.Marshal(td.in)
 			if err != nil {
@@ -172,9 +172,9 @@ func TestMarshalModifier(t *testing.T) {
 			x: `{"arg":"title","subtitle":"sub here","valid":true,"variables":{"foo":"bar"}}`},
 	}
 
-	for _, td := range tests {
+	for i, td := range tests {
 		td := td // capture variable
-		t.Run(fmt.Sprintf("MarshalModifier(%#v)", td.in), func(t *testing.T) {
+		t.Run(fmt.Sprintf("MarshalModifier(%d)", i), func(t *testing.T) {
 			t.Parallel()
 			data, err := json.Marshal(td.in)
 			if err != nil {
@@ -218,9 +218,9 @@ func TestMarshalArg(t *testing.T) {
 			x: `{"alfredworkflow":{"arg":"title","variables":{"ducky":"fuzz","foo":"bar"}}}`},
 	}
 
-	for _, td := range tests {
+	for i, td := range tests {
 		td := td // capture variable
-		t.Run(fmt.Sprintf("MarshalArgVar(%#v)", td.in), func(t *testing.T) {
+		t.Run(fmt.Sprintf("MarshalArgVar(%d)", i), func(t *testing.T) {
 			t.Parallel()
 			data, err := json.Marshal(td.in)
 			if err != nil {
