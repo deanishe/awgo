@@ -9,8 +9,6 @@ import (
 )
 
 func TestReset(t *testing.T) {
-	t.Parallel()
-
 	withTestWf(func(wf *Workflow) {
 		s := wf.Dir()
 		x, err := os.Getwd()

@@ -26,12 +26,6 @@ const (
 	DefaultStripDiacritics         = true // Strip diacritics from sort keys if query is plain ASCII
 )
 
-var stripper transform.Transformer
-
-func init() {
-	stripper = transform.Chain(norm.NFD, transform.RemoveFunc(isMn))
-}
-
 // Sortable makes the implementer fuzzy-sortable.
 // It is a superset of sort.Interface (i.e. your struct must also
 // implement sort.Interface).
@@ -330,6 +324,7 @@ func isMn(r rune) bool {
 // stripDiacritics removes diacritics.
 // Strings are decomposed, then non-ASCII characters are removed.
 func stripDiacritics(s string) string {
+	stripper := transform.Chain(norm.NFD, transform.RemoveFunc(isMn))
 	stripped, _, err := transform.String(stripper, s)
 	if err != nil {
 		log.Printf("Couldn't strip diacritics from `%s`: %s", s, err)

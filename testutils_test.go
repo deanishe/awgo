@@ -43,47 +43,6 @@ var (
 		EnvVarCacheDir:         tCacheDir,
 		EnvVarDataDir:          tDataDir,
 	}
-
-	tInfoPlist = `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>bundleid</key>
-	<string>net.deanishe.awgo</string>
-	<key>connections</key>
-	<dict/>
-	<key>createdby</key>
-	<string>Dean Jackson</string>
-	<key>description</key>
-	<string>AwGo sample info.plist</string>
-	<key>disabled</key>
-	<false/>
-	<key>name</key>
-	<string>AwGo</string>
-	<key>objects</key>
-	<array/>
-	<key>readme</key>
-	<string></string>
-	<key>uidata</key>
-	<dict/>
-	<key>webaddress</key>
-	<string>https://github.com/deanishe/awgo</string>
-    <key>version</key>
-    <string>0.15</string>
-	<key>variables</key>
-	<dict>
-		<key>exported_var</key>
-		<string>exported_value</string>
-		<key>unexported_var</key>
-		<string>unexported_value</string>
-	</dict>
-	<key>variablesdontexport</key>
-	<array>
-		<string>unexported_var</string>
-	</array>
-</dict>
-</plist>
-`
 )
 
 // create a temporary directory, call function fn, delete the directory.
@@ -127,13 +86,13 @@ func withTestWf(fun func(wf *Workflow)) {
 	withTestEnv(func(e MapEnv) {
 
 		var (
-			curdir, dir string
-			err         error
+			dir string
+			err error
 		)
 
-		if curdir, err = os.Getwd(); err != nil {
-			panic(err)
-		}
+		// if curdir, err = os.Getwd(); err != nil {
+		// 	panic(err)
+		// }
 
 		if dir, err = ioutil.TempDir("", "awgo-"); err != nil {
 			panic(err)
@@ -150,10 +109,10 @@ func withTestWf(fun func(wf *Workflow)) {
 		}()
 
 		var (
-			wfdir    = filepath.Join(dir, "workflow")
+			// wfdir    = filepath.Join(dir, "workflow")
 			datadir  = filepath.Join(dir, "data")
 			cachedir = filepath.Join(dir, "cache")
-			ipfile   = filepath.Join(wfdir, "info.plist")
+			// ipfile   = filepath.Join(wfdir, "info.plist")
 		)
 
 		// Update env to point to cache & data dirs
@@ -161,25 +120,27 @@ func withTestWf(fun func(wf *Workflow)) {
 		e[EnvVarDataDir] = datadir
 
 		// Create test files & directories
-		for _, p := range []string{wfdir, datadir, cachedir} {
+		for _, p := range []string{datadir, cachedir} {
 			if err := os.MkdirAll(p, os.ModePerm); err != nil {
 				panic(err)
 			}
 		}
-		// info.plist
-		if err := ioutil.WriteFile(ipfile, []byte(tInfoPlist), os.ModePerm); err != nil {
-			panic(err)
-		}
-
-		// Change to workflow directory and call function from there.
-		if err := os.Chdir(wfdir); err != nil {
-			panic(err)
-		}
-		defer func() {
-			if err := os.Chdir(curdir); err != nil {
+		/*
+			// info.plist
+			if err := ioutil.WriteFile(ipfile, []byte(tInfoPlist), os.ModePerm); err != nil {
 				panic(err)
 			}
-		}()
+
+			// Change to workflow directory and call function from there.
+			if err := os.Chdir(wfdir); err != nil {
+				panic(err)
+			}
+			defer func() {
+				if err := os.Chdir(curdir); err != nil {
+					panic(err)
+				}
+			}()
+		*/
 
 		// Create workflow for current environment and pass it to function.
 		var wf = NewFromEnv(e)
@@ -189,7 +150,6 @@ func withTestWf(fun func(wf *Workflow)) {
 
 // TestWithTestWf verifies the withTestEnv helper.
 func TestWithTestWf(t *testing.T) {
-	t.Parallel()
 
 	withTestWf(func(wf *Workflow) {
 
@@ -197,18 +157,10 @@ func TestWithTestWf(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-
-		cd := filepath.Join(wd, "../cache")
-		dd := filepath.Join(wd, "../data")
-
 		data := []struct {
 			name, x, v string
 		}{
 			{"Workflow.Dir", wd, wf.Dir()},
-			{"Cache.Dir", cd, wf.Cache.Dir},
-			{"CacheDir", cd, wf.CacheDir()},
-			{"Data.Dir", dd, wf.Data.Dir},
-			{"DataDir", dd, wf.DataDir()},
 			{"Name", tName, wf.Name()},
 			{"BundleID", tBundleID, wf.BundleID()},
 
@@ -221,8 +173,6 @@ func TestWithTestWf(t *testing.T) {
 				wf.Config.Get(EnvVarThemeSelectionBG)},
 			{"Config.Preferences", tPreferences, wf.Config.Get(EnvVarPreferences)},
 			{"Config.Localhash", tLocalhash, wf.Config.Get(EnvVarLocalhash)},
-			{"Config.CacheDir", cd, wf.Config.Get(EnvVarCacheDir)},
-			{"Config.DataDir", dd, wf.Config.Get(EnvVarDataDir)},
 		}
 
 		if wf.Debug() != tDebug {

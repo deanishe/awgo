@@ -5,6 +5,7 @@ package aw
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 )
 
@@ -89,6 +90,7 @@ func (a *mockMA) ValidateRun() error {
 
 // TestNonMagicArgs tests that normal arguments aren't ignored
 func TestNonMagicArgs(t *testing.T) {
+	t.Parallel()
 
 	data := []struct {
 		in, x []string
@@ -115,6 +117,7 @@ func TestNonMagicArgs(t *testing.T) {
 }
 
 func TestMagicDefaults(t *testing.T) {
+	t.Parallel()
 
 	wf := New()
 	ma := wf.MagicActions
@@ -129,42 +132,36 @@ func TestMagicDefaults(t *testing.T) {
 func TestMagicActions(t *testing.T) {
 	t.Parallel()
 
-	wf := New()
-	ma := wf.MagicActions
-	ta := &mockMA{}
-
-	ma.Register(ta)
-	// Incomplete keyword = search query
-	_, v := ma.handleArgs([]string{"workflow:tes"}, DefaultMagicPrefix)
-	if !v {
-		t.Errorf("Bad handled. Expected=%v, Got=%v", true, v)
+	tests := []struct {
+		in      string
+		handled bool
+		shown   bool
+		run     bool
+	}{
+		{"workflow:tes", true, true, false},
+		{"workflow:test", true, false, false},
 	}
 
-	if err := ta.ValidateShown(); err != nil {
-		t.Errorf("Bad MagicAction: %v", err)
-	}
-
-	// Test unregister
-	ma.Unregister(ta)
-
-	n := len(ma.actions)
-	x := 6
-	if n != x {
-		t.Errorf("Bad MagicActions length. Expected=%v, Got=%v", x, n)
-	}
-
-	// Register a new action
-	ta = &mockMA{}
-	ma.Register(ta)
-
-	// Keyword of test MA
-	_, v = ma.handleArgs([]string{"workflow:test"}, DefaultMagicPrefix)
-	if !v {
-		t.Errorf("Bad handled. Expected=%v, Got=%v", true, v)
-	}
-
-	if err := ta.ValidateRun(); err != nil {
-		t.Errorf("Bad MagicAction: %v", err)
+	for _, td := range tests {
+		td := td // capture variable
+		t.Run(fmt.Sprintf("MagicAction(%q)", td.in), func(t *testing.T) {
+			t.Parallel()
+			var (
+				wf = New()
+				ta = &mockMA{}
+			)
+			wf.MagicActions.Register(ta)
+			_, v := wf.MagicActions.handleArgs([]string{td.in}, DefaultMagicPrefix)
+			if v != td.handled {
+				t.Errorf("Bad Handled. Expected=%v, Got=%v", td.handled, v)
+			}
+			if err := ta.ValidateShown(); err != nil && td.shown {
+				t.Error("Not Shown")
+			}
+			if err := ta.ValidateRun(); err != nil && td.run {
+				t.Error("Not Run")
+			}
+		})
 	}
 }
 

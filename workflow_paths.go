@@ -18,8 +18,13 @@ import (
 // Dir returns the path to the workflow's root directory.
 func (wf *Workflow) Dir() string {
 
+	wd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+
 	if wf.dir == "" {
-		wf.dir = findWorkflowRoot()
+		wf.dir = findWorkflowRoot(wd)
 	}
 
 	return wf.dir
@@ -102,7 +107,7 @@ func (wf *Workflow) OpenHelp() error {
 }
 
 // Try to find workflow root based on presence of info.plist.
-func findWorkflowRoot() string {
+func findWorkflowRoot(path string) string {
 
 	var (
 		dirs = []string{}        // directories to look in for info.plist
@@ -132,15 +137,9 @@ func findWorkflowRoot() string {
 		}
 	}
 
-	// Working directory is the best place to start looking
-	wd, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-
-	// Add all paths from working directory upwards and from
+	// Add all paths from path upwards and from
 	// directory executable is in upwards.
-	queueTree(wd)
+	queueTree(path)
 	queueTree(filepath.Dir(os.Args[0]))
 
 	// Return path of first directory that contains an info.plist
@@ -153,7 +152,6 @@ func findWorkflowRoot() string {
 		}
 	}
 
-	log.Printf("[warning] info.plist not found. Guessed workflow directory: %s", wd)
-	// Fall back to working directory
-	return wd
+	log.Printf("[warning] info.plist not found. Guessed: %s", path)
+	return path
 }

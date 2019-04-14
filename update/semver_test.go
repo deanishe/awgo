@@ -3,7 +3,11 @@
 
 package update
 
-import "testing"
+import (
+	"fmt"
+	"reflect"
+	"testing"
+)
 
 func TestValidity(t *testing.T) {
 	t.Parallel()
@@ -49,16 +53,20 @@ func TestValidity(t *testing.T) {
 	}
 
 	for _, td := range tests {
-		v, err := NewSemVer(td.in)
-		if err != nil {
-			if td.valid {
-				t.Errorf("parse valid failed: %v", td.in)
+		td := td // capture variable
+		t.Run(fmt.Sprintf("SemVer(%#v)", td.in), func(t *testing.T) {
+			t.Parallel()
+			v, err := NewSemVer(td.in)
+			if err != nil {
+				if td.valid {
+					t.Error("parse valid failed")
+				}
+			} else {
+				if v.String() != td.x {
+					t.Errorf("Expected=%s, Got=%s", td.x, v)
+				}
 			}
-		} else {
-			if v.String() != td.x {
-				t.Errorf("Bad version. Expected=%s, Got=%s", td.x, v)
-			}
-		}
+		})
 	}
 }
 
@@ -94,46 +102,50 @@ func TestVersionComparison(t *testing.T) {
 	}
 
 	for _, td := range tests {
-		v1, err1 := NewSemVer(td.v1)
-		v2, err2 := NewSemVer(td.v2)
-		if err1 != nil || err2 != nil {
-			t.Fatalf("Version error(s). v1=%s, v2=%s", err1, err2)
-		}
-		r := v1.Compare(v2)
-		if r != td.r {
-			t.Fatalf("Failed comparison %q vs %q. Expected=%d, Got=%d", v1, v1, td.r, r)
-		}
-		if td.r == 0 {
-			if !v1.Eq(v2) {
-				t.Fatalf("[EQ] Did not compare as equal: %q %q", v1, v2)
+		td := td // capture variable
+		t.Run(fmt.Sprintf("SemVer.Compare(%q vs %q)", td.v1, td.v2), func(t *testing.T) {
+			t.Parallel()
+			v1, err1 := NewSemVer(td.v1)
+			v2, err2 := NewSemVer(td.v2)
+			if err1 != nil || err2 != nil {
+				t.Fatalf("Different errors. v1=%s, v2=%s", err1, err2)
 			}
-			if !v1.Gte(v2) {
-				t.Fatalf("[GTE] Did not compare as equal: %q %q", v1, v2)
+			r := v1.Compare(v2)
+			if r != td.r {
+				t.Fatalf("Expected=%d, Got=%d", td.r, r)
 			}
-			if !v1.Lte(v2) {
-				t.Fatalf("[LTE] Did not compare as equal: %q %q", v1, v2)
+			if td.r == 0 {
+				if !v1.Eq(v2) {
+					t.Fatal("[EQ] Did not compare as equal")
+				}
+				if !v1.Gte(v2) {
+					t.Fatal("[GTE] Did not compare as equal")
+				}
+				if !v1.Lte(v2) {
+					t.Fatal("[LTE] Did not compare as equal")
+				}
+			} else if td.r == 1 {
+				if v1.Eq(v2) {
+					t.Fatal("[EQ] Compared as equal")
+				}
+				if !v1.Gte(v2) {
+					t.Fatal("[GTE] Did not compare as greater")
+				}
+				if v1.Lte(v2) {
+					t.Fatal("[LTE] Compared as LTE")
+				}
+			} else if td.r == -1 {
+				if v1.Eq(v2) {
+					t.Fatal("[EQ] Compared as equal")
+				}
+				if v1.Gte(v2) {
+					t.Fatal("[GTE] Compared as GTE")
+				}
+				if !v1.Lte(v2) {
+					t.Fatal("[LTE] Did not compare as LTE")
+				}
 			}
-		} else if td.r == 1 {
-			if v1.Eq(v2) {
-				t.Fatalf("[EQ] Compared as equal: %q %q", v1, v2)
-			}
-			if !v1.Gte(v2) {
-				t.Fatalf("[GTE] Did not compare as greater: %q %q", v1, v2)
-			}
-			if v1.Lte(v2) {
-				t.Fatalf("[LTE] Compared as LTE: %q %q", v1, v2)
-			}
-		} else if td.r == -1 {
-			if v1.Eq(v2) {
-				t.Fatalf("[EQ] Compared as equal: %q %q", v1, v2)
-			}
-			if v1.Gte(v2) {
-				t.Fatalf("[GTE] Compared as GTE: %q %q", v1, v2)
-			}
-			if !v1.Lte(v2) {
-				t.Fatalf("[LTE] Did not compare as LTE: %q %q", v1, v2)
-			}
-		}
+		})
 	}
 }
 
@@ -155,23 +167,23 @@ func TestVersionSorting(t *testing.T) {
 	}
 
 	for _, td := range tests {
-		vin := []SemVer{}
-		out := []string{}
-		for _, s := range td.in {
-			v, _ := NewSemVer(s)
-			vin = append(vin, v)
-		}
-		SortSemVer(vin)
-		for _, v := range vin {
-			out = append(out, v.String())
-		}
-		if len(out) != len(td.out) {
-			t.Fatalf("Bad length. Expected=%d, Got=%d", len(td.out), len(out))
-		}
-		for i, s := range td.out {
-			if s != out[i] {
-				t.Fatalf("Bad sort. Expected=%q, Got=%q", out[i], s)
+
+		td := td // capture variable
+		t.Run(fmt.Sprintf("SortSemVer(%#v)", td.in), func(t *testing.T) {
+			t.Parallel()
+			vin := []SemVer{}
+			out := []string{}
+			for _, s := range td.in {
+				v, _ := NewSemVer(s)
+				vin = append(vin, v)
 			}
-		}
+			SortSemVer(vin)
+			for _, v := range vin {
+				out = append(out, v.String())
+			}
+			if !reflect.DeepEqual(out, td.out) {
+				t.Errorf("Expected=%#v, Got=%#v", td.out, out)
+			}
+		})
 	}
 }

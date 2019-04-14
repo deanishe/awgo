@@ -12,6 +12,7 @@ import (
 
 // TestWorkflowValues tests workflow name, bundle ID etc.
 func TestWorkflowValues(t *testing.T) {
+	t.Parallel()
 
 	withTestWf(func(wf *Workflow) {
 
@@ -26,8 +27,9 @@ func TestWorkflowValues(t *testing.T) {
 
 // TestOptions verifies that options correctly alter Workflow.
 func TestOptions(t *testing.T) {
+	t.Parallel()
 
-	data := []struct {
+	tests := []struct {
 		opt  Option                  // option to set
 		test func(wf *Workflow) bool // function to verify change was made
 		desc string                  // test title
@@ -78,17 +80,21 @@ func TestOptions(t *testing.T) {
 			"Remove Magic"},
 	}
 
-	for _, td := range data {
+	for _, td := range tests {
+		td := td // capture variable
+		t.Run(fmt.Sprintf("Option(%#v)", td.opt), func(t *testing.T) {
+			t.Parallel()
+			wf := New(td.opt)
 
-		wf := New(td.opt)
-
-		if !td.test(wf) {
-			t.Errorf("option %s failed", td.desc)
-		}
+			if !td.test(wf) {
+				t.Errorf("option %s failed", td.desc)
+			}
+		})
 	}
 }
 
 func TestWorkflowRun(t *testing.T) {
+	t.Parallel()
 
 	withTestWf(func(wf *Workflow) {
 
@@ -108,37 +114,52 @@ func TestWorkflowRun(t *testing.T) {
 
 // TestWorkflowDir verifies that AwGo finds the right directory.
 func TestWorkflowDir(t *testing.T) {
+	t.Parallel()
 
-	withTestWf(func(wf *Workflow) {
+	var (
+		cwd string
+		err error
+	)
 
-		// Set up environment
-		cwd, err := os.Getwd()
-		if err != nil {
-			t.Fatal(err)
+	if cwd, err = os.Getwd(); err != nil {
+		t.Fatalf("[ERROR] %v", err)
+	}
+
+	tests := []struct {
+		in, x string
+	}{
+		{"testdata", "testdata"},
+		{"testdata/subdir", "testdata"},
+		{".", "."},
+		{"", ""},
+	}
+
+	for _, td := range tests {
+		t.Run(fmt.Sprintf("findWorkflowRoot(%q)", td.in), func(t *testing.T) {
+			t.Parallel()
+			v := findWorkflowRoot(td.in)
+			if v != td.x {
+				t.Errorf("Expected=%v, Got=%v", td.x, v)
+			}
+		})
+	}
+
+	/*
+		if err = os.Chdir(subdir); err != nil {
+			t.Fatalf("[ERROR] %v", err)
 		}
+		defer func() {
+			if err = os.Chdir(cwd); err != nil {
+				panic(err)
+			}
+		}()
+	*/
 
-		subdir := "sub"
-		if err := os.Mkdir(subdir, 0700); err != nil {
-			t.Fatal(err)
-		}
-
-		// workflow root (alongside info.plist)
-		if wf.Dir() != cwd {
-			t.Errorf("Bad Dir (root). Expected=%v, Got=%v", cwd, wf.Dir())
-		}
-
-		// Change to subdirectory
-		if err := os.Chdir(subdir); err != nil {
-			t.Fatal(err)
-		}
-
-		// Reset cached path
-		wf.dir = ""
-		// Should find parent directory (where info.plist is)
-		if wf.Dir() != cwd {
-			t.Errorf("Bad Dir (sub). Expected=%v, Got=%v", cwd, wf.Dir())
-		}
-	})
+	wf := New()
+	v := wf.Dir()
+	if v != cwd {
+		t.Errorf("Bad Workflow.Dir. Expected=%q, Got=%q", cwd, v)
+	}
 }
 
 // New initialises a Workflow with the default settings. Name,
