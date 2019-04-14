@@ -41,6 +41,17 @@ func makeGiteaReleaser() *giteaReleaser {
 	return gr
 }
 
+func TestGiteaURL(t *testing.T) {
+	var (
+		gr = &giteaReleaser{Repo: "git.deanishe.net/deanishe/nonexistent"}
+		x  = "https://git.deanishe.net/deanishe/nonexistent/releases"
+		v  = gr.url().String()
+	)
+	if v != x {
+		t.Errorf("Bad repo URL. Expected=%v, Got=%v", x, v)
+	}
+}
+
 func TestGiteaUpdater(t *testing.T) {
 	v := &versioned{version: "0.2.2"}
 	defer v.Clean()
@@ -102,7 +113,7 @@ var (
 	giteaReleasesEmptyJSON = `[]`
 	// 4 valid releases, including one prerelease
 	// v1.0, v2.0, v6.0 and v7.1.0-beta
-	giteaReleasesJSON      = `
+	giteaReleasesJSON = `
 [
   {
     "assets": [
@@ -419,4 +430,4 @@ var (
   }
 ]
 `
-	)
+)

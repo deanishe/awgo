@@ -56,8 +56,11 @@ func (gr *giteaReleaser) Releases() ([]*Release, error) {
 	return gr.releases, nil
 }
 
-func (gh *giteaReleaser) url() *url.URL {
-	u, _ := url.Parse(gh.Repo + "/releases")
+func (gr *giteaReleaser) url() *url.URL {
+	u, _ := url.Parse(gr.Repo + "/releases")
+	if u.Scheme == "" {
+		u.Scheme = "https"
+	}
 	return u
 }
 
