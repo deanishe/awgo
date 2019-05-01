@@ -12,7 +12,6 @@ import (
 	"github.com/deanishe/awgo/util"
 )
 
-
 // JXA scripts to call Alfred.
 const (
 	scriptSearch    = "Application(%s).search(%s);"
@@ -45,7 +44,7 @@ type Alfred struct {
 	// For testing. Set to true to save JXA script to lastScript
 	// instead of running it.
 	noRunScripts bool
-	lastScript string
+	lastScript   string
 }
 
 // NewAlfred creates a new Alfred from the environment.
@@ -152,9 +151,10 @@ func (a *Alfred) runScript(script string, arg ...interface{}) error {
 
 // Name of JXA Application for running Alfred
 func scriptAppName() string {
+	// Alfred 3
 	if strings.HasPrefix(os.Getenv(EnvVarAlfredVersion), "3") {
 		return "Alfred 3"
 	}
+	// Alfred 4+
 	return "com.runningwithcrayons.Alfred"
 }
-

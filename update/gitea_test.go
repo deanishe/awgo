@@ -46,13 +46,34 @@ func makeGiteaReleaser() *giteaReleaser {
 func TestGiteaURL(t *testing.T) {
 	t.Parallel()
 
-	var (
-		gr = &giteaReleaser{Repo: "git.deanishe.net/deanishe/nonexistent"}
-		x  = "https://git.deanishe.net/deanishe/nonexistent/releases"
-		v  = gr.url().String()
-	)
-	if v != x {
-		t.Errorf("Bad repo URL. Expected=%v, Got=%v", x, v)
+	data := []struct {
+		repo string
+		url  string
+	}{
+		// Invalid input
+		{"", ""},
+		{"https://git.deanishe.net/api/v1/repos/deanishe/nonexistent/releases", ""},
+		{"git.deanishe.net/deanishe", ""},
+		// Valid URLs
+		{"git.deanishe.net/deanishe/nonexistent", "https://git.deanishe.net/api/v1/repos/deanishe/nonexistent/releases"},
+		{"https://git.deanishe.net/deanishe/nonexistent", "https://git.deanishe.net/api/v1/repos/deanishe/nonexistent/releases"},
+		{"http://git.deanishe.net/deanishe/nonexistent", "http://git.deanishe.net/api/v1/repos/deanishe/nonexistent/releases"},
+	}
+
+	for _, td := range data {
+		gr := &giteaReleaser{Repo: td.repo}
+		u := gr.url()
+		if u == nil {
+			if td.url != "" {
+				t.Errorf("Bad API URL for %q. Expected=%q, Got=nil", td.repo, td.url)
+			}
+			continue
+		}
+
+		v := gr.url().String()
+		if v != td.url {
+			t.Errorf("Bad API URL. Expected=%v, Got=%v", td.url, v)
+		}
 	}
 }
 

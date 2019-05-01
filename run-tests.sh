@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-root="$( cd "$( dirname "$0" )"; pwd )"
+root="$( git rev-parse --show-toplevel )"
 testdir="${root}/testenv"
 iplist="${root}/info.plist"
 covfile="${root}/coverage.out"

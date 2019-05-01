@@ -57,10 +57,33 @@ func (gr *giteaReleaser) Releases() ([]*Release, error) {
 }
 
 func (gr *giteaReleaser) url() *url.URL {
-	u, _ := url.Parse(gr.Repo + "/releases")
+	if gr.Repo == "" {
+		return nil
+	}
+	u, err := url.Parse(gr.Repo)
+	if err != nil {
+		return nil
+	}
+	// If no scheme is specified, assume HTTPS and re-parse URL.
+	// This is necessary because URL.Host isn't present on URLs
+	// without a scheme (hostname is added to path)
 	if u.Scheme == "" {
 		u.Scheme = "https"
+		u, err = url.Parse(u.String())
+		if err != nil {
+			return nil
+		}
 	}
+	if u.Host == "" {
+		return nil
+	}
+	path := strings.Split(strings.Trim(u.Path, "/"), "/")
+	if len(path) != 2 {
+		return nil
+	}
+
+	u.Path = fmt.Sprintf("/api/v1/repos/%s/%s/releases", path[0], path[1])
+
 	return u
 }
 

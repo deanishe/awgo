@@ -4,7 +4,7 @@
 /*
 
 Package aw is a "plug-and-play" workflow development library/framework for
-Alfred 3 (https://www.alfredapp.com/)
+Alfred 3 & 4 (https://www.alfredapp.com/)
 
 It combines features for interacting with Alfred (feedback, settings,
 AppleScript API) with simple APIs for common workflow functionality
@@ -45,7 +45,7 @@ of AwGo and useful workflow idioms.
 
 Features
 
-As of AwGo 0.15, all applicable features of Alfred 3.7 are supported.
+As of AwGo 0.15, all applicable features of Alfred 4.0 are supported.
 
 The main features are:
 
