@@ -201,7 +201,7 @@ func (it *Item) Vars() map[string]string {
 	return it.vars
 }
 
-// MarshalJSON serializes Item to Alfred 3's JSON format.
+// MarshalJSON serializes Item to Alfred's JSON format.
 // You shouldn't need to call this directly: use SendFeedback() instead.
 func (it *Item) MarshalJSON() ([]byte, error) {
 	var (
@@ -408,7 +408,7 @@ func (fb *Feedback) NewItem(title string) *Item {
 	return it
 }
 
-// MarshalJSON serializes Feedback to Alfred 3's JSON format.
+// MarshalJSON serializes Feedback to Alfred's JSON format.
 // You shouldn't need to call this: use Send() instead.
 func (fb *Feedback) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {

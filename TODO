@@ -1,3 +1,6 @@
+Compatibility:
+	- Add support for .alfredXworkflow files (e.g. .alfred3workflow, .alfred4workflow)
+	- Automatically filter releases based on Alfred version no.
 
 Refactor:
 	- Embed Alfred, Feedback, MagicActions (...) into Workflow?

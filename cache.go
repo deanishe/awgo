@@ -61,7 +61,7 @@ func (c Cache) Store(name string, data []byte) error {
 		}
 		return nil
 	}
-	return ioutil.WriteFile(p, data, 0600)
+	return util.WriteFile(p, data, 0600)
 }
 
 // StoreJSON serialises v to JSON and saves it to the cache. If v is nil,

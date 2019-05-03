@@ -12,4 +12,3 @@ script:
   - ./run-tests.sh -ic ./...
   - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci; true
   - $GOPATH/bin/godacov -t $CODACY_TOKEN -r ./coverage.out -c $TRAVIS_COMMIT; true
-

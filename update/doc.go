@@ -5,7 +5,7 @@
 Package update implements an API for fetching updates to workflows from remote servers.
 
 The Updater/Releaser API provides the ability to check for newer versions
-of your workflow. Support for updating from GitHub releases is built in.
+of your workflow. Support for updating from GitHub and Gitea releases is built in.
 See GitHub example.
 
 You can use your own backend by implementing the Releaser interface.

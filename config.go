@@ -71,7 +71,6 @@ const (
 type Config struct {
 	Env
 	scripts []string
-	err     error
 }
 
 // NewConfig creates a new Config from the environment.
@@ -252,23 +251,10 @@ func (cfg *Config) Unset(key string, bundleID ...string) *Config {
 
 // Do calls Alfred and runs the accumulated actions.
 //
-// If an error was encountered while preparing any commands, it will be
-// returned here. It also returns an error if there are no commands to run,
-// or if the call to Alfred fails.
-//
+// Returns an error if there are no commands to run, or if the call to Alfred fails.
 // Succeed or fail, any accumulated scripts and errors are cleared when Do()
 // is called.
 func (cfg *Config) Do() error {
-
-	var err error
-
-	if cfg.err != nil {
-		// reset
-		err, cfg.err = cfg.err, nil
-		cfg.scripts = []string{}
-
-		return err
-	}
 
 	if len(cfg.scripts) == 0 {
 		return errors.New("no commands to run")
@@ -278,7 +264,7 @@ func (cfg *Config) Do() error {
 	// reset
 	cfg.scripts = []string{}
 
-	_, err = util.RunJS(script)
+	_, err := util.RunJS(script)
 
 	return err
 }

@@ -14,11 +14,12 @@ import (
 	"time"
 
 	"github.com/deanishe/awgo/fuzzy"
+	"github.com/deanishe/awgo/keychain"
 	"github.com/deanishe/awgo/util"
 )
 
 // AwGoVersion is the semantic version number of this library.
-const AwGoVersion = "0.16.1"
+const AwGoVersion = "0.17.0"
 
 // Default Workflow settings. Can be changed with the corresponding Options.
 //
@@ -82,6 +83,11 @@ type Workflow struct {
 	// Session is a cache that stores session-scoped data. These data
 	// persist until the user closes Alfred or runs a different workflow.
 	Session *Session
+
+	// Access macOS Keychain. Passwords are saved using the workflow's
+	// bundle ID as the service name. Passwords are synced between
+	// devices if you have iCloud Keychain turned on.
+	Keychain *keychain.Keychain
 
 	// The response that will be sent to Alfred. Workflow provides
 	// convenience wrapper methods, so you don't normally have to
@@ -158,6 +164,7 @@ func NewFromEnv(env Env, opts ...Option) *Workflow {
 	wf.Cache = NewCache(wf.CacheDir())
 	wf.Data = NewCache(wf.DataDir())
 	wf.Session = NewSession(wf.CacheDir(), wf.SessionID())
+	wf.Keychain = keychain.New(wf.BundleID())
 	wf.initializeLogging()
 	return wf
 }

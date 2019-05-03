@@ -171,18 +171,16 @@ func (u *Updater) CheckDue() bool {
 // and caches it locally.
 func (u *Updater) CheckForUpdate() error {
 	// If update fails, don't try again for at least an hour
-	t := time.Now().Add(-u.updateInterval).Add(time.Hour)
+	u.LastCheck = time.Now().Add(-u.updateInterval).Add(time.Hour)
+	defer u.cacheLastCheck()
+
 	rels, err := u.Releaser.Releases()
 	if err != nil {
-		u.LastCheck = t
-		u.cacheLastCheck()
 		return err
 	}
 	u.releases = rels
 	data, err := json.Marshal(u.releases)
 	if err != nil {
-		u.LastCheck = t
-		u.cacheLastCheck()
 		return err
 	}
 
@@ -191,7 +189,6 @@ func (u *Updater) CheckForUpdate() error {
 		return err
 	}
 	u.LastCheck = time.Now()
-	u.cacheLastCheck()
 	return nil
 }
 
@@ -208,7 +205,7 @@ func (u *Updater) Install() error {
 	if err := download(r.URL, p); err != nil {
 		return err
 	}
-	return exec.Command("open", "-a", "Alfred 3", p).Run()
+	return exec.Command("open", p).Run()
 }
 
 // cachePath returns a filepath within AwGo's update cache directory.

@@ -69,25 +69,26 @@ Usage:
 
 Options:
     -c      Write coverage report
+    -C      Open HTML coverage report
     -r      Just open coverage report
-    -g      Use gocov for coverage report
+    -g      Use gocov for coverage report (implies -c)
     -i      Create a dummy info.plist
-    -H      Open HTML coverage report
     -h      Show this help message and exit
     -v      Be verbose
     -V      Be even more verbose
 EOF
 }
 
-while getopts ":HcghirvV" opt; do
+while getopts ":CcghirvV" opt; do
   case $opt in
     c)
       cover=true
       ;;
     g)
       usegocov=true
+      cover=true
       ;;
-    H)
+    C)
       opencover=true
       cover=true
       ;;

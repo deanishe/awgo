@@ -1,5 +1,5 @@
-// Copyright (c) 2018 Dean Jackson <deanishe@deanishe.net>
-// MIT Licence - http://opensource.org/licenses/MIT
+// Copyright (c) 2019 Dean Jackson <deanishe@deanishe.net>
+// MIT Licence applies http://opensource.org/licenses/MIT
 
 package util
 
@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 )
 
@@ -147,6 +148,56 @@ func TestClearDirectory(t *testing.T) {
 			if !os.IsNotExist(err) {
 				t.Errorf("file %q exists", s)
 			}
+		}
+
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestWriteFile(t *testing.T) {
+	err := inTempDir(func(dir string) {
+		var (
+			name    = "test.txt"
+			content = []byte(`test`)
+		)
+
+		if PathExists(name) {
+			t.Fatal("Path already exists.")
+		}
+
+		if err := WriteFile(name, content, 0600); err != nil {
+			t.Fatal(err)
+		}
+
+		if !PathExists(name) {
+			t.Errorf("Path doesn't exist: %s", name)
+		}
+
+		data, err := ioutil.ReadFile(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if !reflect.DeepEqual(data, content) {
+			t.Errorf("Bad Content. Expected=%q, Got=%q.", string(content), string(data))
+		}
+
+		fi, err := os.Stat(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if fi.Mode() != 0600 {
+			t.Errorf("Bad FileMode. Expected=0600, Got=%v", fi.Mode())
+		}
+
+		infos, err := ioutil.ReadDir(".")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(infos) != 1 {
+			t.Errorf("Bad no. of files. Expected=1, Got=%d", len(infos))
 		}
 
 	})

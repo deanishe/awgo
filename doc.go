@@ -2,61 +2,28 @@
 // MIT Licence - http://opensource.org/licenses/MIT
 
 /*
+Package aw is a "plug-and-play" workflow development library/framework for Alfred 3 & 4
+(https://www.alfredapp.com/).
 
-Package aw is a "plug-and-play" workflow development library/framework for
-Alfred 3 & 4 (https://www.alfredapp.com/)
-
-It combines features for interacting with Alfred (feedback, settings,
-AppleScript API) with simple APIs for common workflow functionality
-(fuzzy search, caching, processes & updates) to make it easy to create
-a top-shelf workflow in very little time indeed.
-
-AwGo is an opinionated framework that expects to be used in a certain way in
-order to eliminate boilerplate. It *will* panic if not run in a valid,
-minimally Alfred-like environment. At a minimum the following environment
-variables should be set to meaningful values:
-
-    alfred_workflow_bundleid
-    alfred_workflow_cache
-    alfred_workflow_data
-
-    // And if you're using the update API
-    alfred_workflow_version
-
-NOTE: AwGo is currently in development. The API *will* change and should
-not be considered stable until v1.0. Until then, vendoring AwGo (e.g.
-with dep or vgo) is strongly recommended.
-
-
-Links
-
-Docs:     https://godoc.org/github.com/deanishe/awgo
-
-Source:   https://github.com/deanishe/awgo
-
-Issues:   https://github.com/deanishe/awgo/issues
-
-Licence:  https://github.com/deanishe/awgo/blob/master/LICENCE
-
-Be sure to also check out the _examples/ subdirectory, which contains
-some simple, but complete, workflows that demonstrate the features
-of AwGo and useful workflow idioms.
+It provides everything you need to create a polished and blazing-fast Alfred
+frontend for your project.
 
 
 Features
 
-As of AwGo 0.15, all applicable features of Alfred 4.0 are supported.
+As of AwGo 0.17, all applicable features of Alfred 4.0 are supported.
 
 The main features are:
 
-	- Simple access to workflow settings.
-	- Fluent API for generating Alfred JSON.
-	- Fuzzy filtering.
-	- Simple, but powerful, API for caching/saving workflow data.
-	- Run scripts and script code.
-	- Call Alfred's AppleScript API from Go.
-	- Read and write workflow settings from info.plist.
-	- Workflow update API with built-in support for GitHub releases.
+	- Full support for Alfred 3 & 4
+	- Bi-directional interface to workflow's configuration
+	- Fluent API for generating Script Filter JSON
+	- Fuzzy filtering
+	- Simple, powerful API for caching/saving workflow data
+	- Keychain API to securely store (and sync) sensitive data
+	- API to call Alfred's AppleScript methods from Go code
+	- Helpers to easily run scripts and script code
+	- Workflow update API with built-in support for GitHub & Gitea.
 	- Pre-configured logging for easier debugging, with a rotated log file.
 	- Catches panics, logs stack trace and shows user an error message.
 	- "Magic" queries/actions for simplified development and user support.
@@ -64,6 +31,41 @@ The main features are:
 
 
 Usage
+
+AwGo is an opinionated framework that expects to be used in a certain way in
+order to eliminate boilerplate. It *will* panic if not run in a valid,
+minimally Alfred-like environment. At a minimum the following environment
+variables should be set to meaningful values:
+
+	// Absolutely required. No ifs or buts.
+	alfred_workflow_bundleid
+
+	// Cache & data dirs can be set to anything, but for best
+	// results, point them at the same directories as Alfred uses
+	// Alfred 3:  ~/Library/Caches/com.runningwithcrayons.Alfred-3/Workflow Data/<bundle ID>/
+	// Alfred 4+: ~/Library/Caches/com.runningwithcrayons.Alfred/Workflow Data/<bundle ID>/
+	alfred_workflow_cache
+
+	// Alfred 3:  ~/Library/Application Support/Alfred 3/Workflow Data/<bundle ID>/
+	// Alfred 4+: ~/Library/Application Support/Alfred/Workflow Data/<bundle ID>/
+	alfred_workflow_data
+
+	// If you're using the Updater API, a semantic-ish workflow version
+	// must be set otherwise the Updater will panic
+    alfred_workflow_version
+
+	// If you're using the Alfred API and running Alfred 3, you need to
+	// set `alfred_version` as AwGo defaults to calling Alfred 4+
+	alfred_version=3
+
+
+NOTE: AwGo is currently in development. The API *will* change and should
+not be considered stable until v1.0. Until then, be sure to pin a version
+using go modules or similar.
+
+Be sure to also check out the _examples/ subdirectory, which contains
+some simple, but complete, workflows that demonstrate the features
+of AwGo and useful workflow idioms.
 
 Typically, you'd call your program's main entry point via Workflow.Run().
 This way, the library will rescue any panic, log the stack trace and show an
@@ -145,7 +147,7 @@ generate output from Run Script actions.
 Be sure to set TextErrors to true to prevent Workflow from generating
 Alfred JSON if it catches a panic:
 
-	wf.Configure(TextErrors(true))
+	wf.Configure(aw.TextErrors(true))
 
 See ArgVars for more information.
 
@@ -291,5 +293,15 @@ Filters extremely responsive.
 
 See _examples/update and _examples/workflows for demonstrations of this API.
 
+
+Links
+
+Docs:     https://godoc.org/github.com/deanishe/awgo
+
+Source:   https://github.com/deanishe/awgo
+
+Issues:   https://github.com/deanishe/awgo/issues
+
+Licence:  https://github.com/deanishe/awgo/blob/master/LICENCE
 */
 package aw

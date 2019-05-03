@@ -242,7 +242,6 @@ func extract(v interface{}) ([]*binding, error) {
 		}
 
 		if !isBindable(field.Type.Kind()) {
-			log.Printf("[bind] unbindable kind: %s", field.Type.Kind())
 			continue
 		}
 

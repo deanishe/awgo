@@ -311,6 +311,20 @@ func TestStringify(t *testing.T) {
 	}
 }
 
+func TestBundleID(t *testing.T) {
+	cfg := NewConfig()
+	x := "net.deanishe.awgo"
+	v := cfg.getBundleID()
+	if v != x {
+		t.Errorf("Bad BundleID. Expected=%q, Got=%q", x, v)
+	}
+	x = "net.deanishe.awgo2"
+	v = cfg.getBundleID(x)
+	if v != x {
+		t.Errorf("Bad BundleID. Expected=%q, Got=%q", x, v)
+	}
+}
+
 // Basic usage of Config.Get. Returns an empty string if variable is unset.
 func ExampleConfig_Get() {
 	// Set some test variables
