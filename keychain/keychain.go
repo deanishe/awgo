@@ -23,17 +23,6 @@ var (
 	ErrNotFound = errors.New("password not found")
 	// Used internally. Swallowed by Keychain.Set() if account already exists.
 	errDuplicate = errors.New("duplicate password")
-	// Regexp to extract password from /usr/bin/security output.
-	// If the secret is ASCII, output looks like:
-	//
-	//     password: "secret"
-	//
-	// If the secret is non-ASCII, output looks like:
-	//
-	//     password: 0x74C3AB73745F73C3A96372C3A974  "t\303\253st_s\303\251cr\303\251t"
-	//
-	// where the second field is 0x + hex-encoded secret.
-	// rxPw = regexp.MustCompile(`password:\s*(0x([0-9A-F]+)\s*)?("(.*)")`)
 )
 
 // Keychain manages macOS Keychain passwords for a specific service.
@@ -47,8 +36,8 @@ func New(service string) *Keychain {
 }
 
 // Get password from user's Keychain. Returns ErrNotFound if specified account doesn't exist.
-func (kc *Keychain) Get(name string) (string, error) {
-	s, err := kc.run("find-generic-password", name, "-g")
+func (kc *Keychain) Get(account string) (string, error) {
+	s, err := kc.run("find-generic-password", account, "-g")
 	if err != nil {
 		return "", err
 	}
@@ -59,26 +48,26 @@ func (kc *Keychain) Get(name string) (string, error) {
 }
 
 // Set password in user's Keychain. If the account already exists, it is replaced.
-func (kc *Keychain) Set(name, password string) error {
-	_, err := kc.run("add-generic-password", name, "-w", password)
+func (kc *Keychain) Set(account, password string) error {
+	_, err := kc.run("add-generic-password", account, "-w", password)
 	if err == errDuplicate {
-		if err := kc.Delete(name); err != nil {
+		if err := kc.Delete(account); err != nil {
 			return err
 		}
-		_, err = kc.run("add-generic-password", name, "-w", password)
+		_, err = kc.run("add-generic-password", account, "-w", password)
 	}
 	return err
 }
 
 // Delete a password from user's Keychain. Returns ErrNotFound if account doesn't exist.
-func (kc *Keychain) Delete(name string) error {
-	_, err := kc.run("delete-generic-password", name)
+func (kc *Keychain) Delete(account string) error {
+	_, err := kc.run("delete-generic-password", account)
 	return err
 }
 
 // run executes a Keychain command.
-func (kc *Keychain) run(command, name string, args ...string) (string, error) {
-	args = append([]string{command, "-s", kc.service, "-a", name}, args...)
+func (kc *Keychain) run(command, account string, args ...string) (string, error) {
+	args = append([]string{command, "-s", kc.service, "-a", account}, args...)
 	cmd := exec.Command("/usr/bin/security", args...)
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
@@ -124,13 +113,13 @@ func parseSecret(s string) string {
 	if strings.HasPrefix(s, "0x") {
 		i = strings.Index(s, " ")
 		if i < 0 {
-			log.Println("[ERROR] parse output")
+			log.Println("error: parse output")
 			return ""
 		}
 		s = s[2:i]
 		data, err := hex.DecodeString(s)
 		if err != nil {
-			log.Printf("[ERROR] decode secret: %v", err)
+			log.Printf("error: decode secret: %v", err)
 			return ""
 		}
 		return string(data)

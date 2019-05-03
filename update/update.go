@@ -12,7 +12,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -22,65 +21,71 @@ import (
 	"github.com/deanishe/awgo/util"
 )
 
-// DefaultUpdateInterval is how often to check for updates.
-const DefaultUpdateInterval = time.Duration(24 * time.Hour)
+var (
+	// UpdateInterval is how often to check for updates.
+	UpdateInterval = time.Duration(24 * time.Hour)
+	// HTTPTimeout is the timeout for establishing an HTTP(S) connection.
+	HTTPTimeout = (60 * time.Second)
 
-// HTTPTimeout is the timeout for establishing an HTTP(S) connection.
-var HTTPTimeout = (60 * time.Second)
+	// HTTP client used to talk to APIs
+	client *http.Client
+)
 
-// Versioned has a semantic version number (for comparing to releases)
-// and a cache directory (for saving information about available versions
-// and time of last update check).
-//
-// aw.Workflow implements this interface.
-type Versioned interface {
-	Version() string  // Returns a semantic version string
-	CacheDir() string // Path to directory to store cache files
+// Source provides workflow files that can be downloaded.
+// This is what concrete updaters (e.g. GitHub, Gitea) should implement.
+// Source is called by the Updater after every updater interval.
+type Source interface {
+	Downloads() ([]Download, error)
 }
 
-// Releaser is what concrete updaters should implement.
-// The Updater should call the Releaser after every update interval
-// to check if an update is available.
-type Releaser interface {
-	Releases() ([]*Release, error)
+// byVersion sorts downloads by version.
+type byVersion []Download
+
+// Len implements sort.Interface.
+func (s byVersion) Len() int      { return len(s) }
+func (s byVersion) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
+func (s byVersion) Less(i, j int) bool {
+	// Compare workflow versions first, compatible Alfred version second.
+	if s[i].Version.Ne(s[j].Version) {
+		return s[i].Version.Lt(s[j].Version)
+	}
+	return s[i].AlfredVersion().Lt(s[j].AlfredVersion())
 }
 
-// Releases is a slice of Releases that implements sort.Interface
-type Releases []*Release
-
-// Len implements sort.Interface
-func (r Releases) Len() int { return len(r) }
-
-// Less implements sort.Interface
-func (r Releases) Less(i, j int) bool { return r[i].Version.Lt(r[j].Version) }
-
-// Swap implements sort.Interface
-func (r Releases) Swap(i, j int) { r[i], r[j] = r[j], r[i] }
-
-// Release is the metadata of a release. Each Releaser must return one
-// or more Release structs. If one has a higher version number than
-// the workflow's current version, it will be considered an update.
-type Release struct {
-	Filename   string   // Filename of workflow file
-	URL        *url.URL // URL of the .alfredworkflow (or .alfred3workflow) file
-	Prerelease bool     // Whether this release is a pre-release
-	Version    SemVer   // The version number of the release
+// Download is an Alfred workflow available for download & installation.
+type Download struct {
+	// URL is the download location the workflow file can be downloaded from
+	URL string
+	// Filename for downloaded file.
+	// Must have extension .alfredworkflow or .alfredXworkflow where X is a number,
+	// otherwise the Download will be ignored.
+	Filename   string
+	Version    SemVer // Workflow version no.
+	Prerelease bool   // Whether this version is a pre-release
 }
 
-// SortReleases sorts a slice of Releases, lowest to highest version number.
-func SortReleases(releases []*Release) {
-	sort.Sort(Releases(releases))
+// AlfredVersion returns minimum compatible version of Alfred based on file extension.
+// For example, Workflow.alfred4workflow has version 4, while
+// Workflow.alfred3workflow has version 3.
+// The standard .alfredworkflow extension returns a zero version.
+func (dl Download) AlfredVersion() SemVer {
+	m := rxWorkflowFile.FindStringSubmatch(dl.Filename)
+	if len(m) == 2 {
+		if v, err := NewSemVer(m[1]); err == nil {
+			return v
+		}
+	}
+	return SemVer{}
 }
 
 // Updater checks for newer version of the workflow. Available versions are
-// provided by a Releaser, such as the built-in GitHub releaser, which
+// provided by a Source, such as the built-in GitHub source, which
 // reads the releases in a GitHub repo.
 //
-// CheckForUpdate() retrieves the list of available releases from the
-// releaser and caches them. UpdateAvailable() reads the cache. Install()
-// downloads the latest version and asks Alfred to install it.
-//
-// LastCheck and available releases are cached.
+// CheckForUpdate() retrieves the list of available downloads from the
+// source and caches them. UpdateAvailable() reads the cache and returns
+// true if there is a download with a higher version than the current workflow.
+// Install() downloads the latest version and asks Alfred to install it.
 //
 // Because downloading releases is slow and workflows need to run fast,
 // you should not run CheckForUpdate() in a Script Filter.
@@ -92,47 +97,56 @@ func SortReleases(releases []*Release) {
 //
 // See ../examples/update for a full example implementation of updates.
 type Updater struct {
-	CurrentVersion SemVer        // Version of the installed workflow
-	LastCheck      time.Time     // When the remote release list was last checked
-	Prereleases    bool          // Include pre-releases when checking for updates
-	Releaser       Releaser      // Provides available versions
+	Source         Source // Provides downloads
+	CurrentVersion SemVer // Version of the installed workflow
+	Prereleases    bool   // Include pre-releases when checking for updates
+
+	// AlfredVersion is the version of the running Alfred application.
+	// Read from $alfred_version environment variable.
+	AlfredVersion SemVer
+
+	// When the remote release list was last checked (and possibly cached)
+	LastCheck      time.Time
 	updateInterval time.Duration // How often to check for an update
-	cacheDir       string        // Directory to store cache files in
-	pathLastCheck  string        // Cache path for check time
-	pathReleases   string        // Cache path for available releases
-	releases       []*Release    // Available releases
+	downloads      []Download    // Available workflow files
+
+	// Cache paths
+	cacheDir      string // Directory to store cache files in
+	pathLastCheck string // Cache path for check time
+	pathDownloads string // Cache path for available downloads
 }
 
-// New creates a new Updater for Versioned and Releaser.
-//
-// CurrentVersion is set to the workflow's version by calling Version().
-// If you've created your own Workflow struct and subsequently called
-// wf.SetVersion(), you'll also need to set CurrentVersion manually.
-//
-// LastCheck is loaded from the cache, and UpdateInterval is set to
-// DefaultUpdateInterval.
-func New(v Versioned, r Releaser) (*Updater, error) {
-	semver, err := NewSemVer(v.Version())
+// NewUpdater creates a new Updater from Source.
+func NewUpdater(src Source, currentVersion, cacheDir string) (*Updater, error) {
+	v, err := NewSemVer(currentVersion)
 	if err != nil {
-		return nil, fmt.Errorf("invalid semantic version (%s): %v", v.Version(), err)
+		return nil, fmt.Errorf("invalid version %q: %v", currentVersion, err)
+	}
+	if cacheDir == "" {
+		return nil, errors.New("empty cacheDir")
 	}
 
 	u := &Updater{
-		CurrentVersion: semver,
+		CurrentVersion: v,
 		LastCheck:      time.Time{},
-		Releaser:       r,
-		cacheDir:       v.CacheDir(),
-		updateInterval: DefaultUpdateInterval,
+		Source:         src,
+		cacheDir:       cacheDir,
+		updateInterval: UpdateInterval,
+		pathLastCheck:  filepath.Join(cacheDir, "LastCheckTime.txt"),
+		pathDownloads:  filepath.Join(cacheDir, "Downloads.json"),
 	}
-	u.pathLastCheck = u.cachePath("LastCheckTime")
-	u.pathReleases = u.cachePath("Releases.json")
+
+	if s := os.Getenv("alfred_version"); s != "" {
+		if v, err := NewSemVer(s); err == nil {
+			u.AlfredVersion = v
+		}
+	}
 
 	// Load LastCheck
-	data, err := ioutil.ReadFile(u.pathLastCheck)
-	if err == nil {
+	if data, err := ioutil.ReadFile(u.pathLastCheck); err == nil {
 		t, err := time.Parse(time.RFC3339, string(data))
 		if err != nil {
-			log.Printf("Failed to load last update check time from disk: %s", err)
+			log.Printf("error: load last update check: %v", err)
 		} else {
 			u.LastCheck = t
 		}
@@ -140,31 +154,28 @@ func New(v Versioned, r Releaser) (*Updater, error) {
 	return u, nil
 }
 
-// UpdateInterval sets the interval between checks for new versions.
-func (u *Updater) UpdateInterval(interval time.Duration) { u.updateInterval = interval }
-
 // UpdateAvailable returns true if an update is available. Retrieves
 // the list of releases from the cache written by CheckForUpdate.
 func (u *Updater) UpdateAvailable() bool {
-	r := u.latest()
-	if r == nil {
-		log.Println("No releases available.")
+	dl := u.latest()
+	if dl == nil {
+		log.Println("no downloads available")
 		return false
 	}
-	log.Printf("Latest release: %s", r.Version.String())
-	return r.Version.Gt(u.CurrentVersion)
+	log.Printf("latest version: %v", dl.Version)
+	return dl.Version.Gt(u.CurrentVersion)
 }
 
 // CheckDue returns true if the time since the last check is greater than
 // Updater.UpdateInterval.
 func (u *Updater) CheckDue() bool {
 	if u.LastCheck.IsZero() {
-		log.Println("Never checked for updates")
+		// log.Println("never checked for updates")
 		return true
 	}
 	elapsed := time.Now().Sub(u.LastCheck)
 	log.Printf("%s since last check for update", elapsed)
-	return elapsed.Nanoseconds() > u.updateInterval.Nanoseconds()
+	return elapsed > u.updateInterval
 }
 
 // CheckForUpdate fetches the list of releases from remote (via Releaser)
@@ -174,18 +185,22 @@ func (u *Updater) CheckForUpdate() error {
 	u.LastCheck = time.Now().Add(-u.updateInterval).Add(time.Hour)
 	defer u.cacheLastCheck()
 
-	rels, err := u.Releaser.Releases()
-	if err != nil {
+	var (
+		dls  []Download
+		data []byte
+		err  error
+	)
+
+	if dls, err = u.Source.Downloads(); err != nil {
 		return err
 	}
-	u.releases = rels
-	data, err := json.Marshal(u.releases)
-	if err != nil {
+	u.downloads = dls
+	if data, err = json.Marshal(dls); err != nil {
 		return err
 	}
 
 	u.clearCache()
-	if err := ioutil.WriteFile(u.pathReleases, data, 0600); err != nil {
+	if err := ioutil.WriteFile(u.pathDownloads, data, 0600); err != nil {
 		return err
 	}
 	u.LastCheck = time.Now()
@@ -196,28 +211,22 @@ func (u *Updater) CheckForUpdate() error {
 // After the workflow file is downloaded, Install calls Alfred to
 // install the update.
 func (u *Updater) Install() error {
-	r := u.latest()
-	if r == nil {
-		return errors.New("no releases available")
+	dl := u.latest()
+	if dl == nil {
+		return errors.New("no downloads available")
 	}
-	log.Printf("downloading release %s ...", r.Version.String())
-	p := u.cachePath(r.Filename)
-	if err := download(r.URL, p); err != nil {
+	log.Printf("downloading version %s ...", dl.Version)
+	p := filepath.Join(u.cacheDir, dl.Filename)
+	if err := download(dl.URL, p); err != nil {
 		return err
 	}
 	return exec.Command("open", p).Run()
 }
 
-// cachePath returns a filepath within AwGo's update cache directory.
-func (u *Updater) cachePath(filename string) string {
-	dp := util.MustExist(filepath.Join(u.cacheDir, "_aw/update"))
-	return filepath.Join(dp, filename)
-}
-
 // clearCache removes the update cache.
 func (u *Updater) clearCache() {
-	if err := util.ClearDirectory(u.cachePath("")); err != nil {
-		log.Printf("[ERROR] clear cache: %v", err)
+	if err := util.ClearDirectory(u.cacheDir); err != nil {
+		log.Printf("error: clear cache: %v", err)
 	}
 }
 
@@ -225,64 +234,54 @@ func (u *Updater) clearCache() {
 func (u *Updater) cacheLastCheck() {
 	data, err := u.LastCheck.MarshalText()
 	if err != nil {
-		log.Printf("Error marshalling time: %s", err)
+		log.Printf("error: marshal time: %s", err)
 		return
 	}
 	if err := ioutil.WriteFile(u.pathLastCheck, data, 0600); err != nil {
-		log.Printf("Failed to cache update time: %s", err)
+		log.Printf("error: cache update time: %s", err)
 	}
 }
 
-// latest returns the release with the highest version number. Data is
-// loaded from the local cache of releases. Call CheckUpdate() to update
-// the cache.
-func (u *Updater) latest() *Release {
-	if u.releases == nil {
-		if !util.PathExists(u.pathReleases) {
-			log.Println("No cached releases.")
+// Returns latest version that is compatible with the Updater's
+// Alfred version & pre-release preference.
+func (u *Updater) latest() *Download {
+	if u.downloads == nil {
+		u.downloads = []Download{}
+		if !util.PathExists(u.pathDownloads) {
+			log.Println("no cached releases")
 			return nil
 		}
 		// Load from cache
-		data, err := ioutil.ReadFile(u.pathReleases)
+		data, err := ioutil.ReadFile(u.pathDownloads)
 		if err != nil {
-			log.Printf("Error reading cached releases: %s", err)
+			log.Printf("error: read cached releases: %s", err)
 			return nil
 		}
-		if err := json.Unmarshal(data, &u.releases); err != nil {
-			log.Printf("Error unmarshalling cached releases: %s", err)
+		if err := json.Unmarshal(data, &u.downloads); err != nil {
+			log.Printf("error: unmarshal cached releases: %s", err)
 			return nil
 		}
+		sort.Sort(sort.Reverse(byVersion(u.downloads)))
 	}
-	// log.Printf("%d releases available.", len(u.releases))
-	if len(u.releases) == 0 {
+	if len(u.downloads) == 0 {
 		return nil
 	}
-
-	SortReleases(u.releases)
-
-	if u.Prereleases {
-		return u.releases[len(u.releases)-1]
-	}
-
-	// Find newest non-pre-release version
-	i := len(u.releases) - 1
-	for i > 0 {
-		if !u.releases[i].Prerelease {
-			break
+	for _, dl := range u.downloads {
+		if dl.Prerelease && !u.Prereleases {
+			continue
 		}
-		i--
+		if u.AlfredVersion.Ne(SemVer{}) && dl.AlfredVersion().Gt(u.AlfredVersion) {
+			log.Printf("incompatible: %q: current=%v, required=%v", dl.Filename, u.AlfredVersion, dl.AlfredVersion())
+			continue
+		}
+		return &dl
 	}
-
-	r := u.releases[i]
-	if r.Prerelease {
-		return nil
-	}
-	return r
+	return nil
 }
 
 // makeHTTPClient returns an http.Client with a sensible configuration.
-func makeHTTPClient() http.Client {
-	return http.Client{
+func makeHTTPClient() *http.Client {
+	return &http.Client{
 		Transport: &http.Transport{
 			Dial: (&net.Dialer{
 				Timeout:   HTTPTimeout,
@@ -296,8 +295,8 @@ func makeHTTPClient() http.Client {
 }
 
 // getURL returns the contents of a URL.
-func getURL(u *url.URL) ([]byte, error) {
-	res, err := openURL(u)
+func getURL(URL string) ([]byte, error) {
+	res, err := openURL(URL)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -307,12 +306,14 @@ func getURL(u *url.URL) ([]byte, error) {
 }
 
 // download saves a URL to a filepath.
-func download(u *url.URL, path string) error {
-	res, err := openURL(u)
+func download(URL string, path string) error {
+	res, err := openURL(URL)
 	if err != nil {
 		return err
 	}
 	defer res.Body.Close()
+
+	util.MustExist(filepath.Dir(path))
 	out, err := os.Create(path)
 	if err != nil {
 		return err
@@ -322,23 +323,25 @@ func download(u *url.URL, path string) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Wrote `%s` (%d bytes)", path, n)
+	log.Printf("wrote %q (%d bytes)", util.PrettyPath(path), n)
 	return nil
 }
 
 // openURL returns an http.Response. It will return an error if the
 // HTTP status code > 299.
-func openURL(u *url.URL) (*http.Response, error) {
-	log.Printf("Fetching %s ...", u.String())
-	client := makeHTTPClient()
-	res, err := client.Get(u.String())
+func openURL(URL string) (*http.Response, error) {
+	log.Printf("fetching %s ...", URL)
+	if client == nil {
+		client = makeHTTPClient()
+	}
+	r, err := client.Get(URL)
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("[%d] %s", res.StatusCode, u.String())
-	if res.StatusCode > 299 {
-		res.Body.Close()
-		return nil, errors.New(res.Status)
+	log.Printf("[%d] %s", r.StatusCode, URL)
+	if r.StatusCode > 299 {
+		r.Body.Close()
+		return nil, errors.New(r.Status)
 	}
-	return res, nil
+	return r, nil
 }

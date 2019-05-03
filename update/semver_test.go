@@ -149,6 +149,32 @@ func TestVersionCompare(t *testing.T) {
 	}
 }
 
+func TestIsZero(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		v    string
+		zero bool
+	}{
+		{"", true},
+		{"0", true},
+		{"0.0", true},
+		{"0.0.0", true},
+		// invalid strings also return zero SemVer
+		{"one", true},
+		{"1.two.3", true},
+
+		{"1.0", false},
+		{"1.0.2", false},
+	}
+
+	for _, td := range tests {
+		v, _ := NewSemVer(td.v)
+		if v.IsZero() != td.zero {
+			t.Errorf("Bad IsZero for %q. Expected=%v, Got=%v", td.v, td.zero, v.IsZero())
+		}
+	}
+}
 func TestVersionSorting(t *testing.T) {
 	t.Parallel()
 

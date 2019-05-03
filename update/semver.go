@@ -188,6 +188,9 @@ func (v SemVer) Lt(v2 SemVer) bool { return v.Compare(v2) == -1 }
 // Lte checks if v <= v2
 func (v SemVer) Lte(v2 SemVer) bool { return v.Compare(v2) <= 0 }
 
+// IsZero returns true if SemVer has no value.
+func (v SemVer) IsZero() bool { return v.Eq(SemVer{}) }
+
 func containsOnly(s, allowed string) bool {
 	return strings.IndexFunc(s, func(r rune) bool {
 		return !strings.ContainsRune(allowed, r)

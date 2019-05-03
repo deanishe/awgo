@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"os"
 	"testing"
 	"time"
@@ -23,21 +22,21 @@ func mustVersion(s string) SemVer {
 // versioned is a test implementation of Versioned
 type versioned struct {
 	version string
-	dir     string
 }
 
 func (v *versioned) Version() string { return v.version }
-func (v *versioned) CacheDir() string {
-	if v.dir == "" {
-		var err error
-		if v.dir, err = ioutil.TempDir("", "aw-"); err != nil {
-			panic(err)
-		}
-	}
-	return v.dir
-}
-func (v *versioned) Clean() { os.RemoveAll(v.dir) }
 
+type testSource struct {
+	dls []Download
+}
+
+func (src testSource) Downloads() ([]Download, error) { return src.dls, nil }
+
+type testFailSource struct{}
+
+func (src testFailSource) Downloads() ([]Download, error) { return nil, errors.New("fail") }
+
+/*
 // testReleaser is a test implementation of Releaser
 type testReleaser struct {
 	releases []*Release
@@ -56,37 +55,84 @@ func (r testFailReleaser) Releases() ([]*Release, error) {
 var (
 	tr, trPre *testReleaser
 )
+*/
 
-func withVersioned(version string, fn func(v *versioned)) {
-	v := &versioned{version: version}
-	defer v.Clean()
-	fn(v)
+func withTempDir(fn func(dir string)) {
+	dir, err := ioutil.TempDir("", "aw-")
+	if err != nil {
+		panic(err)
+	}
+	defer os.RemoveAll(dir)
+	fn(dir)
 }
 
+/*
+func withVersioned(version string, fn func(v Versioned, dir string)) {
+	v := &versioned{version: version}
+	dir, err := ioutil.TempDir("", "aw-")
+	if err != nil {
+		panic(err)
+	}
+	defer os.RemoveAll(dir)
+	fn(v, dir)
+}
+*/
+
+var (
+	testSrc1 = &testSource{
+		dls: []Download{
+			Download{Version: mustVersion("0.5.0-beta"), Prerelease: true, Filename: "Dummy.alfredworkflow"},
+			Download{Version: mustVersion("0.1"), Prerelease: false, Filename: "Dummy.alfredworkflow"},
+			Download{Version: mustVersion("0.4"), Prerelease: false, Filename: "Dummy.alfredworkflow"},
+			Download{Version: mustVersion("0.2"), Prerelease: false, Filename: "Dummy.alfredworkflow"},
+			Download{Version: mustVersion("0.3"), Prerelease: false, Filename: "Dummy.alfredworkflow"},
+		},
+	}
+	testSrc2 = &testSource{
+		dls: []Download{
+			Download{Version: mustVersion("0.5.0-beta"), Prerelease: true, Filename: "Dummy.alfredworkflow"},
+			Download{Version: mustVersion("0.4.0-beta"), Prerelease: true, Filename: "Dummy.alfredworkflow"},
+			Download{Version: mustVersion("0.3.0-beta"), Prerelease: true, Filename: "Dummy.alfredworkflow"},
+		},
+	}
+)
+
 func init() {
-	tr = &testReleaser{
-		releases: []*Release{
-			&Release{"workflow.alfredworkflow", nil, true, mustVersion("0.5.0-beta")},
-			&Release{"workflow.alfredworkflow", nil, false, mustVersion("0.1")},
-			&Release{"workflow.alfredworkflow", nil, false, mustVersion("0.4")},
-			&Release{"workflow.alfredworkflow", nil, false, mustVersion("0.2")},
-			&Release{"workflow.alfredworkflow", nil, false, mustVersion("0.3")},
-		},
-	}
-	trPre = &testReleaser{
-		releases: []*Release{
-			&Release{"workflow.alfredworkflow", nil, true, mustVersion("0.5.0-beta")},
-			&Release{"workflow.alfredworkflow", nil, true, mustVersion("0.4.0-beta")},
-			&Release{"workflow.alfredworkflow", nil, true, mustVersion("0.3.0-beta")},
-		},
-	}
+
+	/*
+		tr = &testReleaser{
+			releases: []*Release{
+				&Release{mustVersion("0.5.0-beta"), true, []File{File{"Dummy.alfredworkflow", nil, SemVer{}}}},
+				&Release{mustVersion("0.1"), false, []File{File{"Dummy.alfredworkflow", nil, SemVer{}}}},
+				&Release{mustVersion("0.4"), false, []File{File{"Dummy.alfredworkflow", nil, SemVer{}}}},
+				&Release{mustVersion("0.2"), false, []File{File{"Dummy.alfredworkflow", nil, SemVer{}}}},
+				&Release{mustVersion("0.3"), false, []File{File{"Dummy.alfredworkflow", nil, SemVer{}}}},
+				// &Release{"workflow.alfredworkflow", nil, true, mustVersion("0.5.0-beta")},
+				// &Release{"workflow.alfredworkflow", nil, false, mustVersion("0.1")},
+				// &Release{"workflow.alfredworkflow", nil, false, mustVersion("0.4")},
+				// &Release{"workflow.alfredworkflow", nil, false, mustVersion("0.2")},
+				// &Release{"workflow.alfredworkflow", nil, false, mustVersion("0.3")},
+			},
+		}
+		trPre = &testReleaser{
+			releases: []*Release{
+				&Release{mustVersion("0.5.0-beta"), true, []File{File{"Dummy.alfredworkflow", nil, SemVer{}}}},
+				&Release{mustVersion("0.4.0-beta"), true, []File{File{"Dummy.alfredworkflow", nil, SemVer{}}}},
+				&Release{mustVersion("0.3.0-beta"), true, []File{File{"Dummy.alfredworkflow", nil, SemVer{}}}},
+				// &Release{"workflow.alfredworkflow", nil, true, mustVersion("0.5.0-beta")},
+				// &Release{"workflow.alfredworkflow", nil, true, mustVersion("0.4.0-beta")},
+				// &Release{"workflow.alfredworkflow", nil, true, mustVersion("0.3.0-beta")},
+			},
+		}
+	*/
 }
 
 func TestUpdater(t *testing.T) {
 	t.Parallel()
 
-	withVersioned("0.2.2", func(v *versioned) {
-		u, err := New(v, tr)
+	withTempDir(func(dir string) {
+
+		u, err := NewUpdater(testSrc1, "0.2.2", dir)
 		if err != nil {
 			t.Fatalf("Error creating updater: %s", err)
 		}
@@ -117,8 +163,8 @@ func TestUpdater(t *testing.T) {
 func TestUpdaterPreOnly(t *testing.T) {
 	t.Parallel()
 
-	withVersioned("0.2.2", func(v *versioned) {
-		u, err := New(v, trPre)
+	withTempDir(func(dir string) {
+		u, err := NewUpdater(testSrc2, "0.2.2", dir)
 		if err != nil {
 			t.Fatalf("Error creating updater: %s", err)
 		}
@@ -146,8 +192,8 @@ func TestUpdateInterval(t *testing.T) {
 
 func testUpdateIntervalSuccess(t *testing.T) {
 	t.Parallel()
-	withVersioned("0.2.2", func(v *versioned) {
-		u, err := New(v, testReleaser{})
+	withTempDir(func(dir string) {
+		u, err := NewUpdater(testSource{}, "0.2.2", dir)
 		if err != nil {
 			t.Fatalf("Error creating updater: %s", err)
 		}
@@ -170,7 +216,7 @@ func testUpdateIntervalSuccess(t *testing.T) {
 			t.Fatalf("Update is due.")
 		}
 		// Changing UpdateInterval
-		u.UpdateInterval(time.Duration(1 * time.Nanosecond))
+		u.updateInterval = time.Duration(1 * time.Nanosecond)
 		if !u.CheckDue() {
 			t.Fatalf("Update is not due.")
 		}
@@ -179,8 +225,8 @@ func testUpdateIntervalSuccess(t *testing.T) {
 
 func testUpdateIntervalFail(t *testing.T) {
 	t.Parallel()
-	withVersioned("0.2.2", func(v *versioned) {
-		u, err := New(v, testFailReleaser{})
+	withTempDir(func(dir string) {
+		u, err := NewUpdater(testFailSource{}, "0.2.2", dir)
 		if err != nil {
 			t.Fatalf("Error creating updater: %s", err)
 		}
@@ -203,7 +249,7 @@ func testUpdateIntervalFail(t *testing.T) {
 			t.Fatalf("Update is due.")
 		}
 		// Changing UpdateInterval
-		u.UpdateInterval(time.Duration(1 * time.Nanosecond))
+		u.updateInterval = time.Duration(1 * time.Nanosecond)
 		if !u.CheckDue() {
 			t.Fatalf("Update is not due.")
 		}
@@ -221,8 +267,7 @@ func TestHTTPClient(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		u, _ := url.Parse(ts.URL)
-		data, err := getURL(u)
+		data, err := getURL(ts.URL)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -242,8 +287,7 @@ func TestHTTPClient(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		u, _ := url.Parse(ts.URL)
-		_, err := getURL(u)
+		_, err := getURL(ts.URL)
 		if err == nil {
 			t.Errorf("404 request succeeded")
 		}
@@ -258,14 +302,13 @@ func TestHTTPClient(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		u, _ := url.Parse(ts.URL)
 		f, err := ioutil.TempFile("", "awgo-*-test")
 		if err != nil {
 			t.Fatal(err)
 		}
 		defer f.Close()
 
-		err = download(u, f.Name())
+		err = download(ts.URL, f.Name())
 		if err != nil {
 			t.Fatalf("[ERROR] download: %v", err)
 		}

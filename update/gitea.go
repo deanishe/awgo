@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"path/filepath"
+	"sort"
 	"strings"
 
 	aw "github.com/deanishe/awgo"
@@ -17,52 +19,47 @@ import (
 // Repo name should be of the form "username/repo", e.g. "git.deanishe.net/deanishe/alfred-ssh".
 func Gitea(repo string) aw.Option {
 	return func(wf *aw.Workflow) aw.Option {
-		u, _ := New(wf, &giteaReleaser{Repo: repo, fetch: getURL})
+		u, _ := NewUpdater(&giteaSource{Repo: repo, fetch: getURL},
+			wf.Version(),
+			filepath.Join(wf.CacheDir(), "_aw/update"),
+		)
 		return aw.Update(u)(wf)
 	}
 }
 
-// giteaReleaser updates from a Gitea repo's releases. Repo should be in
-// the form "domain.tld/username/reponame", e.g.
-// "git.deanishe.net/deanishe/alfred-ssh". Releases
-// are marked as pre-releases based on the "This is a pre-release"
-// checkbox on the website, *not* the version number/tag.
-type giteaReleaser struct {
-	Repo     string     // Repo name in form domain.tld/username/repo
-	releases []*Release // GitHub releases for Repo
-	fetch    func(*url.URL) ([]byte, error)
+type giteaSource struct {
+	Repo  string
+	dls   []Download
+	fetch func(URL string) ([]byte, error)
 }
 
-// Releases implements Releaser. Returns a slice of available releases that
-// contain an .alfredworkflow file.
-func (gr *giteaReleaser) Releases() ([]*Release, error) {
-	if gr.releases == nil {
-		gr.releases = []*Release{}
+// Downloads implements Source.
+func (src *giteaSource) Downloads() ([]Download, error) {
+	if src.dls == nil {
+		src.dls = []Download{}
 		// rels := []*Release{}
-		js, err := gr.fetch(gr.url())
+		js, err := src.fetch(src.url())
 		if err != nil {
-			log.Printf("[ERROR] fetch Gitea releases: %s", err)
+			// log.Printf("error: fetch GitHub releases: %s", err)
 			return nil, err
 		}
 		// log.Printf("%d bytes of JSON", len(js))
-		rs, err := parseGiteaReleases(js)
-		if err != nil {
-			log.Printf("[ERROR] parse Gitea releases: %s", err)
+		if src.dls, err = parseGiteaReleases(js); err != nil {
+			// log.Printf("error: parse GitHub releases: %s", err)
 			return nil, err
 		}
-		gr.releases = rs
 	}
-	log.Printf("%d release(s) in repo %s", len(gr.releases), gr.Repo)
-	return gr.releases, nil
+	log.Printf("%d download(s) in repo %s", len(src.dls), src.Repo)
+	return src.dls, nil
 }
 
-func (gr *giteaReleaser) url() *url.URL {
-	if gr.Repo == "" {
-		return nil
+func (src *giteaSource) url() string {
+	if src.Repo == "" {
+		return ""
 	}
-	u, err := url.Parse(gr.Repo)
+	u, err := url.Parse(src.Repo)
 	if err != nil {
-		return nil
+		return ""
 	}
 	// If no scheme is specified, assume HTTPS and re-parse URL.
 	// This is necessary because URL.Host isn't present on URLs
@@ -71,20 +68,20 @@ func (gr *giteaReleaser) url() *url.URL {
 		u.Scheme = "https"
 		u, err = url.Parse(u.String())
 		if err != nil {
-			return nil
+			return ""
 		}
 	}
 	if u.Host == "" {
-		return nil
+		return ""
 	}
 	path := strings.Split(strings.Trim(u.Path, "/"), "/")
 	if len(path) != 2 {
-		return nil
+		return ""
 	}
 
 	u.Path = fmt.Sprintf("/api/v1/repos/%s/%s/releases", path[0], path[1])
 
-	return u
+	return u.String()
 }
 
 // giteaRelease is the data model for Gitea releases JSON.
@@ -97,67 +94,50 @@ type giteaRelease struct {
 
 // giteaAsset is the data model for GitHub releases JSON.
 type giteaAsset struct {
-	Name string `json:"name"`
-	URL  string `json:"browser_download_url"`
+	Name       string `json:"name"`
+	URL        string `json:"browser_download_url"`
+	MinVersion SemVer `json:"-"`
 }
 
 // parseGiteaReleases parses Gitea releases JSON.
-func parseGiteaReleases(js []byte) ([]*Release, error) {
+func parseGiteaReleases(js []byte) ([]Download, error) {
 	var (
-		grs = []*giteaRelease{}
-		rs  = []*Release{}
+		rels = []*giteaRelease{}
+		dls  = []Download{}
 	)
-	if err := json.Unmarshal(js, &grs); err != nil {
+	if err := json.Unmarshal(js, &rels); err != nil {
 		return nil, err
 	}
-	for _, gr := range grs {
-		r, err := giteaReleaseToRelease(gr)
+	for _, r := range rels {
+		if len(r.Assets) == 0 {
+			continue
+		}
+		v, err := NewSemVer(r.Tag)
 		if err != nil {
-			log.Printf("invalid release: %s", err)
-		} else {
-			rs = append(rs, r)
+			log.Printf("ignored release %s: not semantic: %v", r.Tag, err)
+			continue
 		}
-	}
-	return rs, nil
-}
-
-func giteaReleaseToRelease(gr *giteaRelease) (*Release, error) {
-	r := &Release{Prerelease: gr.Prerelease}
-	// Check version
-	v, err := NewSemVer(gr.Tag)
-	if err != nil {
-		return nil, fmt.Errorf("invalid version/tag %q: %s", gr.Tag, err)
-	}
-	r.Version = v
-	// Check files (assets)
-	assets := []*giteaAsset{}
-	assets3 := []*giteaAsset{} // .alfred3workflow files
-	for _, a := range gr.Assets {
-		if strings.HasSuffix(a.Name, ".alfredworkflow") {
-			assets = append(assets, a)
-		} else if strings.HasSuffix(a.Name, ".alfred3workflow") {
-			assets3 = append(assets3, a)
+		var all []Download
+		for _, a := range r.Assets {
+			m := rxWorkflowFile.FindStringSubmatch(a.Name)
+			if len(m) != 2 {
+				log.Printf("ignored release %s: no workflow files", r.Tag)
+				continue
+			}
+			w := Download{
+				URL:        a.URL,
+				Filename:   a.Name,
+				Version:    v,
+				Prerelease: r.Prerelease,
+			}
+			all = append(all, w)
 		}
+		if err := validRelease(all); err != nil {
+			log.Printf("ignored release %s: %v", r.Tag, err)
+			continue
+		}
+		dls = append(dls, all...)
 	}
-
-	// Prefer .alfred3workflow files if present
-	if len(assets3) > 0 {
-		assets = assets3
-	}
-
-	// Reject bad releases
-	if len(assets) > 1 {
-		return nil, fmt.Errorf("multiple (%d) workflow files in release %s", len(assets), gr.Tag)
-	}
-	if len(assets) == 0 {
-		return nil, fmt.Errorf("no workflow files in release %s", gr.Tag)
-	}
-
-	r.Filename = assets[0].Name
-	u, err := url.Parse(assets[0].URL)
-	if err != nil {
-		return nil, err
-	}
-	r.URL = u
-	return r, nil
+	sort.Sort(sort.Reverse(byVersion(dls)))
+	return dls, nil
 }

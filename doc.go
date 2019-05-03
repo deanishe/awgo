@@ -24,7 +24,7 @@ The main features are:
 	- API to call Alfred's AppleScript methods from Go code
 	- Helpers to easily run scripts and script code
 	- Workflow update API with built-in support for GitHub & Gitea.
-	- Pre-configured logging for easier debugging, with a rotated log file.
+	- Pre-configured logging for easier debugging, with a rotating log file.
 	- Catches panics, logs stack trace and shows user an error message.
 	- "Magic" queries/actions for simplified development and user support.
 	- Some default icons based on macOS system icons.
@@ -164,10 +164,16 @@ Env implementation.
 
 A Workflow can be re-configured later using its Configure() method.
 
-Check out the _examples/ subdirectory for some simple, but complete, workflows
-which you can copy to get started.
-
 See the documentation for Option for more information on configuring a Workflow.
+
+
+Updates
+
+AwGo can check for and install new versions of your workflow.
+Subpackage update provides an implementation of the Updater interface and
+sources to load updates from GitHub or Gitea releases.
+
+See subpackage update and _examples/update.
 
 
 Fuzzy filtering
@@ -180,10 +186,9 @@ those that do not match.
 
 Sorting is performed by subpackage fuzzy via the fuzzy.Sortable interface.
 
-See _examples/fuzzy for a basic demonstration.
-
-See _examples/bookmarks for a demonstration of implementing fuzzy.Sortable on
-your own structs and customising the fuzzy sort settings.
+See _examples/fuzzy for a basic demonstration, and _examples/bookmarks for a
+demonstration of implementing fuzzy.Sortable on your own structs and customising
+the fuzzy sort settings.
 
 
 Logging
@@ -228,15 +233,7 @@ settings in Alfred:
 		// handle error
 	}
 
-And to save a struct's fields to the workflow's settings in Alfred:
-
-	// Defaults
-	opts = &Options{
-		Server:   "localhost",
-		Port:     6000,
-	}
-
-	// Save Options to Alfred
+	// Save Options back to Alfred.
 	if err := cfg.From(opts); err != nil {
 		// handle error
 	}

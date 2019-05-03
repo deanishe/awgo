@@ -6,17 +6,15 @@ package aw
 import (
 	"errors"
 	"log"
-	"time"
 )
 
 // Updater can check for and download & install newer versions of the workflow.
-// There is a concrete implementation and documentation in subpackage "update".
+// There is a concrete implementation and documentation in subpackage update.
 type Updater interface {
-	UpdateInterval(time.Duration) // Set interval between checks
-	UpdateAvailable() bool        // Return true if a newer version is available
-	CheckDue() bool               // Return true if a check for a newer version is due
-	CheckForUpdate() error        // Retrieve available releases, e.g. from a URL
-	Install() error               // Install the latest version
+	UpdateAvailable() bool // Return true if a newer version is available
+	CheckDue() bool        // Return true if a check for a newer version is due
+	CheckForUpdate() error // Retrieve available releases, e.g. from a URL
+	Install() error        // Install the latest version
 }
 
 // --------------------------------------------------------------------
