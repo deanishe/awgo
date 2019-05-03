@@ -14,19 +14,29 @@ AwGo — A Go library for Alfred workflows
 
 Full-featured library to build lightning-fast workflows in a jiffy.
 
+- [Features](#features)
+- [Installation & usage](#installation--usage)
+- [Documentation](#documentation)
+- [Requirements](#requirements)
+- [Development](#development)
+- [Licensing & thanks](#licensing--thanks)
+
+
 Features
 --------
 
-- Easy access to [Alfred and workflow settings][config].
-- Fluent API for generating [Alfred JSON feedback][feedback] for Script Filters.
-- Support for all applicable Alfred features up to v3.6.
-- [Fuzzy sorting/filtering][fuzzy] of results.
-- [Simple, but powerful, API][cache-api] for [caching/saving workflow data][cache].
-- [Catches panics, logs stack trace and shows user an error message][run].
-- Workflow [update API][update] with built-in support for [GitHub releases][update-github].
-- [Pre-configured logging][logging] for easier debugging, with a rotated log file.
-- ["Magic" queries/actions][magic] for simplified development and user support.
-- macOS [system icons][icons].
+- Full support for Alfred 3 & 4
+- Bi-directional interface to [workflow's config][config]
+- Fluent API for generating [Script Filter JSON][feedback]
+- [Fuzzy sorting/filtering][fuzzy]
+- [Simple, powerful API][cache-api] for [caching/saving workflow data][cache]
+- Keychain API to [securely store (and sync) sensitive data][keychain]
+- Helpers to [easily run scripts and script code][scripts]
+- Workflow [update API][update] with built-in support for [GitHub][update-github] & [Gitea][update-gitea]
+- [Pre-configured logging][logging] for easier debugging, with a rotated log file
+- [Catches panics, logs stack trace and shows user an error message][run]
+- ["Magic" queries/actions][magic] for simplified development and user support
+- macOS [system icons][icons]
 
 
 Installation & usage
@@ -110,6 +120,7 @@ values, or the library will panic:
 And if you're using the update API, also:
 
 - `alfred_workflow_version`
+- `alfred_version` (not needed for Alfred 4+)
 
 
 Development
@@ -136,11 +147,14 @@ The icon is based on the [Go Gopher][gopher] by [Renee French][renee].
 [config]: https://godoc.org/github.com/deanishe/awgo#Config
 [feedback]: https://godoc.org/github.com/deanishe/awgo#Feedback.NewItem
 [fuzzy]: https://godoc.org/github.com/deanishe/awgo/fuzzy
-[cache]: https://godoc.org/github.com/deanishe/awgo#hdr-Saving_and_caching_data
+[cache]: https://godoc.org/github.com/deanishe/awgo#hdr-Storing_data
 [cache-api]: https://godoc.org/github.com/deanishe/awgo#Cache
 [run]: https://godoc.org/github.com/deanishe/awgo#Run
 [update]: https://godoc.org/github.com/deanishe/awgo/update
+[keychain]: https://godoc.org/github.com/deanishe/awgo/keychain
+[scripts]: https://godoc.org/github.com/deanishe/awgo/util#hdr-Scripting
 [update-github]: https://godoc.org/github.com/deanishe/awgo/update#GitHub
+[update-gitea]: https://godoc.org/github.com/deanishe/awgo/update#Gitea
 [logging]: https://godoc.org/github.com/deanishe/awgo#hdr-Logging
 [magic]: https://godoc.org/github.com/deanishe/awgo#MagicAction
 [icons]: https://godoc.org/github.com/deanishe/awgo#Icon

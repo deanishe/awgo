@@ -23,11 +23,11 @@ The main features are:
 	- Keychain API to securely store (and sync) sensitive data
 	- API to call Alfred's AppleScript methods from Go code
 	- Helpers to easily run scripts and script code
-	- Workflow update API with built-in support for GitHub & Gitea.
-	- Pre-configured logging for easier debugging, with a rotating log file.
-	- Catches panics, logs stack trace and shows user an error message.
-	- "Magic" queries/actions for simplified development and user support.
-	- Some default icons based on macOS system icons.
+	- Workflow update API with built-in support for GitHub & Gitea
+	- Pre-configured logging for easier debugging, with a rotating log file
+	- Catches panics, logs stack trace and shows user an error message
+	- "Magic" queries/actions for simplified development and user support
+	- Some default icons based on macOS system icons
 
 
 Usage
