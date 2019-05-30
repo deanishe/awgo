@@ -130,7 +130,7 @@ export alfred_workflow_data="${testdir}/data"
 export alfred_workflow_cache="${testdir}/cache"
 
 [[ $#@ -eq 0 ]] && {
-  pkgs=(go list ./...)
+  pkgs=(./...)
 } || {
   pkgs=($@)
 }

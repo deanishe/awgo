@@ -316,6 +316,81 @@ func TestModifiersInheritVars(t *testing.T) {
 	}
 }
 
+func TestEmptyModifiersIgnored(t *testing.T) {
+	t.Parallel()
+
+	fb := NewFeedback()
+
+	tests := []struct {
+		keys []ModKey
+		ok   bool
+	}{
+		{[]ModKey{}, false},
+		{[]ModKey{""}, false},
+		{[]ModKey{"", ""}, false},
+		{[]ModKey{"rick flair"}, false},
+		{[]ModKey{"andre the giant", ""}, false},
+		{[]ModKey{"ultimate warrior", "cmd"}, true},
+		{[]ModKey{"ctrl", "", "giant haystacks"}, true},
+	}
+
+	for _, td := range tests {
+		it := fb.NewItem("title")
+		v := len(it.mods)
+		if v != 0 {
+			t.Fatalf("Unexpected modifiers: %+v", it.mods)
+		}
+		_ = it.NewModifier(td.keys...)
+		v = len(it.mods)
+		if td.ok {
+			if v != 1 {
+				t.Errorf("Good mod %+v not accepted", td.keys)
+			}
+		} else {
+			if v != 0 {
+				t.Errorf("Bad mod %+v accepted", td.keys)
+			}
+		}
+	}
+}
+
+func TestMultipleModifiers(t *testing.T) {
+	t.Parallel()
+
+	fb := NewFeedback()
+	it := fb.NewItem("title")
+
+	tests := []struct {
+		keys []ModKey
+		x    string
+	}{
+		{[]ModKey{"cmd"}, "cmd"},
+		{[]ModKey{"alt"}, "alt"},
+		{[]ModKey{"opt"}, "alt"},
+		{[]ModKey{"fn"}, "fn"},
+		{[]ModKey{"shift"}, "shift"},
+		{[]ModKey{"alt", "cmd"}, "alt+cmd"},
+		{[]ModKey{"cmd", "alt"}, "alt+cmd"},
+		{[]ModKey{"cmd", "opt"}, "alt+cmd"},
+		{[]ModKey{"cmd", "opt", "ctrl"}, "alt+cmd+ctrl"},
+		{[]ModKey{"cmd", "opt", "shift"}, "alt+cmd+shift"},
+		// invalid keys ignored
+		{[]ModKey{}, ""},
+		{[]ModKey{""}, ""},
+		{[]ModKey{"shift", "cmd", ""}, "cmd+shift"},
+		{[]ModKey{"shift", "ctrl", "hulk hogan"}, "ctrl+shift"},
+		{[]ModKey{"shift", "undertaker", "cmd", ""}, "cmd+shift"},
+	}
+
+	for _, td := range tests {
+		m := it.NewModifier(td.keys...)
+		v := string(m.Key)
+		if v != td.x {
+			t.Errorf("Bad Modifier for %#v. Expected=%q, Got=%q", td.keys, td.x, v)
+		}
+	}
+}
+
 // TestFeedbackRerun verifies that rerun is properly set.
 func TestFeedbackRerun(t *testing.T) {
 	t.Parallel()

@@ -8,15 +8,18 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
+	"strings"
 
 	"github.com/deanishe/awgo/fuzzy"
 )
 
 // ModKey is a modifier key pressed by the user to run an alternate
-// item action in Alfred (in combination with ↩).
+// item action in Alfred (in combination with ↩). It is passed
+// to Item.NewModifier().
 //
-// It is passed to Item.NewModifier(). ModKeys cannot be combined:
-// Alfred only permits one modifier at a time.
+// Alfred 3 only permits one modifier at a time, but on Alfred 4+
+// you can combine them arbitrarily.
 type ModKey string
 
 // Valid modifier keys used to specify alternate actions in Script Filters.
@@ -153,12 +156,15 @@ func (it *Item) Var(k, v string) *Item {
 
 // NewModifier returns an initialised Modifier bound to this Item.
 // It also populates the Modifier with any workflow variables set in the Item.
-func (it *Item) NewModifier(key ModKey) *Modifier {
-	m, err := newModifier(key)
-	if err != nil {
-		panic(err)
-	}
-
+//
+// You must specify at least one modifier key. Alfred 3 only supports
+// a single modifier, but Alfred 4+ allow them to be arbitrarily combined.
+// Any invalid modifier keys are ignored. If you specify an unusable set of
+// modifiers (i.e. they evaluate to ""), although a Modifier is returned,
+// it is not retained by Item and will not be sent to Alfred. An error message
+// is also logged.
+func (it *Item) NewModifier(key ...ModKey) *Modifier {
+	m := newModifier(key...)
 	// Add Item variables to Modifier
 	if it.vars != nil {
 		for k, v := range it.vars {
@@ -172,6 +178,10 @@ func (it *Item) NewModifier(key ModKey) *Modifier {
 
 // SetModifier sets a Modifier for a modifier key.
 func (it *Item) SetModifier(m *Modifier) {
+	if m.Key == "" {
+		log.Printf("[ERROR] modifier has no key: %#v", m)
+		return
+	}
 	if it.mods == nil {
 		it.mods = map[ModKey]*Modifier{}
 	}
@@ -270,7 +280,8 @@ type itemText struct {
 // Variables are inherited at creation time, so any Item variables you set
 // after creating the Modifier are not inherited.
 type Modifier struct {
-	// The modifier key. May be any of ValidModifiers.
+	// The modifier key, e.g. "cmd", "alt".
+	// With Alfred 4+, modifiers can be combined, e.g. "cmd+alt", "ctrl+shift+cmd"
 	Key      ModKey
 	arg      *string
 	subtitle *string
@@ -280,8 +291,27 @@ type Modifier struct {
 }
 
 // newModifier creates a Modifier, validating key.
-func newModifier(key ModKey) (*Modifier, error) {
-	return &Modifier{Key: key, vars: map[string]string{}}, nil
+func newModifier(key ...ModKey) *Modifier {
+	l := []string{}
+	for _, k := range key {
+		s := strings.TrimSpace(strings.ToLower(string(k)))
+		if s == "opt" {
+			s = "alt"
+		}
+		if s == "" {
+			continue
+		}
+		if s != "alt" && s != "cmd" && s != "ctrl" &&
+			s != "fn" && s != "opt" && s != "shift" {
+
+			log.Printf("[warning] ignored invalid modifier %q", k)
+			continue
+		}
+		l = append(l, s)
+	}
+	sort.Strings(l)
+	s := strings.Join(l, "+")
+	return &Modifier{Key: ModKey(s), vars: map[string]string{}}
 }
 
 // Arg sets the arg for the Modifier.
