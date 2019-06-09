@@ -2,22 +2,20 @@
 // MIT Licence - http://opensource.org/licenses/MIT
 
 /*
-Package update implements an API for fetching updates to workflows from remote servers.
+Package update implements an API for fetching workflow updates from remote servers.
 
-The Updater/Releaser API provides the ability to check for newer versions
-of your workflow. Support for updating from GitHub and Gitea releases is built in.
-See GitHub example.
+It is the "backend" for aw.Workflow's update API, and provides concrete updaters for
+GitHub and Gitea releases, and Alfred metadata.json files (as aw.Options). Updater
+implements aw.Updater and you can create a custom Updater to use with
+aw.Workflow/aw.Update() by passing a custom implementation of Source to NewUpdater().
 
-You can use your own backend by implementing the Releaser interface.
+The only hard requirement is support for (mostly) semantic version numbers. See
+SemVer documentation and http://semver.org for details.
 
-The only hard requirement is support for (mostly) semantic version numbers.
-See SemVer documentation and http://semver.org for details.
+Updater is also Alfred-version-aware, and ignores incompatible workflow version,
+e.g. workflow files with the extension ".alfred4workflow" are ignored
+when Updater is run in Alfred 3.
 
-This package is the "backend". You should set an Updater on an aw.Workflow
-struct (using e.g. the GitHub aw.Option) and use the Workflow methods
-CheckForUpdate(), UpdateAvailable() and InstallUpdate() to interact with
-the Updater.
-
-See ../_examples/update for one possible way to use this API.
+See ../_examples/update for one possible way to using the updater API.
 */
 package update

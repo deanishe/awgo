@@ -35,6 +35,7 @@ var (
 // This is what concrete updaters (e.g. GitHub, Gitea) should implement.
 // Source is called by the Updater after every updater interval.
 type Source interface {
+	// Downloads returns all available workflow files.
 	Downloads() ([]Download, error)
 }
 
@@ -53,14 +54,14 @@ func (s byVersion) Less(i, j int) bool {
 }
 
 // Download is an Alfred workflow available for download & installation.
+// It is the primary update data structure, returned by all Sources.
 type Download struct {
-	// URL is the download location the workflow file can be downloaded from
-	URL string
+	URL string // Where the workflow file can be downloaded from
 	// Filename for downloaded file.
 	// Must have extension .alfredworkflow or .alfredXworkflow where X is a number,
 	// otherwise the Download will be ignored.
 	Filename   string
-	Version    SemVer // Workflow version no.
+	Version    SemVer // Semantic version no.
 	Prerelease bool   // Whether this version is a pre-release
 }
 
@@ -80,11 +81,12 @@ func (dl Download) AlfredVersion() SemVer {
 
 // Updater checks for newer version of the workflow. Available versions are
 // provided by a Source, such as the built-in GitHub source, which
-// reads the releases in a GitHub repo.
+// reads the releases in a GitHub repo. It is a concrete implementation
+// of aw.Updater.
 //
 // CheckForUpdate() retrieves the list of available downloads from the
 // source and caches them. UpdateAvailable() reads the cache and returns
-// true if there is a download with a higher version than the current workflow.
+// true if there is a download with a higher version than the running workflow.
 // Install() downloads the latest version and asks Alfred to install it.
 //
 // Because downloading releases is slow and workflows need to run fast,
@@ -116,7 +118,9 @@ type Updater struct {
 	pathDownloads string // Cache path for available downloads
 }
 
-// NewUpdater creates a new Updater from Source.
+// NewUpdater creates a new Updater for Source. `currentVersion` is the workflow's
+// version number and `cacheDir` is a directory where the Updater can cache
+// a list of available releases.
 func NewUpdater(src Source, currentVersion, cacheDir string) (*Updater, error) {
 	v, err := NewSemVer(currentVersion)
 	if err != nil {
@@ -228,6 +232,7 @@ func (u *Updater) clearCache() {
 	if err := util.ClearDirectory(u.cacheDir); err != nil {
 		log.Printf("error: clear cache: %v", err)
 	}
+	util.MustExist(u.cacheDir)
 }
 
 // cacheLastCheck saves time to cachepath.
@@ -301,8 +306,7 @@ func getURL(URL string) ([]byte, error) {
 		return []byte{}, err
 	}
 	defer res.Body.Close()
-	data, err := ioutil.ReadAll(res.Body)
-	return data, err
+	return ioutil.ReadAll(res.Body)
 }
 
 // download saves a URL to a filepath.

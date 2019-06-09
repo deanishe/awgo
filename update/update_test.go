@@ -14,6 +14,14 @@ import (
 	"time"
 )
 
+func mustRead(filename string) []byte {
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		panic(err)
+	}
+	return data
+}
+
 func mustVersion(s string) SemVer {
 	v, _ := NewSemVer(s)
 	return v
@@ -36,27 +44,6 @@ type testFailSource struct{}
 
 func (src testFailSource) Downloads() ([]Download, error) { return nil, errors.New("fail") }
 
-/*
-// testReleaser is a test implementation of Releaser
-type testReleaser struct {
-	releases []*Release
-}
-
-func (r testReleaser) Releases() ([]*Release, error) {
-	return r.releases, nil
-}
-
-type testFailReleaser struct{}
-
-func (r testFailReleaser) Releases() ([]*Release, error) {
-	return nil, errors.New("failed")
-}
-
-var (
-	tr, trPre *testReleaser
-)
-*/
-
 func withTempDir(fn func(dir string)) {
 	dir, err := ioutil.TempDir("", "aw-")
 	if err != nil {
@@ -65,18 +52,6 @@ func withTempDir(fn func(dir string)) {
 	defer os.RemoveAll(dir)
 	fn(dir)
 }
-
-/*
-func withVersioned(version string, fn func(v Versioned, dir string)) {
-	v := &versioned{version: version}
-	dir, err := ioutil.TempDir("", "aw-")
-	if err != nil {
-		panic(err)
-	}
-	defer os.RemoveAll(dir)
-	fn(v, dir)
-}
-*/
 
 var (
 	testSrc1 = &testSource{
@@ -96,36 +71,6 @@ var (
 		},
 	}
 )
-
-func init() {
-
-	/*
-		tr = &testReleaser{
-			releases: []*Release{
-				&Release{mustVersion("0.5.0-beta"), true, []File{File{"Dummy.alfredworkflow", nil, SemVer{}}}},
-				&Release{mustVersion("0.1"), false, []File{File{"Dummy.alfredworkflow", nil, SemVer{}}}},
-				&Release{mustVersion("0.4"), false, []File{File{"Dummy.alfredworkflow", nil, SemVer{}}}},
-				&Release{mustVersion("0.2"), false, []File{File{"Dummy.alfredworkflow", nil, SemVer{}}}},
-				&Release{mustVersion("0.3"), false, []File{File{"Dummy.alfredworkflow", nil, SemVer{}}}},
-				// &Release{"workflow.alfredworkflow", nil, true, mustVersion("0.5.0-beta")},
-				// &Release{"workflow.alfredworkflow", nil, false, mustVersion("0.1")},
-				// &Release{"workflow.alfredworkflow", nil, false, mustVersion("0.4")},
-				// &Release{"workflow.alfredworkflow", nil, false, mustVersion("0.2")},
-				// &Release{"workflow.alfredworkflow", nil, false, mustVersion("0.3")},
-			},
-		}
-		trPre = &testReleaser{
-			releases: []*Release{
-				&Release{mustVersion("0.5.0-beta"), true, []File{File{"Dummy.alfredworkflow", nil, SemVer{}}}},
-				&Release{mustVersion("0.4.0-beta"), true, []File{File{"Dummy.alfredworkflow", nil, SemVer{}}}},
-				&Release{mustVersion("0.3.0-beta"), true, []File{File{"Dummy.alfredworkflow", nil, SemVer{}}}},
-				// &Release{"workflow.alfredworkflow", nil, true, mustVersion("0.5.0-beta")},
-				// &Release{"workflow.alfredworkflow", nil, true, mustVersion("0.4.0-beta")},
-				// &Release{"workflow.alfredworkflow", nil, true, mustVersion("0.3.0-beta")},
-			},
-		}
-	*/
-}
 
 func TestUpdater(t *testing.T) {
 	t.Parallel()

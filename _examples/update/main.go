@@ -45,7 +45,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/deanishe/awgo"
+	aw "github.com/deanishe/awgo"
 	"github.com/deanishe/awgo/update"
 )
 
@@ -61,6 +61,8 @@ var (
 	iconAvailable = &aw.Icon{Value: "update-available.png"}
 	repo          = "deanishe/alfred-ssh" // GitHub repo
 	wf            *aw.Workflow            // Our Workflow struct
+	// URL of Alfred metadata.json file to use update.Metadata updater.
+	// metadataURL = "https://raw.githubusercontent.com/deanishe/alfred-ssh/master/metadata.json"
 
 	// Fake data for Script Filter
 	items = []string{
@@ -112,6 +114,8 @@ func init() {
 	flag.BoolVar(&doCheck, "check", false, "check for a new version")
 
 	wf = aw.New(update.GitHub(repo))
+	// To user metadata.json updater
+	// wf = aw.New(update.Metadata(metaDataURL))
 }
 
 func run() {

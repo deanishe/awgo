@@ -1,0 +1,13 @@
+{
+  "alfredworkflow": {
+    "category": "Internet",
+    "readme": "Secure SHell\n============\n\nRapidly open SSH/SFTP/mosh connections, with suggestions from  SSH configuration files and /etc/hosts.\n\nRemembers connections with usernames, so you don't have to type your username every time.\n\n\nSettings\n--------\n\nThe workflow reads hosts from five sources:\n\n- ~/.ssh/config\n- ~/.ssh/known_hosts\n- /etc/ssh/ssh_config\n- /etc/hosts\n- Its own history\n\nYou can disable any source by setting its corresponding Workflow Environment Variable to 1, so set DISABLE_ETC_HOSTS=1 to ignore /etc/hosts.\n\nMOSH_CMD specifieds the path to the `mosh` executable. The default, \"mosh\", should work on most systems, as the command is passed to your terminal application.\n\nTo disable mosh, delete the value for MOSH_CMD.\n\nThe SSH_CMD performs a similar function for the default action (opening SSH connections).\n\nBy default, the workflow generates an ssh://... URL and asks the system to open it (or passes it to the application specified in SSH_APP).\n\nIf you set SSH_CMD, the workflow will instead generate an `ssh` command and run that in your Terminal app. This is slower, but\nwill load your dotfiles.\n\nSet EXIT_ON_SUCCESS to 0 to prevent the terminal closing if the ping/mosh command exits cleanly.\n\n\nWhen removing a connection from the History, the workflow re-opens itself with the previous query.\n\nThe EXTERNAL_TRIGGER setting tells the workflow to re-open itself using the External Trigger instead of calling itself by keyword (\"ssh\").",
+    "createdby": "Dean Jackson",
+    "downloadurl": "https://github.com/deanishe/alfred-ssh/releases/download/v0.8.0/Secure-SHell-0.8.0.alfredworkflow",
+    "version": "0.8.0",
+    "bundleid": "net.deanishe.alfred-ssh",
+    "description": "Open SSH connections",
+    "name": "Secure SHell",
+    "webaddress": "https://github.com/deanishe/alfred-ssh"
+  }
+}

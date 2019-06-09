@@ -171,7 +171,8 @@ Updates
 
 AwGo can check for and install new versions of your workflow.
 Subpackage update provides an implementation of the Updater interface and
-sources to load updates from GitHub or Gitea releases.
+sources to load updates from GitHub or Gitea releases, or from the URL of
+an Alfred `metadata.json` file.
 
 See subpackage update and _examples/update.
 
