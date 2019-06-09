@@ -16,7 +16,7 @@ import (
 )
 
 // Gitea is a Workflow Option. It sets a Workflow Updater for the specified Gitea repo.
-// Repo name should be of the form "username/repo", e.g. "git.deanishe.net/deanishe/alfred-ssh".
+// Repo name should be the full URL of the repo, e.g. "git.deanishe.net/deanishe/alfred-ssh".
 func Gitea(repo string) aw.Option {
 	return func(wf *aw.Workflow) aw.Option {
 		u, _ := NewUpdater(&giteaSource{Repo: repo, fetch: getURL},
