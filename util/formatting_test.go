@@ -4,8 +4,41 @@
 package util
 
 import (
+	"fmt"
 	"testing"
 )
+
+func TestSlugify(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		in string
+		x  string
+	}{
+		{"", ""},
+		{" ", "-"},
+		{"Test", "Test"},
+		{"Test Space", "Test-Space"},
+		{"Test  Multiple  Spaces", "Test-Multiple-Spaces"},
+		{" Trim Space ", "-Trim-Space-"},
+		{"  Trim Spaces  ", "-Trim-Spaces-"},
+		{"Dots.Are.OK", "Dots.Are.OK"},
+		{"ÄSCÏI ònly", "ASCII-only"},
+		{"Filesystem/safe", "Filesystem-safe"},
+		{"Filesystem: safe", "Filesystem-safe"},
+	}
+
+	for _, td := range tests {
+		td := td
+		t.Run(fmt.Sprintf("input=%q", td.in), func(t *testing.T) {
+			t.Parallel()
+			v := Slugify(td.in)
+			if v != td.x {
+				t.Errorf("Bad slug. Expected=%q, Got=%q", td.x, v)
+			}
+		})
+	}
+}
 
 type padTest struct {
 	str string // input string
