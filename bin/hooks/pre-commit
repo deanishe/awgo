@@ -1,0 +1,3 @@
+#!/bin/zsh
+
+find _examples -type f -name 'info.plist' -exec /usr/libexec/PlistBuddy -c 'Set :disabled false' {} \;
