@@ -128,39 +128,39 @@ func TestExport(t *testing.T) {
 	for _, src := range []string{"./testdata/workflow", "./testdata/workflow-symlinked"} {
 		src := src
 		t.Run(src, func(t *testing.T) {
-			t.Parallel()
+			withEnv(map[string]string{"alfred_version": "4.0.3"}, func() {
+				withTempDir(func(dir string) {
+					var (
+						xdir = filepath.Join(dir, "extracted")
+						path string
+						err  error
+					)
+					if err = os.Mkdir(xdir, 0700); err != nil {
+						t.Fatal(err)
+					}
+					if path, err = Export(src, dir); err != nil {
+						t.Fatal(err)
+					}
 
-			withTempDir(func(dir string) {
-				var (
-					xdir = filepath.Join(dir, "extracted")
-					path string
-					err  error
-				)
-				if err = os.Mkdir(xdir, 0700); err != nil {
-					t.Fatal(err)
-				}
-				if path, err = Export(src, dir); err != nil {
-					t.Fatal(err)
-				}
+					if _, err = os.Stat(path); err != nil {
+						t.Fatal(err)
+					}
 
-				if _, err = os.Stat(path); err != nil {
-					t.Fatal(err)
-				}
+					name := filepath.Base(path)
+					x := "AwGo-1.2.0.alfredworkflow"
+					if name != x {
+						t.Errorf("Bad Name. Expected=%q, Got=%q", x, name)
+					}
 
-				name := filepath.Base(path)
-				x := "AwGo-1.2.0.alfredworkflow"
-				if name != x {
-					t.Errorf("Bad Name. Expected=%q, Got=%q", x, name)
-				}
+					cmd := exec.Command("unzip", path, "-d", xdir)
+					if err = cmd.Run(); err != nil {
+						t.Fatal(err)
+					}
 
-				cmd := exec.Command("unzip", path, "-d", xdir)
-				if err = cmd.Run(); err != nil {
-					t.Fatal(err)
-				}
-
-				if err = compareDirs(src, xdir); err != nil {
-					t.Fatal(err)
-				}
+					if err = compareDirs(src, xdir); err != nil {
+						t.Fatal(err)
+					}
+				})
 			})
 		})
 	}
