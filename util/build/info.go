@@ -237,6 +237,10 @@ func expand(path string) string {
 }
 
 func findSyncFolder(v int, dir string) (string, error) {
+	if s := os.Getenv("alfred_preferences"); s != "" {
+		return filepath.Dir(s), nil
+	}
+
 	var (
 		prefsJSON  = filepath.Join(dir, "Application Support/Alfred/prefs.json")
 		prefsPlist = filepath.Join(dir, "Preferences/com.runningwithcrayons.Alfred-Preferences-3.plist")

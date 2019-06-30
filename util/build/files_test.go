@@ -128,7 +128,11 @@ func TestExport(t *testing.T) {
 	for _, src := range []string{"./testdata/workflow", "./testdata/workflow-symlinked"} {
 		src := src
 		t.Run(src, func(t *testing.T) {
-			withEnv(map[string]string{"alfred_version": "4.0.3"}, func() {
+			env := map[string]string{
+				"alfred_version":     "4.0.3",
+				"alfred_preferences": "./testbuild",
+			}
+			withEnv(env, func() {
 				withTempDir(func(dir string) {
 					var (
 						xdir = filepath.Join(dir, "extracted")
