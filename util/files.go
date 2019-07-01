@@ -59,14 +59,17 @@ func WriteFile(filename string, data []byte, perm os.FileMode) error {
 	if err != nil {
 		return err
 	}
-	name = f.Name()
-	defer func(p string) {
-		// Ensure tempfile is deleted
-		if err := os.Remove(p); err != nil {
-			log.Printf("[ERROR] delete tempfile %q: %v", PrettyPath(p), err)
-		}
-	}(name)
 	defer f.Close()
+
+	name = f.Name()
+	defer func() {
+		// Ensure tempfile is deleted
+		if err := os.Remove(name); err != nil {
+			if !os.IsNotExist(err) {
+				log.Printf("[ERROR] tempfile: %v", err)
+			}
+		}
+	}()
 
 	if err := ioutil.WriteFile(name, data, perm); err != nil {
 		return err
