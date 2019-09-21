@@ -15,12 +15,12 @@ import (
 
 // Environment variables containing workflow and Alfred info.
 //
-// Read the values with os.Getenv(EnvVarName) or via Alfred:
+// Read the values with os.Getenv(EnvVarName) or via Config:
 //
 //    // Returns a string
-//    Alfred.Get(EnvVarName)
+//    Config.Get(EnvVarName)
 //    // Parse string into a bool
-//    Alfred.GetBool(EnvVarDebug)
+//    Config.GetBool(EnvVarDebug)
 //
 const (
 	// Workflow info assigned in Alfred Preferences
