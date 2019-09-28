@@ -14,4 +14,4 @@ script:
   - $GOPATH/bin/godacov -t $CODACY_TOKEN -r ./coverage.out -c $TRAVIS_COMMIT; true
 
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+  - bash <(curl -s https://codecov.io/bash); true
