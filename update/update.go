@@ -31,6 +31,35 @@ var (
 	client *http.Client
 )
 
+// Mockable functions
+var (
+	// Run command
+	runCommand = func(name string, arg ...string) error {
+		return exec.Command(name, arg...).Run()
+	}
+	// save a URL to a filepath.
+	download = func(URL, path string) error {
+		res, err := openURL(URL)
+		if err != nil {
+			return err
+		}
+		defer res.Body.Close()
+
+		util.MustExist(filepath.Dir(path))
+		out, err := os.Create(path)
+		if err != nil {
+			return err
+		}
+		defer out.Close()
+		n, err := io.Copy(out, res.Body)
+		if err != nil {
+			return err
+		}
+		log.Printf("wrote %q (%d bytes)", util.PrettyPath(path), n)
+		return nil
+	}
+)
+
 // Source provides workflow files that can be downloaded.
 // This is what concrete updaters (e.g. GitHub, Gitea) should implement.
 // Source is called by the Updater after every updater interval.
@@ -224,7 +253,8 @@ func (u *Updater) Install() error {
 	if err := download(dl.URL, p); err != nil {
 		return err
 	}
-	return exec.Command("open", p).Run()
+
+	return runCommand("open", p)
 }
 
 // clearCache removes the update cache.
@@ -275,7 +305,7 @@ func (u *Updater) latest() *Download {
 		if dl.Prerelease && !u.Prereleases {
 			continue
 		}
-		if u.AlfredVersion.Ne(SemVer{}) && dl.AlfredVersion().Gt(u.AlfredVersion) {
+		if !u.AlfredVersion.IsZero() && dl.AlfredVersion().Gt(u.AlfredVersion) {
 			log.Printf("incompatible: %q: current=%v, required=%v", dl.Filename, u.AlfredVersion, dl.AlfredVersion())
 			continue
 		}
@@ -283,6 +313,14 @@ func (u *Updater) latest() *Download {
 	}
 	return nil
 }
+
+// // Mockable function to run commands
+// type commandRunner func(name string, arg ...string) error
+//
+// // Run command via exec.Command
+// func runCommand(name string, arg ...string) error {
+// 	return exec.Command(name, arg...).Run()
+// }
 
 // makeHTTPClient returns an http.Client with a sensible configuration.
 func makeHTTPClient() *http.Client {
@@ -307,28 +345,6 @@ func getURL(URL string) ([]byte, error) {
 	}
 	defer res.Body.Close()
 	return ioutil.ReadAll(res.Body)
-}
-
-// download saves a URL to a filepath.
-func download(URL string, path string) error {
-	res, err := openURL(URL)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-
-	util.MustExist(filepath.Dir(path))
-	out, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-	n, err := io.Copy(out, res.Body)
-	if err != nil {
-		return err
-	}
-	log.Printf("wrote %q (%d bytes)", util.PrettyPath(path), n)
-	return nil
 }
 
 // openURL returns an http.Response. It will return an error if the

@@ -12,7 +12,21 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
+
+// Mock exec.Command
+type mockExec struct {
+	name string
+	args []string
+}
+
+func (me *mockExec) Run(name string, arg ...string) error {
+	me.name = name
+	me.args = append([]string{name}, arg...)
+	return nil
+}
 
 func mustRead(filename string) []byte {
 	data, err := ioutil.ReadFile(filename)
@@ -56,18 +70,18 @@ func withTempDir(fn func(dir string)) {
 var (
 	testSrc1 = &testSource{
 		dls: []Download{
-			Download{Version: mustVersion("0.5.0-beta"), Prerelease: true, Filename: "Dummy.alfredworkflow"},
-			Download{Version: mustVersion("0.1"), Prerelease: false, Filename: "Dummy.alfredworkflow"},
-			Download{Version: mustVersion("0.4"), Prerelease: false, Filename: "Dummy.alfredworkflow"},
-			Download{Version: mustVersion("0.2"), Prerelease: false, Filename: "Dummy.alfredworkflow"},
-			Download{Version: mustVersion("0.3"), Prerelease: false, Filename: "Dummy.alfredworkflow"},
+			{Version: mustVersion("0.5.0-beta"), Prerelease: true, Filename: "Dummy.alfredworkflow"},
+			{Version: mustVersion("0.1"), Prerelease: false, Filename: "Dummy.alfredworkflow"},
+			{Version: mustVersion("0.4"), Prerelease: false, Filename: "Dummy.alfredworkflow"},
+			{Version: mustVersion("0.2"), Prerelease: false, Filename: "Dummy.alfredworkflow"},
+			{Version: mustVersion("0.3"), Prerelease: false, Filename: "Dummy.alfredworkflow"},
 		},
 	}
 	testSrc2 = &testSource{
 		dls: []Download{
-			Download{Version: mustVersion("0.5.0-beta"), Prerelease: true, Filename: "Dummy.alfredworkflow"},
-			Download{Version: mustVersion("0.4.0-beta"), Prerelease: true, Filename: "Dummy.alfredworkflow"},
-			Download{Version: mustVersion("0.3.0-beta"), Prerelease: true, Filename: "Dummy.alfredworkflow"},
+			{Version: mustVersion("0.5.0-beta"), Prerelease: true, Filename: "Dummy.alfredworkflow"},
+			{Version: mustVersion("0.4.0-beta"), Prerelease: true, Filename: "Dummy.alfredworkflow"},
+			{Version: mustVersion("0.3.0-beta"), Prerelease: true, Filename: "Dummy.alfredworkflow"},
 		},
 	}
 )
@@ -211,6 +225,40 @@ func testUpdateIntervalFail(t *testing.T) {
 		if !u.CheckDue() {
 			t.Fatalf("Update is not due.")
 		}
+	})
+}
+
+func TestUpdater_Install(t *testing.T) {
+	origRun := runCommand
+	origDownload := download
+	defer func() {
+		runCommand = origRun
+		download = origDownload
+	}()
+
+	me := &mockExec{}
+	runCommand = me.Run
+	download = func(URL, path string) error { return nil }
+
+	withTempDir(func(dir string) {
+
+		u, err := NewUpdater(testSrc1, "0.2.2", dir)
+		if err != nil {
+			t.Fatalf("Error creating updater: %s", err)
+		}
+
+		assert.False(t, u.UpdateAvailable(), "empty updater has update")
+		if err := u.Install(); err == nil {
+			t.Fatalf("empty updater installed")
+		}
+		if err := u.CheckForUpdate(); err != nil {
+			t.Fatalf("Error getting releases: %s", err)
+		}
+		if err := u.Install(); err != nil {
+			t.Fatalf("install failed: %v", err)
+		}
+
+		assert.Equal(t, "open", me.name, "wrong command called")
 	})
 }
 

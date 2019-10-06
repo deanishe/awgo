@@ -26,14 +26,14 @@ var (
 	// Used by the Script Runner (and by extension Run()) to to
 	// determine how to run files that aren't executable.
 	DefaultInterpreters = map[string][]string{
-		".py":          []string{"/usr/bin/python"},
-		".rb":          []string{"/usr/bin/ruby"},
-		".sh":          []string{"/bin/bash"},
-		".zsh":         []string{"/bin/zsh"},
-		".scpt":        []string{"/usr/bin/osascript"},
-		".scptd":       []string{"/usr/bin/osascript"},
-		".applescript": []string{"/usr/bin/osascript"},
-		".js":          []string{"/usr/bin/osascript", "-l", "JavaScript"},
+		".py":          {"/usr/bin/python"},
+		".rb":          {"/usr/bin/ruby"},
+		".sh":          {"/bin/bash"},
+		".zsh":         {"/bin/zsh"},
+		".scpt":        {"/usr/bin/osascript"},
+		".scptd":       {"/usr/bin/osascript"},
+		".applescript": {"/usr/bin/osascript"},
+		".js":          {"/usr/bin/osascript", "-l", "JavaScript"},
 	}
 
 	// Available runners in order they should be tried.

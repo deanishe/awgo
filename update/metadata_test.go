@@ -5,8 +5,10 @@ package update
 
 import (
 	"fmt"
-	"io/ioutil"
 	"testing"
+
+	"github.com/pkg/errors"
+	"github.com/stretchr/testify/assert"
 
 	aw "github.com/deanishe/awgo"
 )
@@ -15,7 +17,7 @@ func TestMetadata(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		jsname   string
+		jsName   string
 		ok       bool
 		filename string
 		url      string
@@ -28,28 +30,12 @@ func TestMetadata(t *testing.T) {
 			"https://github.com/deanishe/alfred-ssh/releases/download/v0.8.0/Secure-SHell-0.8.0.alfredworkflow",
 			mustVersion("v0.8"),
 		},
-		// returns error
-		{
-			"metadata-empty.json",
-			false,
-			"",
-			"",
-			SemVer{},
-		},
 		{
 			"metadata-alfred4.json",
 			true,
 			"Secure-SHell-0.8.0.alfred4workflow",
 			"https://github.com/deanishe/alfred-ssh/releases/download/v0.8.0/Secure-SHell-0.8.0.alfred4workflow",
 			mustVersion("v0.8"),
-		},
-		// returns error
-		{
-			"metadata-bad-filename.json",
-			false,
-			"",
-			"",
-			SemVer{},
 		},
 		{
 			"metadata-old.json",
@@ -58,57 +44,109 @@ func TestMetadata(t *testing.T) {
 			"https://github.com/deanishe/alfred-ssh/releases/download/v0.1.0/Secure-SHell-0.1.0.alfredworkflow",
 			mustVersion("v0.1"),
 		},
+
+		// invalid metadata files
+		{
+			"invalid.json",
+			false,
+			"",
+			"",
+			SemVer{},
+		},
+		{
+			"metadata-empty.json",
+			false,
+			"",
+			"",
+			SemVer{},
+		},
+		{
+			"metadata-empty-url.json",
+			false,
+			"",
+			"",
+			SemVer{},
+		},
+		{
+			"metadata-invalid-url.json",
+			false,
+			"",
+			"",
+			SemVer{},
+		},
+		{
+			"metadata-invalid-url-scheme.json",
+			false,
+			"",
+			"",
+			SemVer{},
+		},
+		{
+			"metadata-invalid-version.json",
+			false,
+			"",
+			"",
+			SemVer{},
+		},
+		{
+			"metadata-bad-filename.json",
+			false,
+			"",
+			"",
+			SemVer{},
+		},
 	}
 
-	for i, td := range tests {
-		var (
-			data []byte
-			err  error
-			dl   Download
-			src  *metadataSource
-		)
-		if data, err = ioutil.ReadFile("testdata/" + td.jsname); err != nil {
-			t.Errorf("[%d] parse metadata: %v", i, err)
-			continue
-		}
-		dl, err = parseMetadata(data)
-		if !td.ok {
-			if err == nil {
-				t.Errorf("[%d] bad release parsed", i)
+	for _, td := range tests {
+		td := td
+		t.Run(td.jsName, func(t *testing.T) {
+			t.Parallel()
+
+			data := mustRead("testdata/" + td.jsName)
+			dl, err := parseMetadata(data)
+			if !td.ok {
+				if err == nil {
+					t.Fatal("bad release accepted")
+				}
+				return
 			}
-			continue
-		}
-		if err != nil {
-			t.Errorf("[%d] parse metadata: %v", i, err)
-			continue
-		}
 
-		if dl.Filename != td.filename {
-			t.Errorf("[%d] Bad Filename. Expected=%q, Got=%q", i, td.filename, dl.Filename)
-		}
-		if dl.URL != td.url {
-			t.Errorf("[%d] Bad URL. Expected=%q, Got=%q", i, td.url, dl.URL)
-		}
-		if dl.Version.Ne(td.version) {
-			t.Errorf("[%d] Bad Version. Expected=%v, Got=%v", i, td.version, dl.Version)
-		}
-		if dl.Prerelease != false {
-			t.Errorf("[%d] Bad Prerelease. Expected=false, Got=%v", i, dl.Prerelease)
-		}
+			if err != nil {
+				t.Fatalf("parse metadata: %v", err)
+			}
 
-		src = &metadataSource{
-			url:   "https://raw.githubusercontent.com/deanishe/alfred-ssh/master/metadata.json",
-			fetch: func(URL string) ([]byte, error) { return data, nil },
-		}
+			assert.Equal(t, td.filename, dl.Filename, "Bad filename")
+			assert.Equal(t, td.url, dl.URL, "Bad URL")
+			assert.True(t, dl.Version.Eq(td.version), "Bad version")
+			assert.False(t, dl.Prerelease, "Prerelease is true")
 
-		dls, err := src.Downloads()
-		if err != nil {
-			t.Fatal("parse empty JSON")
-		}
+			src := &metadataSource{
+				url:   "https://raw.githubusercontent.com/deanishe/alfred-ssh/master/metadata.json",
+				fetch: func(URL string) ([]byte, error) { return data, nil },
+			}
 
-		if len(dls) != 1 {
-			t.Errorf("Bad Count. Expected=1, Got=%d", len(dls))
-		}
+			dls, err := src.Downloads()
+			if err != nil {
+				t.Fatal("parse empty JSON")
+			}
+			assert.Equal(t, 1, len(dls), "Bad download count")
+		})
+	}
+}
+
+func TestMetadataSource_Downloads(t *testing.T) {
+	// fetch fails
+	fetch := func(URL string) ([]byte, error) { return nil, errors.New("i ded") }
+	src := &metadataSource{url: "blah", fetch: fetch}
+	if _, err := src.Downloads(); err == nil {
+		t.Fatal("bad fetch didn't fail")
+	}
+
+	// fetch returns invalid data
+	fetch = func(URL string) ([]byte, error) { return []byte("totes not JSON"), nil }
+	src = &metadataSource{url: "blah", fetch: fetch}
+	if _, err := src.Downloads(); err == nil {
+		t.Fatal("bad fetch didn't fail")
 	}
 }
 

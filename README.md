@@ -134,7 +134,8 @@ script in the project root or run unit tests via the `run-tests.sh` script
 Licensing & thanks
 ------------------
 
-This library is released under the [MIT licence][licence].
+This library is released under the [MIT licence][licence]. It was built with
+[neovim][neovim] and [GoLand by JetBrains][jetbrains].
 
 The icon is based on the [Go Gopher][gopher] by [Renee French][renee].
 
@@ -165,8 +166,10 @@ The icon is based on the [Go Gopher][gopher] by [Renee French][renee].
 [goreport-link]: https://goreportcard.com/report/github.com/deanishe/awgo
 [goreport-icon]: https://goreportcard.com/badge/github.com/deanishe/awgo
 [codacy-icon]: https://api.codacy.com/project/badge/Grade/e785f7b0e830468da6fa2856d62e59ab
-[codacy-link]: https://www.codacy.com/app/deanishe/awgo?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=deanishe/awgo&amp;utm_campaign=Badge_Grade
-[coveralls-icon]: https://coveralls.io/repos/github/deanishe/awgo/badge.svg?branch=master
+[codacy-link]: https://www.codacy.com/app/deanishe/awgo
+[coveralls-icon]: https://coveralls.io/repos/github/deanishe/awgo/badge.svg?branch=master&v2
 [coveralls-link]: https://coveralls.io/github/deanishe/awgo?branch=master
 [godoc-icon]: https://godoc.org/github.com/deanishe/awgo?status.svg
 [godoc-link]: https://godoc.org/github.com/deanishe/awgo
+[jetbrains]: https://www.jetbrains.com/?from=deanishe/awgo
+[neovim]: https://neovim.io/
