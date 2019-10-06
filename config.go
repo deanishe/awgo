@@ -51,6 +51,12 @@ const (
 	EnvVarLocalhash = "alfred_preferences_localhash"
 )
 
+// mockable JS script runner
+var runJS = func(script string) error {
+	_, err := util.RunJS(script)
+	return err
+}
+
 // Config loads workflow settings from Alfred's environment variables.
 //
 // The Get* methods read a variable from the environment, converting it to
@@ -264,9 +270,7 @@ func (cfg *Config) Do() error {
 	// reset
 	cfg.scripts = []string{}
 
-	_, err := util.RunJS(script)
-
-	return err
+	return runJS(script)
 }
 
 // Extract bundle ID from argument or default.

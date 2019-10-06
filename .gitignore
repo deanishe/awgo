@@ -1,9 +1,6 @@
 # Deps
 /vendor/*
 
-# Tests that actually call Alfred
-*_private_test.go
-
 # Created by test
 /coverage.*
 /testenv
