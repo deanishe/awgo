@@ -7,8 +7,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
+
+	"github.com/deanishe/awgo/util"
+	"github.com/stretchr/testify/assert"
 )
+
+type mockExit struct {
+	code int
+}
+
+func (me *mockExit) Exit(code int) { me.code = code }
 
 // TestWorkflowValues tests workflow name, bundle ID etc.
 func TestWorkflowValues(t *testing.T) {
@@ -23,6 +33,11 @@ func TestWorkflowValues(t *testing.T) {
 			t.Errorf("Bad BundleID. Expected=%s, Got=%s", tBundleID, wf.BundleID())
 		}
 	})
+}
+
+// TestInvalidEnv executes workflow in an invalid environment.
+func TestInvalidEnv(t *testing.T) {
+	assert.Panics(t, func() { NewFromEnv(MapEnv{}) })
 }
 
 // TestOptions verifies that options correctly alter Workflow.
@@ -100,15 +115,20 @@ func TestWorkflowRun(t *testing.T) {
 
 		var called bool
 
-		run := func() {
-			called = true
-		}
-
+		run := func() { called = true }
 		wf.Run(run)
 
-		if !called {
-			t.Errorf("run wasn't called")
-		}
+		assert.True(t, called, "run wasn't called")
+	})
+}
+
+func TestWorkflowRunRescue(t *testing.T) {
+	withTestWf(func(wf *Workflow) {
+		me := &mockExit{}
+		exitFunc = me.Exit
+		defer func() { exitFunc = os.Exit }()
+		wf.Run(func() { panic("aaaargh!") })
+		assert.Equal(t, 1, me.code, "workflow did not catch panic")
 	})
 }
 
@@ -144,22 +164,24 @@ func TestWorkflowDir(t *testing.T) {
 		})
 	}
 
-	/*
-		if err = os.Chdir(subdir); err != nil {
-			t.Fatalf("[ERROR] %v", err)
-		}
-		defer func() {
-			if err = os.Chdir(cwd); err != nil {
-				panic(err)
-			}
-		}()
-	*/
-
 	wf := New()
 	v := wf.Dir()
 	if v != cwd {
 		t.Errorf("Bad Workflow.Dir. Expected=%q, Got=%q", cwd, v)
 	}
+}
+
+// Check that AW's directories exist
+func TestAwDirs(t *testing.T) {
+	withTestWf(func(wf *Workflow) {
+		p := wf.awCacheDir()
+		assert.True(t, util.PathExists(p), "AW cache dir does not exist")
+		assert.True(t, strings.HasSuffix(p, "_aw"), "AW cache is not called '_aw'")
+
+		p = wf.awDataDir()
+		assert.True(t, util.PathExists(p), "AW data dir does not exist")
+		assert.True(t, strings.HasSuffix(p, "_aw"), "AW data is not called '_aw'")
+	})
 }
 
 // New initialises a Workflow with the default settings. Name,

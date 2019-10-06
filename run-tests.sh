@@ -141,7 +141,7 @@ $runtests && {
   st=$?
 
   [[ $st -eq 0 ]] && {
-    success "tests passed"
+    success "passed"
   }
   command rm $vopt -rf "$testdir"/*
 }
@@ -151,7 +151,7 @@ test -f "$iplist" && command rm $vopt -f "$iplist"
 cd -
 
 [[ $st -ne 0 ]] && {
-  fail "tests failed"
+  fail "failed"
 }
 
 $opencover && {

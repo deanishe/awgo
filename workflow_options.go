@@ -36,7 +36,7 @@ func (opts options) apply(wf *Workflow) Option {
 func HelpURL(URL string) Option {
 	return func(wf *Workflow) Option {
 		prev := wf.helpURL
-		ma := &helpMA{URL}
+		ma := &helpMA{wf}
 		if URL != "" {
 			wf.MagicActions.Register(ma)
 		} else {

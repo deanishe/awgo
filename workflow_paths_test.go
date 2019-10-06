@@ -6,7 +6,20 @@ package aw
 import (
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
+
+type mockExec struct {
+	name string
+	args []string
+}
+
+func (me *mockExec) Run(name string, arg ...string) error {
+	me.name = name
+	me.args = append([]string{name}, arg...)
+	return nil
+}
 
 func TestReset(t *testing.T) {
 	withTestWf(func(wf *Workflow) {
@@ -53,6 +66,54 @@ func TestReset(t *testing.T) {
 		}
 		if wf.Session.Exists(name) {
 			t.Fatal("Session cache exists")
+		}
+	})
+}
+
+func TestWorkflowRoot(t *testing.T) {
+	withTestWf(func(wf *Workflow) {
+		wd, err := os.Getwd()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		p := findWorkflowRoot(wd)
+		if p != wd {
+			t.Errorf("Bad Workflow directory. Expected=%q, Got=%q", wd, p)
+		}
+	})
+}
+
+func TestOpen(t *testing.T) {
+	helpURL := "https://github.com/deanishe/awgo"
+
+	withTestWf(func(wf *Workflow) {
+		wf.Configure(HelpURL(helpURL))
+		tests := []struct {
+			fn   func() error
+			name string
+			args []string
+		}{
+			{wf.OpenLog, "open",
+				[]string{"open", wf.LogFile()},
+			},
+			{wf.OpenHelp, "open",
+				[]string{"open", helpURL},
+			},
+			{wf.OpenCache, "open",
+				[]string{"open", wf.CacheDir()},
+			},
+			{wf.OpenData, "open",
+				[]string{"open", wf.DataDir()},
+			},
+		}
+
+		for _, td := range tests {
+			me := &mockExec{}
+			wf.execFunc = me.Run
+			td.fn()
+			assert.Equal(t, td.name, me.name, "Wrong command name")
+			assert.Equal(t, td.args, me.args, "Wrong command args")
 		}
 	})
 }

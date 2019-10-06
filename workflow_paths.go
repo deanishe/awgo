@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -42,7 +41,7 @@ func (wf *Workflow) CacheDir() string {
 
 // OpenCache opens the workflow's cache directory in the default application (usually Finder).
 func (wf *Workflow) OpenCache() error {
-	return exec.Command("open", wf.CacheDir()).Run()
+	return wf.execFunc("open", wf.CacheDir())
 }
 
 // ClearCache deletes all files from the workflow's cache directory.
@@ -62,7 +61,7 @@ func (wf *Workflow) DataDir() string {
 
 // OpenData opens the workflow's data directory in the default application (usually Finder).
 func (wf *Workflow) OpenData() error {
-	return exec.Command("open", wf.DataDir()).Run()
+	return wf.execFunc("open", wf.DataDir())
 }
 
 // ClearData deletes all files from the workflow's data directory.
@@ -95,7 +94,7 @@ func (wf *Workflow) OpenLog() error {
 	if !util.PathExists(wf.LogFile()) {
 		log.Println("Creating log file...")
 	}
-	return exec.Command("open", wf.LogFile()).Run()
+	return wf.execFunc("open", wf.LogFile())
 }
 
 // OpenHelp opens the workflow's help URL (if set) in the default browser.
@@ -103,7 +102,7 @@ func (wf *Workflow) OpenHelp() error {
 	if wf.helpURL == "" {
 		return errors.New("Help URL is not set")
 	}
-	return exec.Command("open", wf.helpURL).Run()
+	return wf.execFunc("open", wf.helpURL)
 }
 
 // Try to find workflow root based on presence of info.plist.

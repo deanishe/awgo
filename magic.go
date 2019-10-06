@@ -6,8 +6,6 @@ package aw
 import (
 	"fmt"
 	"log"
-	"os"
-	"os/exec"
 	"strings"
 )
 
@@ -134,7 +132,7 @@ func (ma *MagicActions) Args(args []string, prefix string) []string {
 
 	if handled {
 		finishLog(false)
-		os.Exit(0)
+		exitFunc(0)
 	}
 
 	return args
@@ -259,13 +257,13 @@ func (a resetMA) Run() error          { return a.wf.Reset() }
 
 // Opens URL in default browser.
 type helpMA struct {
-	URL string
+	wf *Workflow
 }
 
 func (a helpMA) Keyword() string     { return "help" }
 func (a helpMA) Description() string { return "Open workflow help URL in default browser" }
 func (a helpMA) RunText() string     { return "Opening help in your browser…" }
-func (a helpMA) Run() error          { return exec.Command("open", a.URL).Run() }
+func (a helpMA) Run() error          { return a.wf.OpenHelp() }
 
 // Updates the workflow if a newer release is available.
 type updateMA struct {

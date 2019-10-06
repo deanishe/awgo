@@ -6,6 +6,8 @@ package aw
 import (
 	"errors"
 	"fmt"
+	"github.com/stretchr/testify/assert"
+	"os"
 	"testing"
 )
 
@@ -117,16 +119,36 @@ func TestNonMagicArgs(t *testing.T) {
 }
 
 func TestMagicDefaults(t *testing.T) {
-	t.Parallel()
+	helpURL := "https://github.com/deanishe/awgo"
 
-	wf := New()
-	ma := wf.MagicActions
+	withTestWf(func(wf *Workflow) {
+		wf.Configure(HelpURL(helpURL))
+		ma := wf.MagicActions
 
-	x := 6
-	v := len(ma.actions)
-	if v != x {
-		t.Errorf("Bad MagicAction count. Expected=%d, Got=%d", x, v)
-	}
+		x := 6
+		v := len(ma.actions)
+		if v != x {
+			t.Errorf("Bad MagicAction count. Expected=%d, Got=%d", x, v)
+		}
+
+		tests := []struct {
+			in   string
+			name string
+			args []string
+		}{
+			{"workflow:cache", "open", []string{"open", wf.CacheDir()}},
+			{"workflow:log", "open", []string{"open", wf.LogFile()}},
+			{"workflow:data", "open", []string{"open", wf.DataDir()}},
+		}
+
+		for _, td := range tests {
+			me := &mockExec{}
+			wf.execFunc = me.Run
+			_ = wf.MagicActions.Args([]string{td.in}, "workflow:")
+			assert.Equal(t, td.name, me.name, "Unexpected command name")
+			assert.Equal(t, td.args, me.args, "Unexpected command args")
+		}
+	})
 }
 
 func TestMagicActions(t *testing.T) {
@@ -161,6 +183,46 @@ func TestMagicActions(t *testing.T) {
 			if err := ta.ValidateRun(); err != nil && td.run {
 				t.Error("Not Run")
 			}
+		})
+	}
+}
+
+// Test MagicArgs call os.Exit.
+func TestMagicExits(t *testing.T) {
+	tests := []struct {
+		in   string
+		exit bool
+	}{
+		{"prefix:", true},
+		{"prefix", false},
+	}
+
+	defer func() { exitFunc = os.Exit }()
+
+	// test wf.MagicActions
+	for _, td := range tests {
+		withTestWf(func(wf *Workflow) {
+			me := &mockExit{}
+			exitFunc = me.Exit
+			wf.MagicActions.Args([]string{td.in}, "prefix:")
+			assert.Equal(t, 0, me.code, "MagicArgs did not exit")
+		})
+	}
+
+	origArgs := os.Args[:]
+	defer func() {
+		os.Args = origArgs
+	}()
+
+	// test wf.Args
+	for _, td := range tests {
+		withTestWf(func(wf *Workflow) {
+			me := &mockExit{}
+			exitFunc = me.Exit
+			os.Args = []string{"blah", td.in}
+			wf.Configure(MagicPrefix("prefix:"))
+			wf.Args()
+			assert.Equal(t, 0, me.code, "wf.Args did not exit")
 		})
 	}
 }

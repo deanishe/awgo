@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime/debug"
 	"sync"
@@ -47,6 +48,17 @@ var (
 func init() {
 	startTime = time.Now()
 }
+
+// Mockable function to run commands
+type commandRunner func(name string, arg ...string) error
+
+// Run command via exec.Command
+func runCommand(name string, arg ...string) error {
+	return exec.Command(name, arg...).Run()
+}
+
+// Mockable exit function
+var exitFunc = os.Exit
 
 // Workflow provides a consolidated API for building Script Filters.
 //
@@ -114,6 +126,8 @@ type Workflow struct {
 	dataDir     string         // Workflow's data directory
 	sessionName string         // Name of the variable sessionID is stored in
 	sessionID   string         // Random session ID
+
+	execFunc commandRunner // Run external commands
 }
 
 // New creates and initialises a new Workflow, passing any Options to
@@ -155,6 +169,7 @@ func NewFromEnv(env Env, opts ...Option) *Workflow {
 		maxResults:  DefaultMaxResults,
 		sessionName: DefaultSessionName,
 		sortOptions: []fuzzy.Option{},
+		execFunc:    runCommand,
 	}
 
 	wf.MagicActions = defaultMagicActions(wf)
@@ -382,7 +397,8 @@ func finishLog(fatal bool) {
 	s := util.Pad(fmt.Sprintf(" %v ", elapsed), "-", 50)
 
 	if fatal {
-		log.Fatalln(s)
+		log.Println(s)
+		exitFunc(1)
 	} else {
 		log.Println(s)
 	}

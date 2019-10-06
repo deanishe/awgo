@@ -10,6 +10,8 @@ import (
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // testHost is the tagged struct tests load from and into.
@@ -130,9 +132,7 @@ func TestExtract(t *testing.T) {
 		x[bind.Name] = bind.EnvVar
 	}
 
-	if err := verifyMapsEqual(x, data); err != nil {
-		t.Fatalf("extract failed: %v", err)
-	}
+	assert.Equal(t, x, data, "extract failed")
 
 	// Field not found error
 	st := struct {

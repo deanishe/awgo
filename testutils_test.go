@@ -22,10 +22,10 @@ var (
 	tTheme                    = "alfred.theme.custom.DE3D17CA-64A2-4B42-A3F6-C71DB1201F88"
 	tThemeBackground          = "rgba(255,255,255,1.00)"
 	tThemeSelectionBackground = "rgba(255,255,255,1.00)"
-	tPreferences              = os.ExpandEnv("$HOME/Library/Application Support/Alfred 3/Alfred.alfredpreferences")
+	tPreferences              = os.ExpandEnv("$HOME/Library/Application Support/Alfred/Alfred.alfredpreferences")
 	tLocalhash                = "0dd4500828b5c675862eaa7786cf0f374823b965"
-	tCacheDir                 = os.ExpandEnv("$HOME/Library/Caches/com.runningwithcrayons.Alfred-3/Workflow Data/net.deanishe.awgo")
-	tDataDir                  = os.ExpandEnv("$HOME/Library/Application Support/Alfred 3/Workflow Data/net.deanishe.awgo")
+	tCacheDir                 = os.ExpandEnv("$HOME/Library/Caches/com.runningwithcrayons.Alfred/Workflow Data/net.deanishe.awgo")
+	tDataDir                  = os.ExpandEnv("$HOME/Library/Application Support/Alfred/Workflow Data/net.deanishe.awgo")
 
 	testEnv = MapEnv{
 		EnvVarVersion:          tVersion,
@@ -59,7 +59,7 @@ func withTempDir(fn func(dir string)) {
 }
 
 // Call function with a test environment.
-func withTestEnv(fun func(e MapEnv)) {
+func withTestEnv(fn func(e MapEnv)) {
 	e := MapEnv{
 		EnvVarVersion:          tVersion,
 		EnvVarName:             tName,
@@ -77,11 +77,11 @@ func withTestEnv(fun func(e MapEnv)) {
 		EnvVarDataDir:          tDataDir,
 	}
 
-	fun(e)
+	fn(e)
 }
 
 // Call function in a test workflow environment.
-func withTestWf(fun func(wf *Workflow)) {
+func withTestWf(fn func(wf *Workflow)) {
 
 	withTestEnv(func(e MapEnv) {
 
@@ -144,7 +144,7 @@ func withTestWf(fun func(wf *Workflow)) {
 
 		// Create workflow for current environment and pass it to function.
 		var wf = NewFromEnv(e)
-		fun(wf)
+		fn(wf)
 	})
 }
 
@@ -210,33 +210,4 @@ func slicesEqual(a, b []string) bool {
 	}
 
 	return true
-}
-
-// tests whether two maps have the same contents.
-func verifyMapsEqual(a, b map[string]string) error {
-
-	if a == nil && b == nil {
-		return nil
-	}
-
-	if a == nil || b == nil {
-		return fmt.Errorf("nil map. a=%v, b=%v", a, b)
-	}
-
-	if len(a) != len(b) {
-		return fmt.Errorf("different lengths (%d != %d)", len(a), len(b))
-	}
-
-	for k, v := range a {
-
-		v2, ok := b[k]
-		if !ok {
-			return fmt.Errorf("key %v missing in b", k)
-
-		} else if v2 != v {
-			return fmt.Errorf("%s is different: %#v != %#v", k, v, v2)
-		}
-	}
-
-	return nil
 }
