@@ -167,7 +167,7 @@ The icon is based on the [Go Gopher][gopher] by [Renee French][renee].
 [goreport-icon]: https://goreportcard.com/badge/github.com/deanishe/awgo
 [codacy-icon]: https://api.codacy.com/project/badge/Grade/e785f7b0e830468da6fa2856d62e59ab
 [codacy-link]: https://www.codacy.com/app/deanishe/awgo
-[coveralls-icon]: https://coveralls.io/repos/github/deanishe/awgo/badge.svg?branch=master&v2
+[coveralls-icon]: https://coveralls.io/repos/github/deanishe/awgo/badge.svg?branch=master&v3
 [coveralls-link]: https://coveralls.io/github/deanishe/awgo?branch=master
 [godoc-icon]: https://godoc.org/github.com/deanishe/awgo?status.svg
 [godoc-link]: https://godoc.org/github.com/deanishe/awgo
