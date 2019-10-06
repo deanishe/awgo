@@ -8,6 +8,7 @@ import (
 	"log"
 	"reflect"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -66,8 +67,15 @@ func (cfg *Config) bindVars(v interface{}) (map[string]string, error) {
 // setMulti batches the saving of multiple variables.
 func (cfg *Config) setMulti(variables map[string]string, export bool) error {
 
-	for k, v := range variables {
-		cfg.Set(k, v, export)
+	// sort keys to make the output testable
+	var keys []string
+	for k := range variables {
+		keys = append(keys, k)
+	}
+	sort.Sort(sort.StringSlice(keys))
+
+	for _, k := range keys {
+		cfg.Set(k, variables[k], export)
 	}
 
 	return cfg.Do()

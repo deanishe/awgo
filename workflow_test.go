@@ -183,15 +183,17 @@ func TestWorkflow_awDirs(t *testing.T) {
 
 // Check log is rotated
 func TestWorkflow_logRotate(t *testing.T) {
-	t.Parallel()
-
+	logInitialized = false // ensure log is created
 	withTestWf(func(wf *Workflow) {
-		log.Print("some log message")
 
-		logInitialized = false
-		wf2 := New(MaxLogSize(1))
-		wf2.cacheDir = wf.CacheDir()
-		assert.True(t, true, util.PathExists(wf2.LogFile()+".1"), "log file not rotated")
+		wf.Configure(MaxLogSize(10))
+		log.Print("more than 10 bytes")
+
+		assert.True(t, util.PathExists(wf.LogFile()), "log file does not exist")
+
+		logInitialized = false // ensure log is created
+		wf.initializeLogging()
+		assert.True(t, util.PathExists(wf.LogFile()+".1"), "log file not rotated")
 	})
 }
 

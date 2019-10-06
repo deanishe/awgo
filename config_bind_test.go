@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"reflect"
+	"sort"
 	"testing"
 	"time"
 
@@ -37,6 +38,53 @@ var (
 	testPingAverage        = 4.5
 	testFieldCount         = 7 // Number of visible, non-ignored fields in testHost
 )
+
+var (
+	privTestName     = "Hello World"
+	privTestQuoted   = `"QUOTED"`
+	privTestEmpty    = ""
+	privTestBool     = true
+	privTestDuration = time.Minute * 5
+	privTestInt      = 10
+	privTestFloat    = 6.6
+
+	privTestEnv = MapEnv{
+		"AWGO_TEST_NAME":     privTestName,
+		"AWGO_TEST_QUOTED":   privTestQuoted,
+		"AWGO_TEST_EMPTY":    privTestEmpty,
+		"AWGO_TEST_BOOL":     fmt.Sprintf("%v", privTestBool),
+		"AWGO_TEST_DURATION": fmt.Sprintf("%v", privTestDuration),
+		"AWGO_TEST_INT":      fmt.Sprintf("%d", privTestInt),
+		"AWGO_TEST_FLOAT":    fmt.Sprintf("%f", privTestFloat),
+	}
+
+	privTestSrc = struct {
+		TestName     string
+		TestQuoted   string
+		TestEmpty    string
+		TestBool     bool
+		TestDuration time.Duration
+		TestInt      int
+		TestFloat    float64
+	}{
+		TestName:     privTestName,
+		TestQuoted:   privTestQuoted,
+		TestEmpty:    privTestEmpty,
+		TestBool:     privTestBool,
+		TestDuration: privTestDuration,
+		TestInt:      privTestInt,
+		TestFloat:    privTestFloat,
+	}
+)
+
+type mockJSRunner struct {
+	script string
+}
+
+func (mj *mockJSRunner) Run(script string) error {
+	mj.script = script
+	return nil
+}
 
 // Test bindDest implementation that captures saves.
 type testDest struct {
@@ -157,7 +205,7 @@ func TestExtract(t *testing.T) {
 }
 
 // TestConfigTo verifies that a struct is correctly populated from a Config.
-func TestConfigTo(t *testing.T) {
+func TestConfig_To(t *testing.T) {
 	t.Parallel()
 
 	h := &testHost{}
@@ -202,8 +250,63 @@ func TestConfigTo(t *testing.T) {
 
 }
 
-// TestConfigFrom verifies that a bindDest is correctly populated from a (tagged) struct.
-func TestConfigFrom(t *testing.T) {
+// generated script
+func TestConfig_Do(t *testing.T) {
+
+	orig := runJS
+	defer func() { runJS = orig }()
+	mj := &mockJSRunner{}
+	runJS = mj.Run
+
+	cfg := NewConfig(MapEnv{
+		EnvVarAlfredVersion: "4.0.4",
+		EnvVarBundleID:      "net.deanishe.awgo",
+	})
+	keys := []string{}
+	for k := range privTestEnv {
+		keys = append(keys, k)
+	}
+	sort.Sort(sort.StringSlice(keys))
+	for _, k := range keys {
+		cfg.Set(k, privTestEnv[k], false)
+	}
+	if err := cfg.Do(); err != nil {
+		t.Errorf("couldn't create test env: %v", err)
+	}
+
+	x := `Application("com.runningwithcrayons.Alfred").setConfiguration("AWGO_TEST_BOOL", {"exportable":false,"inWorkflow":"net.deanishe.awgo","toValue":"true"});
+Application("com.runningwithcrayons.Alfred").setConfiguration("AWGO_TEST_DURATION", {"exportable":false,"inWorkflow":"net.deanishe.awgo","toValue":"5m0s"});
+Application("com.runningwithcrayons.Alfred").setConfiguration("AWGO_TEST_EMPTY", {"exportable":false,"inWorkflow":"net.deanishe.awgo","toValue":""});
+Application("com.runningwithcrayons.Alfred").setConfiguration("AWGO_TEST_FLOAT", {"exportable":false,"inWorkflow":"net.deanishe.awgo","toValue":"6.600000"});
+Application("com.runningwithcrayons.Alfred").setConfiguration("AWGO_TEST_INT", {"exportable":false,"inWorkflow":"net.deanishe.awgo","toValue":"10"});
+Application("com.runningwithcrayons.Alfred").setConfiguration("AWGO_TEST_NAME", {"exportable":false,"inWorkflow":"net.deanishe.awgo","toValue":"Hello World"});
+Application("com.runningwithcrayons.Alfred").setConfiguration("AWGO_TEST_QUOTED", {"exportable":false,"inWorkflow":"net.deanishe.awgo","toValue":"\"QUOTED\""});`
+	assert.Equal(t, x, mj.script, "bad script")
+
+	// no scripts, should return error
+	if err := cfg.Do(); err == nil {
+		t.Error("empty scripts didn't return error")
+	}
+
+	for _, k := range keys {
+		cfg.Unset(k)
+	}
+	if err := cfg.Do(); err != nil {
+		t.Errorf("couldn't delete test env: %v", err)
+	}
+
+	x = `Application("com.runningwithcrayons.Alfred").removeConfiguration("AWGO_TEST_BOOL", {"inWorkflow":"net.deanishe.awgo"});
+Application("com.runningwithcrayons.Alfred").removeConfiguration("AWGO_TEST_DURATION", {"inWorkflow":"net.deanishe.awgo"});
+Application("com.runningwithcrayons.Alfred").removeConfiguration("AWGO_TEST_EMPTY", {"inWorkflow":"net.deanishe.awgo"});
+Application("com.runningwithcrayons.Alfred").removeConfiguration("AWGO_TEST_FLOAT", {"inWorkflow":"net.deanishe.awgo"});
+Application("com.runningwithcrayons.Alfred").removeConfiguration("AWGO_TEST_INT", {"inWorkflow":"net.deanishe.awgo"});
+Application("com.runningwithcrayons.Alfred").removeConfiguration("AWGO_TEST_NAME", {"inWorkflow":"net.deanishe.awgo"});
+Application("com.runningwithcrayons.Alfred").removeConfiguration("AWGO_TEST_QUOTED", {"inWorkflow":"net.deanishe.awgo"});`
+	assert.Equal(t, x, mj.script, "bad script")
+}
+
+// verify that a bindDest is correctly populated from a (tagged) struct.
+func TestConfig_From(t *testing.T) {
 	t.Parallel()
 
 	e := MapEnv{
@@ -301,8 +404,34 @@ func TestConfigFrom(t *testing.T) {
 	testBind(th, x)
 }
 
-// TestVarName tests the envvar name algorithm.
-func TestVarName(t *testing.T) {
+// generated script
+func TestConfig_From_script(t *testing.T) {
+
+	orig := runJS
+	defer func() { runJS = orig }()
+	mj := &mockJSRunner{}
+	runJS = mj.Run
+
+	cfg := NewConfig(MapEnv{
+		EnvVarAlfredVersion: "4.0.4",
+		EnvVarBundleID:      "net.deanishe.awgo",
+	})
+
+	if err := cfg.From(privTestSrc); err != nil {
+		t.Fatal(err)
+	}
+
+	x := `Application("com.runningwithcrayons.Alfred").setConfiguration("TEST_BOOL", {"exportable":false,"inWorkflow":"net.deanishe.awgo","toValue":"true"});
+Application("com.runningwithcrayons.Alfred").setConfiguration("TEST_DURATION", {"exportable":false,"inWorkflow":"net.deanishe.awgo","toValue":"5m0s"});
+Application("com.runningwithcrayons.Alfred").setConfiguration("TEST_FLOAT", {"exportable":false,"inWorkflow":"net.deanishe.awgo","toValue":"6.6"});
+Application("com.runningwithcrayons.Alfred").setConfiguration("TEST_INT", {"exportable":false,"inWorkflow":"net.deanishe.awgo","toValue":"10"});
+Application("com.runningwithcrayons.Alfred").setConfiguration("TEST_NAME", {"exportable":false,"inWorkflow":"net.deanishe.awgo","toValue":"Hello World"});
+Application("com.runningwithcrayons.Alfred").setConfiguration("TEST_QUOTED", {"exportable":false,"inWorkflow":"net.deanishe.awgo","toValue":"\"QUOTED\""});`
+	assert.Equal(t, x, mj.script, "bad script")
+}
+
+// envvar name algorithm.
+func TestEnvVarForField(t *testing.T) {
 	t.Parallel()
 	data := []struct {
 		in, out string
