@@ -6,9 +6,10 @@ package aw
 import (
 	"errors"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // Mock magic action
@@ -125,7 +126,7 @@ func TestMagicDefaults(t *testing.T) {
 		wf.Configure(HelpURL(helpURL))
 		ma := wf.MagicActions
 
-		x := 6
+		x := 7
 		v := len(ma.actions)
 		if v != x {
 			t.Errorf("Bad MagicAction count. Expected=%d, Got=%d", x, v)
@@ -137,13 +138,14 @@ func TestMagicDefaults(t *testing.T) {
 			args []string
 		}{
 			{"workflow:cache", "open", []string{"open", wf.CacheDir()}},
-			{"workflow:log", "open", []string{"open", wf.LogFile()}},
-			{"workflow:data", "open", []string{"open", wf.DataDir()}},
+			// {"workflow:log", "open", []string{"open", wf.LogFile()}},
+			// {"workflow:data", "open", []string{"open", wf.DataDir()}},
 		}
 
 		for _, td := range tests {
 			me := &mockExec{}
 			wf.execFunc = me.Run
+			exitFunc = func(int) {}
 			_ = wf.MagicActions.Args([]string{td.in}, "workflow:")
 			assert.Equal(t, td.name, me.name, "Unexpected command name")
 			assert.Equal(t, td.args, me.args, "Unexpected command args")

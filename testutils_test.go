@@ -45,6 +45,25 @@ var (
 	}
 )
 
+// Mock os.Exit
+type mockExit struct {
+	code int
+}
+
+func (me *mockExit) Exit(code int) { me.code = code }
+
+// Mock exec.Command
+type mockExec struct {
+	name string
+	args []string
+}
+
+func (me *mockExec) Run(name string, arg ...string) error {
+	me.name = name
+	me.args = append([]string{name}, arg...)
+	return nil
+}
+
 // create a temporary directory, call function fn, delete the directory.
 func withTempDir(fn func(dir string)) {
 	p, err := ioutil.TempDir("", "awgo-")

@@ -14,12 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type mockExit struct {
-	code int
-}
-
-func (me *mockExit) Exit(code int) { me.code = code }
-
 // TestWorkflowValues tests workflow name, bundle ID etc.
 func TestWorkflowValues(t *testing.T) {
 	t.Parallel()
@@ -109,7 +103,6 @@ func TestOptions(t *testing.T) {
 }
 
 func TestWorkflowRun(t *testing.T) {
-	t.Parallel()
 
 	withTestWf(func(wf *Workflow) {
 

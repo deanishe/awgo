@@ -10,17 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type mockExec struct {
-	name string
-	args []string
-}
-
-func (me *mockExec) Run(name string, arg ...string) error {
-	me.name = name
-	me.args = append([]string{name}, arg...)
-	return nil
-}
-
 func TestReset(t *testing.T) {
 	withTestWf(func(wf *Workflow) {
 		s := wf.Dir()
