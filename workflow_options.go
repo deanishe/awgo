@@ -38,9 +38,9 @@ func HelpURL(URL string) Option {
 		prev := wf.helpURL
 		ma := &helpMA{wf}
 		if URL != "" {
-			wf.MagicActions.Register(ma)
+			wf.magicActions.register(ma)
 		} else {
-			wf.MagicActions.Unregister(ma)
+			wf.magicActions.unregister(ma)
 		}
 		wf.helpURL = URL
 		return HelpURL(prev)
@@ -176,7 +176,7 @@ func Update(updater Updater) Option {
 func AddMagic(actions ...MagicAction) Option {
 	return func(wf *Workflow) Option {
 		for _, action := range actions {
-			wf.MagicActions.Register(action)
+			wf.magicActions.register(action)
 		}
 		return RemoveMagic(actions...)
 	}
@@ -187,7 +187,7 @@ func AddMagic(actions ...MagicAction) Option {
 // See the MagicAction interface for more information.
 func RemoveMagic(actions ...MagicAction) Option {
 	return func(wf *Workflow) Option {
-		wf.MagicActions.Unregister(actions...)
+		wf.magicActions.unregister(actions...)
 		return AddMagic(actions...)
 	}
 }

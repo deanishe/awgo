@@ -10,10 +10,6 @@ import (
 	"strings"
 )
 
-const (
-	numbers = "0123456789"
-)
-
 // SemVers implements sort.Interface for SemVer.
 type SemVers []SemVer
 
@@ -56,7 +52,7 @@ func NewSemVer(s string) (SemVer, error) {
 	var build, pre string
 	s = strings.TrimSpace(s)
 	if len(s) == 0 {
-		return SemVer{}, fmt.Errorf("Empty version string: %q", s)
+		return SemVer{}, fmt.Errorf("empty version string: %q", s)
 	}
 	// Remove "v" prefix and extend short versions to full length.
 	s = strings.TrimPrefix(s, "v")
@@ -69,7 +65,7 @@ func NewSemVer(s string) (SemVer, error) {
 		s, pre = s[:i], s[i+1:]
 	}
 
-	parts := strings.SplitN(s, ".", 3)
+	parts := strings.SplitN(s, ".", -1)
 	for len(parts) < 3 { // Pad version
 		parts = append(parts, "0")
 	}
@@ -79,33 +75,24 @@ func NewSemVer(s string) (SemVer, error) {
 	}
 
 	// Major
-	if !containsOnly(parts[0], numbers) {
-		return SemVer{}, fmt.Errorf("Invalid char(s) in major number %q", parts[0])
-	}
 	if hasLeadingZeroes(parts[0]) {
-		return SemVer{}, fmt.Errorf("Major version may not contain leading zeroes: %q", parts[0])
+		return SemVer{}, fmt.Errorf("major version may not contain leading zeroes: %q", parts[0])
 	}
 	major, err := strconv.ParseUint(parts[0], 10, 64)
 	if err != nil {
-		return SemVer{}, fmt.Errorf("Invalid major version %q: %s", parts[0], err)
+		return SemVer{}, fmt.Errorf("invalid major version %q: %s", parts[0], err)
 	}
 
 	// Minor
-	if !containsOnly(parts[1], numbers) {
-		return SemVer{}, fmt.Errorf("Invalid char(s) in minor number %q", parts[1])
-	}
 	minor, err = strconv.ParseUint(parts[1], 10, 64)
 	if err != nil {
-		return SemVer{}, fmt.Errorf("Invalid minor version %q: %s", parts[1], err)
+		return SemVer{}, fmt.Errorf("invalid minor version %q: %s", parts[1], err)
 	}
 
 	// Patch
-	if !containsOnly(parts[2], numbers) {
-		return SemVer{}, fmt.Errorf("Invalid char(s) in minor number %q", parts[2])
-	}
 	patch, err = strconv.ParseUint(parts[2], 10, 64)
 	if err != nil {
-		return SemVer{}, fmt.Errorf("Invalid patch version %q: %s", parts[2], err)
+		return SemVer{}, fmt.Errorf("invalid patch version %q: %s", parts[2], err)
 	}
 
 	return SemVer{
@@ -190,12 +177,6 @@ func (v SemVer) Lte(v2 SemVer) bool { return v.Compare(v2) <= 0 }
 
 // IsZero returns true if SemVer has no value.
 func (v SemVer) IsZero() bool { return v.Eq(SemVer{}) }
-
-func containsOnly(s, allowed string) bool {
-	return strings.IndexFunc(s, func(r rune) bool {
-		return !strings.ContainsRune(allowed, r)
-	}) == -1
-}
 
 func hasLeadingZeroes(s string) bool {
 	return s[0] == '0' && len(s) > 1

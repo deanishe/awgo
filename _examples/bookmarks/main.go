@@ -44,7 +44,7 @@ func init() {
 func run() {
 	var query string
 
-	// Use wf.Args() to enable Magic Actions
+	// Use wf.args() to enable Magic Actions
 	if args := wf.Args(); len(args) > 0 {
 		query = args[0]
 	}

@@ -109,10 +109,6 @@ func withTestWf(fn func(wf *Workflow)) {
 			err error
 		)
 
-		// if curdir, err = os.Getwd(); err != nil {
-		// 	panic(err)
-		// }
-
 		if dir, err = ioutil.TempDir("", "awgo-"); err != nil {
 			panic(err)
 		}
@@ -128,38 +124,20 @@ func withTestWf(fn func(wf *Workflow)) {
 		}()
 
 		var (
-			// wfdir    = filepath.Join(dir, "workflow")
-			datadir  = filepath.Join(dir, "data")
-			cachedir = filepath.Join(dir, "cache")
-			// ipfile   = filepath.Join(wfdir, "info.plist")
+			dataDir  = filepath.Join(dir, "data")
+			cacheDir = filepath.Join(dir, "cache")
 		)
 
 		// Update env to point to cache & data dirs
-		e[EnvVarCacheDir] = cachedir
-		e[EnvVarDataDir] = datadir
+		e[EnvVarCacheDir] = cacheDir
+		e[EnvVarDataDir] = dataDir
 
 		// Create test files & directories
-		for _, p := range []string{datadir, cachedir} {
+		for _, p := range []string{dataDir, cacheDir} {
 			if err := os.MkdirAll(p, os.ModePerm); err != nil {
 				panic(err)
 			}
 		}
-		/*
-			// info.plist
-			if err := ioutil.WriteFile(ipfile, []byte(tInfoPlist), os.ModePerm); err != nil {
-				panic(err)
-			}
-
-			// Change to workflow directory and call function from there.
-			if err := os.Chdir(wfdir); err != nil {
-				panic(err)
-			}
-			defer func() {
-				if err := os.Chdir(curdir); err != nil {
-					panic(err)
-				}
-			}()
-		*/
 
 		// Create workflow for current environment and pass it to function.
 		var wf = NewFromEnv(e)
@@ -205,28 +183,4 @@ func TestWithTestWf(t *testing.T) {
 		}
 
 	})
-}
-
-// slicesEqual tests if 2 string slices are equal.
-func slicesEqual(a, b []string) bool {
-
-	if a == nil && b == nil {
-		return true
-	}
-
-	if a == nil || b == nil {
-		return false
-	}
-
-	if len(a) != len(b) {
-		return false
-	}
-
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-
-	return true
 }

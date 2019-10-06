@@ -47,7 +47,7 @@ func (a *mockMA) Run() error {
 }
 
 // Returns an error if the MA wasn't "shown".
-// That means MagicActions didn't show a list of actions.
+// That means magicActions didn't show a list of actions.
 func (a *mockMA) ValidateShown() error {
 
 	if !a.keyCalled {
@@ -104,7 +104,7 @@ func TestNonMagicArgs(t *testing.T) {
 	for _, td := range data {
 
 		wf := New()
-		ma := wf.MagicActions
+		ma := wf.magicActions
 
 		args, handled := ma.handleArgs(td.in, DefaultMagicPrefix)
 
@@ -112,9 +112,7 @@ func TestNonMagicArgs(t *testing.T) {
 			t.Error("handled")
 		}
 
-		if !slicesEqual(args, td.x) {
-			t.Errorf("not equal. Expected=%v, Got=%v", td.x, args)
-		}
+		assert.Equal(t, td.x, args, "unexpected non-magic arguments")
 	}
 
 }
@@ -124,7 +122,7 @@ func TestMagicDefaults(t *testing.T) {
 
 	withTestWf(func(wf *Workflow) {
 		wf.Configure(HelpURL(helpURL))
-		ma := wf.MagicActions
+		ma := wf.magicActions
 
 		x := 7
 		v := len(ma.actions)
@@ -138,15 +136,16 @@ func TestMagicDefaults(t *testing.T) {
 			args []string
 		}{
 			{"workflow:cache", "open", []string{"open", wf.CacheDir()}},
-			// {"workflow:log", "open", []string{"open", wf.LogFile()}},
-			// {"workflow:data", "open", []string{"open", wf.DataDir()}},
+			{"workflow:log", "open", []string{"open", wf.LogFile()}},
+			{"workflow:data", "open", []string{"open", wf.DataDir()}},
+			{"workflow:help", "open", []string{"open", helpURL}},
 		}
 
 		for _, td := range tests {
 			me := &mockExec{}
 			wf.execFunc = me.Run
 			exitFunc = func(int) {}
-			_ = wf.MagicActions.Args([]string{td.in}, "workflow:")
+			_ = wf.magicActions.args([]string{td.in}, "workflow:")
 			assert.Equal(t, td.name, me.name, "Unexpected command name")
 			assert.Equal(t, td.args, me.args, "Unexpected command args")
 		}
@@ -154,31 +153,27 @@ func TestMagicDefaults(t *testing.T) {
 }
 
 func TestMagicActions(t *testing.T) {
-	t.Parallel()
 
 	tests := []struct {
-		in      string
-		handled bool
-		shown   bool
-		run     bool
+		in    string
+		shown bool
+		run   bool
 	}{
-		{"workflow:tes", true, true, false},
-		{"workflow:test", true, false, false},
+		{"workflow:tes", true, false},
+		{"workflow:test", false, true},
+		//{"workflow:test", true, false, true},
 	}
 
 	for _, td := range tests {
 		td := td // capture variable
 		t.Run(fmt.Sprintf("MagicAction(%q)", td.in), func(t *testing.T) {
-			t.Parallel()
 			var (
 				wf = New()
 				ta = &mockMA{}
 			)
-			wf.MagicActions.Register(ta)
-			_, v := wf.MagicActions.handleArgs([]string{td.in}, DefaultMagicPrefix)
-			if v != td.handled {
-				t.Errorf("Bad Handled. Expected=%v, Got=%v", td.handled, v)
-			}
+			exitFunc = func(int) {}
+			wf.magicActions.register(ta)
+			_ = wf.magicActions.args([]string{td.in}, DefaultMagicPrefix)
 			if err := ta.ValidateShown(); err != nil && td.shown {
 				t.Error("Not Shown")
 			}
@@ -201,12 +196,12 @@ func TestMagicExits(t *testing.T) {
 
 	defer func() { exitFunc = os.Exit }()
 
-	// test wf.MagicActions
+	// test wf.magicActions
 	for _, td := range tests {
 		withTestWf(func(wf *Workflow) {
 			me := &mockExit{}
 			exitFunc = me.Exit
-			wf.MagicActions.Args([]string{td.in}, "prefix:")
+			wf.magicActions.args([]string{td.in}, "prefix:")
 			assert.Equal(t, 0, me.code, "MagicArgs did not exit")
 		})
 	}
@@ -216,7 +211,7 @@ func TestMagicExits(t *testing.T) {
 		os.Args = origArgs
 	}()
 
-	// test wf.Args
+	// test wf.args
 	for _, td := range tests {
 		withTestWf(func(wf *Workflow) {
 			me := &mockExit{}
@@ -224,7 +219,7 @@ func TestMagicExits(t *testing.T) {
 			os.Args = []string{"blah", td.in}
 			wf.Configure(MagicPrefix("prefix:"))
 			wf.Args()
-			assert.Equal(t, 0, me.code, "wf.Args did not exit")
+			assert.Equal(t, 0, me.code, "wf.args did not exit")
 		})
 	}
 }
@@ -236,7 +231,7 @@ func TestMagicUpdate(t *testing.T) {
 	u := &mockUpdater{}
 	// Workflow automatically adds a MagicAction to call the Updater
 	wf := New(Update(u))
-	ma := wf.MagicActions
+	ma := wf.magicActions
 
 	// Incomplete keyword = search query
 	_, v := ma.handleArgs([]string{"workflow:upda"}, DefaultMagicPrefix)

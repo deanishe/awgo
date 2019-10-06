@@ -73,8 +73,6 @@ var (
 )
 
 func TestUpdater(t *testing.T) {
-	t.Parallel()
-
 	withTempDir(func(dir string) {
 
 		u, err := NewUpdater(testSrc1, "0.2.2", dir)
@@ -100,6 +98,12 @@ func TestUpdater(t *testing.T) {
 		u.CurrentVersion = mustVersion("0.4.5")
 		if !u.UpdateAvailable() {
 			t.Fatal("Bad update #4")
+		}
+
+		// Empty cache directory
+		u, err = NewUpdater(testSrc1, "0.2.2", "")
+		if err == nil {
+			t.Fatal("Updater accepted empty cacheDir")
 		}
 	})
 }
@@ -239,6 +243,22 @@ func TestHTTPClient(t *testing.T) {
 		ts.Close()
 	})
 
+	t.Run("HTTP(fail)", func(t *testing.T) {
+		t.Parallel()
+
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			http.NotFound(w, r)
+		}))
+		URL := ts.URL
+		ts.Close()
+
+		_, err := getURL(URL)
+		if err == nil {
+			t.Errorf("bad request succeeded")
+		}
+		ts.Close()
+	})
+
 	t.Run("HTTP(download)", func(t *testing.T) {
 		t.Parallel()
 
@@ -265,6 +285,21 @@ func TestHTTPClient(t *testing.T) {
 		s := string(data)
 		if s != "contents\n" {
 			t.Errorf("Expected=%q, Got=%q", "contents\n", s)
+		}
+	})
+
+	t.Run("HTTP(download fails)", func(t *testing.T) {
+		t.Parallel()
+
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintln(w, "contents")
+		}))
+		URL := ts.URL
+		ts.Close()
+
+		err := download(URL, "")
+		if err == nil {
+			t.Fatal("Bad download didn't return error")
 		}
 	})
 }

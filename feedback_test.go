@@ -118,6 +118,9 @@ func TestMarshalItem(t *testing.T) {
 		// With match
 		{in: &Item{title: "title", match: p("one two three")},
 			x: `{"title":"title","match":"one two three","valid":false}`},
+		// With quicklook
+		{in: &Item{title: "title", ql: p("http://www.example.com")},
+			x: `{"title":"title","valid":false,"quicklookurl":"http://www.example.com"}`},
 	}
 
 	for i, td := range tests {

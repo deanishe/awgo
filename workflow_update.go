@@ -23,7 +23,7 @@ type Updater interface {
 // setUpdater sets an updater for the workflow.
 func (wf *Workflow) setUpdater(u Updater) {
 	wf.Updater = u
-	wf.MagicActions.Register(&updateMA{wf.Updater})
+	wf.magicActions.register(&updateMA{wf.Updater})
 }
 
 // UpdateCheckDue returns true if an update is available.

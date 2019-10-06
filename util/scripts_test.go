@@ -15,8 +15,8 @@ func TestExecutableRunner(t *testing.T) {
 	t.Parallel()
 
 	data := []struct {
-		in string
-		x  bool
+		in    string
+		valid bool
 	}{
 		{"", false},
 		{"non-existent", false},
@@ -39,8 +39,16 @@ func TestExecutableRunner(t *testing.T) {
 		t.Run(fmt.Sprintf("CanRun(%s)", td.in), func(t *testing.T) {
 			t.Parallel()
 			v := r.CanRun(td.in)
-			if v != td.x {
-				t.Errorf("Bad CanRun for %#v. Expected=%v, Got=%v", td.in, td.x, v)
+			if v != td.valid {
+				t.Errorf("Bad CanRun for %#v. Expected=%v, Got=%v", td.in, td.valid, v)
+			}
+			// Also test runners
+			cmd := runners.Cmd(td.in)
+			if td.valid && cmd == nil {
+				t.Errorf("Bad Cmd for %#v. Expected=*exec.Cmd, Got=nil", td.in)
+			}
+			if !td.valid && cmd != nil {
+				t.Errorf("Bad Cmd for %#v. Expected=nil, Got=*exec.Cmd", td.in)
 			}
 		})
 	}

@@ -9,31 +9,13 @@ import (
 	"strings"
 )
 
-// defaultMagicActions creates a MagicActions with the default actions
-// already registered.
-func defaultMagicActions(wf *Workflow) *MagicActions {
-	ma := &MagicActions{
-		actions: map[string]MagicAction{},
-		wf:      wf,
-	}
-	ma.Register(
-		logMA{wf},
-		cacheMA{wf},
-		clearCacheMA{wf},
-		dataMA{wf},
-		clearDataMA{wf},
-		resetMA{wf},
-	)
-	return ma
-}
-
 /*
 MagicAction is a command that is called directly by AwGo (i.e.  your workflow
 code is not run) if its keyword is passed in a user query.
 
-To use Magic Actions, it's imperative that your workflow call Workflow.Args().
+To use Magic Actions, it's imperative that your workflow call Workflow.args().
 
-Calls to Workflow.Args() check the workflow's arguments (os.Args[1:])
+Calls to Workflow.args() check the workflow's arguments (os.args[1:])
 for the magic prefix ("workflow:" by default), and hijack control of the
 workflow if found.
 
@@ -74,8 +56,8 @@ default:
 
 Custom Actions
 
-To add custom MagicActions, you must register them with your Workflow
-*before* you call Workflow.Args()
+To add custom magicActions, you must register them with your Workflow
+*before* you call Workflow.args()
 
 To do this, configure Workflow with the AddMagic option.
 
@@ -99,34 +81,34 @@ type MagicAction interface {
 	Run() error
 }
 
-// MagicActions contains the registered magic actions. See the MagicAction
+// magicActions contains the registered magic actions. See the MagicAction
 // interface for full documentation.
-type MagicActions struct {
+type magicActions struct {
 	actions map[string]MagicAction
 	wf      *Workflow
 }
 
-// Register adds a MagicAction to the mapping. Previous entries are overwritten.
-func (ma *MagicActions) Register(actions ...MagicAction) {
+// register adds a MagicAction to the mapping. Previous entries are overwritten.
+func (ma *magicActions) register(actions ...MagicAction) {
 	for _, action := range actions {
 		ma.actions[action.Keyword()] = action
 	}
 }
 
-// Unregister removes a MagicAction from the mapping (based on its keyword).
-func (ma *MagicActions) Unregister(actions ...MagicAction) {
+// unregister removes a MagicAction from the mapping (based on its keyword).
+func (ma *magicActions) unregister(actions ...MagicAction) {
 	for _, action := range actions {
 		delete(ma.actions, action.Keyword())
 	}
 }
 
-// Args runs a magic action or returns command-line arguments.
+// args runs a magic action or returns command-line arguments.
 // It parses args for magic actions. If it finds one, it takes
 // control of your workflow and runs the action. Control is
 // not returned to your code.
 //
 // If no magic actions are found, it returns args.
-func (ma *MagicActions) Args(args []string, prefix string) []string {
+func (ma *magicActions) args(args []string, prefix string) []string {
 
 	args, handled := ma.handleArgs(args, prefix)
 
@@ -136,12 +118,11 @@ func (ma *MagicActions) Args(args []string, prefix string) []string {
 	}
 
 	return args
-
 }
 
 // handleArgs checks args for the magic prefix. Returns args and true if
 // it found and handled a magic argument.
-func (ma *MagicActions) handleArgs(args []string, prefix string) ([]string, bool) {
+func (ma *magicActions) handleArgs(args []string, prefix string) ([]string, bool) {
 
 	var handled bool
 

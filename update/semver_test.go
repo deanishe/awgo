@@ -25,7 +25,9 @@ func TestVersionValid(t *testing.T) {
 		{"1.0.0.0", "", false},
 		{"01", "", false},
 		{"01.2.3", "", false},
-
+		{"blah.2.3", "", false},
+		{"1.blah.3", "", false},
+		{"1.2.blah", "", false},
 		// valid versions
 		{"1", "1.0.0", true},
 		{"1.0.0", "1.0.0", true},
@@ -89,6 +91,7 @@ func TestVersionCompare(t *testing.T) {
 		{"1", "1.0", 0},
 		{"1.1.0", "1.0", 1},
 		{"1.1.0", "1.2", -1},
+		{"1.1.0", "1.1.1", -1},
 		{"1.1.0-alpha", "1.1.0", -1},
 		{"1.1.0-beta", "1.1.0-alpha", 1},
 		{"1.1.0-alpha", "1.1.0-alpha", 0},

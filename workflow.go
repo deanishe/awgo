@@ -109,10 +109,10 @@ type Workflow struct {
 	// Updater fetches updates for the workflow.
 	Updater Updater
 
-	// MagicActions contains the magic actions registered for this workflow.
+	// magicActions contains the magic actions registered for this workflow.
 	// Several built-in actions are registered by default. See the docs for
 	// MagicAction for details.
-	MagicActions *MagicActions
+	magicActions *magicActions
 
 	logPrefix   string         // Written to debugger to force a newline
 	maxLogSize  int            // Maximum size of log file in bytes
@@ -172,7 +172,20 @@ func NewFromEnv(env Env, opts ...Option) *Workflow {
 		execFunc:    runCommand,
 	}
 
-	wf.MagicActions = defaultMagicActions(wf)
+	wf.magicActions = &magicActions{
+		actions: map[string]MagicAction{},
+		wf:      wf,
+	}
+
+	// default magic actions
+	wf.Configure(AddMagic(
+		logMA{wf},
+		cacheMA{wf},
+		clearCacheMA{wf},
+		dataMA{wf},
+		clearDataMA{wf},
+		resetMA{wf},
+	))
 
 	wf.Configure(opts...)
 
@@ -290,7 +303,7 @@ func (wf *Workflow) SessionID() string {
 // Debug returns true if Alfred's debugger is open.
 func (wf *Workflow) Debug() bool { return wf.Config.GetBool(EnvVarDebug) }
 
-// Args returns command-line arguments passed to the program.
+// args returns command-line arguments passed to the program.
 // It intercepts "magic args" and runs the corresponding actions, terminating
 // the workflow. See MagicAction for full documentation.
 func (wf *Workflow) Args() []string {
@@ -298,7 +311,7 @@ func (wf *Workflow) Args() []string {
 	if wf.magicPrefix != "" {
 		prefix = wf.magicPrefix
 	}
-	return wf.MagicActions.Args(os.Args[1:], prefix)
+	return wf.magicActions.args(os.Args[1:], prefix)
 }
 
 // Run runs your workflow function, catching any errors.

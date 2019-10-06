@@ -46,6 +46,11 @@ func TestRunInBackground(t *testing.T) {
 	if err := wf.Kill("sleep"); err != nil {
 		t.Fatalf("Error killing 'sleep' job: %s", err)
 	}
+	// Job kill fails
+	if err := wf.Kill("sleep"); err == nil {
+		t.Fatal("No error killing 'sleep' job")
+	}
+
 	if wf.IsRunning("sleep") {
 		t.Fatal("'sleep' job still running")
 	}

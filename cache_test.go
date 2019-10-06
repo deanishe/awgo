@@ -108,7 +108,7 @@ func TestLoadOrStore(t *testing.T) {
 	withTempDir(func(dir string) {
 		c := NewCache(dir)
 		n := "test.txt"
-		maxAge := time.Duration(time.Second * 1)
+		maxAge := time.Duration(time.Millisecond * 50)
 
 		// Sanity checks
 		p := c.path(n)
@@ -158,7 +158,7 @@ func TestLoadOrStore(t *testing.T) {
 			t.Errorf("reload was called")
 		}
 
-		time.Sleep(time.Duration(time.Second * 1))
+		time.Sleep(time.Duration(time.Millisecond * 100))
 
 		if !c.Expired(n, maxAge) {
 			t.Errorf("cache hasn't expired")
@@ -259,7 +259,7 @@ func TestLoadOrStoreJSON(t *testing.T) {
 	withTempDir(func(dir string) {
 		n := "test.json"
 		c := NewCache(dir)
-		maxAge := time.Duration(time.Second * 1)
+		maxAge := time.Duration(time.Millisecond * 50)
 
 		// Sanity checks
 		p := c.path(n)
@@ -315,7 +315,7 @@ func TestLoadOrStoreJSON(t *testing.T) {
 			t.Errorf("reload was called")
 		}
 
-		time.Sleep(time.Duration(time.Second * 1))
+		time.Sleep(time.Duration(time.Millisecond * 100))
 
 		if !c.Expired(n, maxAge) {
 			t.Errorf("cache hasn't expired")

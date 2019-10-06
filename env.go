@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// Env is the datasource for configuration lookups.
+// Env is the data source for configuration lookups.
 //
 // Pass a custom implementation to NewFromEnv() to provide a custom
 // source for the required workflow configuration settings.

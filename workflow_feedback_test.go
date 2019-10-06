@@ -5,6 +5,7 @@ package aw
 
 import (
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
 	"os"
 	"path/filepath"
 	"strings"
@@ -77,4 +78,12 @@ func TestNewFileItem(t *testing.T) {
 	if it.icon.Value != ipPath {
 		t.Fatalf("Incorrect Value: %v", it.icon.Value)
 	}
+}
+
+// WarnEmpty adds an item
+func TestWarnEmpty(t *testing.T) {
+	wf := New()
+	assert.Equal(t, 0, len(wf.Feedback.Items), "feedback not empty")
+	wf.WarnEmpty("test", "test")
+	assert.Equal(t, 1, len(wf.Feedback.Items), "feedback empty")
 }

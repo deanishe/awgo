@@ -6,6 +6,7 @@ package aw
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"testing"
@@ -81,11 +82,11 @@ func TestOptions(t *testing.T) {
 			"Set TextErrors"},
 		{
 			AddMagic(&mockMA{}),
-			func(wf *Workflow) bool { return wf.MagicActions.actions["test"] != nil },
+			func(wf *Workflow) bool { return wf.magicActions.actions["test"] != nil },
 			"Add Magic"},
 		{
 			RemoveMagic(logMA{}),
-			func(wf *Workflow) bool { return wf.MagicActions.actions["log"] == nil },
+			func(wf *Workflow) bool { return wf.magicActions.actions["log"] == nil },
 			"Remove Magic"},
 	}
 
@@ -174,6 +175,18 @@ func TestAwDirs(t *testing.T) {
 		p = wf.awDataDir()
 		assert.True(t, util.PathExists(p), "AW data dir does not exist")
 		assert.True(t, strings.HasSuffix(p, "_aw"), "AW data is not called '_aw'")
+	})
+}
+
+// Check log is rotated
+func TestLogRotate(t *testing.T) {
+	withTestWf(func(wf *Workflow) {
+		log.Print("some log message")
+
+		wf2 := New(MaxLogSize(1))
+		wf2.cacheDir = wf.CacheDir()
+		p := wf2.LogFile() + ".1"
+		assert.True(t, true, util.PathExists(p), "log file not rotated")
 	})
 }
 
