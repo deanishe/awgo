@@ -63,7 +63,7 @@ run-tests.sh [options] [<module>...]
 Run unit tests in a workflow-like environment.
 
 Usage:
-    run-tests.sh [-v|-V] [-c] [-i] [-g] [-H]
+    run-tests.sh [-v|-V] [-c] [-C] [-i] [-g]
     run-tests.sh [-g] -r
     run-tests.sh -h
 
@@ -137,7 +137,9 @@ export alfred_workflow_cache="${testdir}/cache"
 
 st=0
 $runtests && {
-  go test $gopts $pkgs
+#  go test $gopts $pkgs
+  go test -cover -json $gopts $pkgs | go run github.com/mfridman/tparse
+#  gotestsum -- $gopts $pkgs
   st=$?
 
   [[ $st -eq 0 ]] && {

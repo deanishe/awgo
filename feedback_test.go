@@ -70,7 +70,7 @@ func TestItem_MarshalJSON(t *testing.T) {
 		// Alternate subtitle
 		{in: &Item{title: "title", subtitle: p("subtitle"),
 			mods: map[ModKey]*Modifier{
-				"cmd": &Modifier{
+				"cmd": {
 					Key:      "cmd",
 					subtitle: p("command sub")}}},
 			x: `{"title":"title","subtitle":"subtitle",` +

@@ -19,52 +19,52 @@ import (
 // v9.0 contains only a .alfred4workflow file.
 var testGitHubDownloads = []Download{
 	// Latest version for Alfred 4
-	Download{
+	{
 		URL:        "https://github.com/deanishe/alfred-workflow-dummy/releases/download/v10.0-beta/Dummy-10.0-beta.alfredworkflow",
 		Filename:   "Dummy-10.0-beta.alfredworkflow",
 		Version:    mustVersion("v10.0-beta"),
 		Prerelease: true,
 	},
 	// Latest stable version for Alfred 4
-	Download{
+	{
 		URL:        "https://github.com/deanishe/alfred-workflow-dummy/releases/download/v9.0/Dummy-9.0.alfred4workflow",
 		Filename:   "Dummy-9.0.alfred4workflow",
 		Version:    mustVersion("v9.0"),
 		Prerelease: false,
 	},
 	// Latest version for Alfred 3
-	Download{
+	{
 		URL:        "https://github.com/deanishe/alfred-workflow-dummy/releases/download/v7.1.0-beta/Dummy-7.1-beta.alfredworkflow",
 		Filename:   "Dummy-7.1-beta.alfredworkflow",
 		Version:    mustVersion("v7.1.0-beta"),
 		Prerelease: true,
 	},
 	// Latest stable version for Alfred 3
-	Download{
+	{
 		URL:        "https://github.com/deanishe/alfred-workflow-dummy/releases/download/v6.0/Dummy-6.0.alfred4workflow",
 		Filename:   "Dummy-6.0.alfred4workflow",
 		Version:    mustVersion("v6.0"),
 		Prerelease: false,
 	},
-	Download{
+	{
 		URL:        "https://github.com/deanishe/alfred-workflow-dummy/releases/download/v6.0/Dummy-6.0.alfred3workflow",
 		Filename:   "Dummy-6.0.alfred3workflow",
 		Version:    mustVersion("v6.0"),
 		Prerelease: false,
 	},
-	Download{
+	{
 		URL:        "https://github.com/deanishe/alfred-workflow-dummy/releases/download/v6.0/Dummy-6.0.alfredworkflow",
 		Filename:   "Dummy-6.0.alfredworkflow",
 		Version:    mustVersion("v6.0"),
 		Prerelease: false,
 	},
-	Download{
+	{
 		URL:        "https://github.com/deanishe/alfred-workflow-dummy/releases/download/v2.0/Dummy-2.0.alfredworkflow",
 		Filename:   "Dummy-2.0.alfredworkflow",
 		Version:    mustVersion("v2.0"),
 		Prerelease: false,
 	},
-	Download{
+	{
 		URL:        "https://github.com/deanishe/alfred-workflow-dummy/releases/download/v1.0/Dummy-1.0.alfredworkflow",
 		Filename:   "Dummy-1.0.alfredworkflow",
 		Version:    mustVersion("v1.0"),

@@ -53,12 +53,12 @@ func TestPadLeft(t *testing.T) {
 
 	var padLeftTests = []padTest{
 		// Simple cases
-		padTest{"wow", "-", 5, "--wow"},
-		padTest{"pow", " ", 4, " pow"},
+		{"wow", "-", 5, "--wow"},
+		{"pow", " ", 4, " pow"},
 		// Input same length as n
-		padTest{"pow", " ", 3, "pow"},
+		{"pow", " ", 3, "pow"},
 		// Input longer than n
-		padTest{"powwow", " ", 3, "powwow"},
+		{"powwow", " ", 3, "powwow"},
 	}
 	for _, td := range padLeftTests {
 		if out := PadLeft(td.str, td.pad, td.n); out != td.x {
@@ -73,12 +73,12 @@ func TestPadRight(t *testing.T) {
 
 	var padRightTests = []padTest{
 		// Simple cases
-		padTest{"wow", "-", 5, "wow--"},
-		padTest{"pow", " ", 4, "pow "},
+		{"wow", "-", 5, "wow--"},
+		{"pow", " ", 4, "pow "},
 		// Input same length as n
-		padTest{"pow", " ", 3, "pow"},
+		{"pow", " ", 3, "pow"},
 		// Input longer than n
-		padTest{"powwow", " ", 3, "powwow"},
+		{"powwow", " ", 3, "powwow"},
 	}
 	for _, td := range padRightTests {
 		if out := PadRight(td.str, td.pad, td.n); out != td.x {
@@ -93,14 +93,14 @@ func TestPad(t *testing.T) {
 
 	var padTests = []padTest{
 		// Simple cases
-		padTest{"wow", "-", 5, "-wow-"},
-		padTest{"pow", " ", 4, "pow "},
+		{"wow", "-", 5, "-wow-"},
+		{"pow", " ", 4, "pow "},
 		// Even-length str
-		padTest{"wow", "-", 10, "---wow----"},
+		{"wow", "-", 10, "---wow----"},
 		// Input same length as n
-		padTest{"pow", " ", 3, "pow"},
+		{"pow", " ", 3, "pow"},
 		// Input longer than n
-		padTest{"powwow", " ", 3, "powwow"},
+		{"powwow", " ", 3, "powwow"},
 	}
 	for _, td := range padTests {
 		if out := Pad(td.str, td.pad, td.n); out != td.x {

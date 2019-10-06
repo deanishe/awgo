@@ -188,6 +188,7 @@ func TestWorkflow_logRotate(t *testing.T) {
 	withTestWf(func(wf *Workflow) {
 		log.Print("some log message")
 
+		logInitialized = false
 		wf2 := New(MaxLogSize(1))
 		wf2.cacheDir = wf.CacheDir()
 		assert.True(t, true, util.PathExists(wf2.LogFile()+".1"), "log file not rotated")

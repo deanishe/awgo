@@ -72,8 +72,8 @@ func TestVersionValid(t *testing.T) {
 	}
 }
 
-// TestVersionCompare compares versions strings
-func TestVersionCompare(t *testing.T) {
+// Compare versions strings
+func TestSemVer_Compare(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -152,7 +152,7 @@ func TestVersionCompare(t *testing.T) {
 	}
 }
 
-func TestIsZero(t *testing.T) {
+func TestSemVer_IsZero(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -178,7 +178,7 @@ func TestIsZero(t *testing.T) {
 		}
 	}
 }
-func TestVersionSorting(t *testing.T) {
+func TestSortSemVer(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

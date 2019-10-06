@@ -231,7 +231,7 @@ func (info *Info) readPlist() error {
 // expand ~ in a filepath.
 func expand(path string) string {
 	if path == "~" || strings.HasPrefix(path, "~/") {
-		return filepath.Clean(filepath.Join(os.ExpandEnv("$HOME"), path[1:len(path)]))
+		return filepath.Clean(filepath.Join(os.ExpandEnv("$HOME"), path[1:]))
 	}
 	return path
 }

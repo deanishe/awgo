@@ -161,13 +161,13 @@ func TestNewScriptRunner(t *testing.T) {
 	}{
 		// Python scripts only
 		{1, 6, map[string][]string{
-			".py": []string{"/usr/bin/python"},
+			".py": {"/usr/bin/python"},
 		}},
 		// AppleScripts
 		{3, 4, map[string][]string{
-			".scpt":        []string{"/usr/bin/osascript"},
-			".applescript": []string{"/usr/bin/osascript"},
-			".js":          []string{"/usr/bin/osascript", "-l", "JavaScript"},
+			".scpt":        {"/usr/bin/osascript"},
+			".applescript": {"/usr/bin/osascript"},
+			".js":          {"/usr/bin/osascript", "-l", "JavaScript"},
 		}},
 	}
 
