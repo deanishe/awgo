@@ -52,7 +52,7 @@ variables should be set to meaningful values:
 
 	// If you're using the Updater API, a semantic-ish workflow version
 	// must be set otherwise the Updater will panic
-    alfred_workflow_version
+	alfred_workflow_version
 
 	// If you're using the Alfred API and running Alfred 3, you need to
 	// set `alfred_version` as AwGo defaults to calling Alfred 4+
