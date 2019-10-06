@@ -7,9 +7,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestSetIcon(t *testing.T) {
+func TestItem_Icon(t *testing.T) {
 	t.Parallel()
 
 	it := Item{}
@@ -29,8 +31,8 @@ func p(s string) *string {
 	return v
 }
 
-// TestEmpty asserts feedback is empty.
-func TestEmpty(t *testing.T) {
+// Feedback is empty.
+func TestFeedback_IsEmpty(t *testing.T) {
 	t.Parallel()
 
 	fb := NewFeedback()
@@ -43,7 +45,7 @@ func TestEmpty(t *testing.T) {
 	}
 }
 
-func TestMarshalItem(t *testing.T) {
+func TestItem_MarshalJSON(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -139,7 +141,7 @@ func TestMarshalItem(t *testing.T) {
 	}
 }
 
-func TestMarshalModifier(t *testing.T) {
+func TestModifier_MarshalJSON(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -191,7 +193,7 @@ func TestMarshalModifier(t *testing.T) {
 	}
 }
 
-func TestMarshalArg(t *testing.T) {
+func TestArgVars_MarshalJSON(t *testing.T) {
 	t.Parallel()
 
 	var tests = []struct {
@@ -237,7 +239,8 @@ func TestMarshalArg(t *testing.T) {
 	}
 }
 
-func TestStringifyArg(t *testing.T) {
+// Simple arg marshalled to single string
+func TestArgVars_String(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -273,7 +276,28 @@ func TestStringifyArg(t *testing.T) {
 	}
 }
 
-func TestMarshalFeedback(t *testing.T) {
+// Vars set correctly
+func TestArgVars_Vars(t *testing.T) {
+	t.Parallel()
+
+	vars := map[string]string{
+		"key1": "val1",
+		"key2": "val2",
+		"key3": "val3",
+		"key4": "val4",
+		"key5": "val5",
+	}
+
+	av := NewArgVars()
+	for k, v := range vars {
+		av.Var(k, v)
+	}
+
+	assert.Equal(t, vars, av.Vars(), "Unexpected Vars")
+}
+
+// Marshal Feedback to JSON
+func TestFeedback_MarshalJSON(t *testing.T) {
 	t.Parallel()
 
 	// Empty feedback
@@ -289,7 +313,6 @@ func TestMarshalFeedback(t *testing.T) {
 	}
 
 	// Feedback with item
-	// want = `<items><item valid="no"><title>item 1</title></item></items>`
 	want = `{"items":[{"title":"item 1","valid":false}]}`
 	fb.NewItem("item 1")
 
@@ -304,9 +327,8 @@ func TestMarshalFeedback(t *testing.T) {
 
 }
 
-// TestModifiersInheritVars tests that Modifiers inherit variables from their
-// parent Item
-func TestModifiersInheritVars(t *testing.T) {
+// Modifier inherits variables from parent Item
+func TestModifierInheritVars(t *testing.T) {
 	t.Parallel()
 
 	fb := NewFeedback()
@@ -319,6 +341,7 @@ func TestModifiersInheritVars(t *testing.T) {
 	}
 }
 
+// Empty/invalid modifiers
 func TestEmptyModifiersIgnored(t *testing.T) {
 	t.Parallel()
 
@@ -357,6 +380,7 @@ func TestEmptyModifiersIgnored(t *testing.T) {
 	}
 }
 
+// Combined modifiers
 func TestMultipleModifiers(t *testing.T) {
 	t.Parallel()
 
@@ -394,8 +418,29 @@ func TestMultipleModifiers(t *testing.T) {
 	}
 }
 
-// TestFeedbackRerun verifies that rerun is properly set.
-func TestFeedbackRerun(t *testing.T) {
+// Modifier creation shortcut methods
+func TestModifierShortcuts(t *testing.T) {
+	t.Parallel()
+
+	it := &Item{}
+	tests := []struct {
+		m *Modifier
+		k ModKey
+	}{
+		{it.Cmd(), ModCmd},
+		{it.Opt(), ModOpt},
+		{it.Shift(), ModShift},
+		{it.Ctrl(), ModCtrl},
+		{it.Fn(), ModFn},
+	}
+
+	for _, td := range tests {
+		assert.Equal(t, td.k, td.m.Key, "Bad ModKey for %q", td.k)
+	}
+}
+
+// TestFeedback_Rerun verifies that rerun is properly set.
+func TestFeedback_Rerun(t *testing.T) {
 	t.Parallel()
 
 	fb := NewFeedback()
@@ -412,8 +457,8 @@ func TestFeedbackRerun(t *testing.T) {
 	}
 }
 
-// TestFeedbackVars tests if vars are properly inherited by Items and Modifiers
-func TestFeedbackVars(t *testing.T) {
+// Vars are properly inherited by Items and Modifiers
+func TestFeedback_Vars(t *testing.T) {
 	t.Parallel()
 
 	fb := NewFeedback()
@@ -449,8 +494,90 @@ func TestFeedbackVars(t *testing.T) {
 	}
 }
 
-// TestSortFeedback sorts Feedback.Items
-func TestSortFeedback(t *testing.T) {
+// Item methods set fields correctly
+func TestItem_methods(t *testing.T) {
+	t.Parallel()
+
+	var (
+		title        = "title"
+		subtitle     = "subtitle"
+		match        = "match"
+		uid          = "uid"
+		autocomplete = "autocomplete"
+		arg          = "arg"
+		valid        = true
+		copytext     = "copytext"
+		largetype    = "largetype"
+		qlURL        = "http://www.example.com"
+	)
+
+	it := &Item{}
+
+	assert.Equal(t, "", it.title, "Non-empty title")
+	assert.Nil(t, it.subtitle, "Non-nil subtitle")
+	assert.Nil(t, it.match, "Non-nil match")
+	assert.Nil(t, it.uid, "Non-nil UID")
+	assert.Nil(t, it.autocomplete, "Non-nil autocomplete")
+	assert.Nil(t, it.arg, "Non-nil arg")
+	assert.Nil(t, it.copytext, "Non-nil copytext")
+	assert.Nil(t, it.largetype, "Non-nil largetype")
+	assert.Nil(t, it.ql, "Non-nil quicklook")
+
+	it.Title(title).
+		Subtitle(subtitle).
+		Match(match).
+		UID(uid).
+		Autocomplete(autocomplete).
+		Arg(arg).
+		Valid(valid).
+		Copytext(copytext).
+		Largetype(largetype).
+		Quicklook(qlURL)
+
+	assert.Equal(t, title, it.title, "Bad title")
+	assert.Equal(t, subtitle, *it.subtitle, "Bad subtitle")
+	assert.Equal(t, match, *it.match, "Bad match")
+	assert.Equal(t, uid, *it.uid, "Bad UID")
+	assert.Equal(t, autocomplete, *it.autocomplete, "Bad autocomplete")
+	assert.Equal(t, arg, *it.arg, "Bad arg")
+	assert.Equal(t, valid, valid, "Bad valid")
+	assert.Equal(t, copytext, *it.copytext, "Bad copytext")
+	assert.Equal(t, largetype, *it.largetype, "Bad largetext")
+	assert.Equal(t, qlURL, *it.ql, "Bad quicklook URL")
+}
+
+func TestModifier_methods(t *testing.T) {
+	var (
+		key      = ModCmd
+		arg      = "arg"
+		subtitle = "subtitle"
+		valid    = true
+		icon     = IconAccount
+	)
+
+	m := &Modifier{}
+	assert.Equal(t, ModKey(""), m.Key, "Non-empty key")
+	assert.Nil(t, m.arg, "Non-nil arg")
+	assert.Nil(t, m.subtitle, "Non-nil subtitle")
+	assert.False(t, m.valid, "Bad valid")
+	assert.Nil(t, m.icon, "Bad icon")
+
+	m.Key = key
+	m.Subtitle(subtitle).
+		Arg(arg).
+		Valid(valid).
+		Icon(icon)
+
+	assert.Equal(t, key, m.Key, "Bad key")
+	assert.Equal(t, arg, *m.arg, "Bad arg")
+	assert.Equal(t, subtitle, *m.subtitle, "Bad subtitle")
+	assert.Equal(t, valid, m.valid, "Bad valid")
+	assert.Equal(t, icon.Type, m.icon.Type, "Bad icon type")
+	assert.Equal(t, icon.Value, m.icon.Value, "Bad icon value")
+}
+
+// Sorts Feedback.Items
+func TestFeedback_Sort(t *testing.T) {
 
 	for _, td := range feedbackTitles {
 		fb := NewFeedback()
@@ -517,8 +644,8 @@ var filterTitles = []struct {
 	},
 }
 
-// TestFilterFeedback filters Feedback.Items
-func TestFilterFeedback(t *testing.T) {
+// Filter Feedback.Items
+func TestFeedback_Filter(t *testing.T) {
 	for _, td := range filterTitles {
 		fb := NewFeedback()
 		for _, s := range td.in {

@@ -6,6 +6,7 @@ package aw
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"log"
 	"os"
 	"strings"
@@ -35,8 +36,8 @@ func TestInvalidEnv(t *testing.T) {
 	assert.Panics(t, func() { NewFromEnv(MapEnv{}) })
 }
 
-// TestOptions verifies that options correctly alter Workflow.
-func TestOptions(t *testing.T) {
+// Options correctly alter Workflow.
+func TestNew(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -103,7 +104,7 @@ func TestOptions(t *testing.T) {
 	}
 }
 
-func TestWorkflowRun(t *testing.T) {
+func TestWorkflow_Run(t *testing.T) {
 
 	withTestWf(func(wf *Workflow) {
 
@@ -116,7 +117,7 @@ func TestWorkflowRun(t *testing.T) {
 	})
 }
 
-func TestWorkflowRunRescue(t *testing.T) {
+func TestWorkflow_Run_Rescue(t *testing.T) {
 	withTestWf(func(wf *Workflow) {
 		me := &mockExit{}
 		exitFunc = me.Exit
@@ -127,7 +128,7 @@ func TestWorkflowRunRescue(t *testing.T) {
 }
 
 // TestWorkflowDir verifies that AwGo finds the right directory.
-func TestWorkflowDir(t *testing.T) {
+func TestWorkflow_Dir(t *testing.T) {
 	t.Parallel()
 
 	var (
@@ -166,7 +167,9 @@ func TestWorkflowDir(t *testing.T) {
 }
 
 // Check that AW's directories exist
-func TestAwDirs(t *testing.T) {
+func TestWorkflow_awDirs(t *testing.T) {
+	t.Parallel()
+
 	withTestWf(func(wf *Workflow) {
 		p := wf.awCacheDir()
 		assert.True(t, util.PathExists(p), "AW cache dir does not exist")
@@ -179,15 +182,78 @@ func TestAwDirs(t *testing.T) {
 }
 
 // Check log is rotated
-func TestLogRotate(t *testing.T) {
+func TestWorkflow_logRotate(t *testing.T) {
+	t.Parallel()
+
 	withTestWf(func(wf *Workflow) {
 		log.Print("some log message")
 
 		wf2 := New(MaxLogSize(1))
 		wf2.cacheDir = wf.CacheDir()
-		p := wf2.LogFile() + ".1"
-		assert.True(t, true, util.PathExists(p), "log file not rotated")
+		assert.True(t, true, util.PathExists(wf2.LogFile()+".1"), "log file not rotated")
 	})
+}
+
+// Variables are correctly set
+func TestWorkflow_Vars(t *testing.T) {
+	t.Parallel()
+
+	vars := map[string]string{
+		"key1": "val1",
+		"key2": "val2",
+		"key3": "val3",
+		"key4": "val4",
+		"key5": "val5",
+	}
+
+	withTestWf(func(wf *Workflow) {
+		for k, v := range vars {
+			wf.Var(k, v)
+		}
+		assert.Equal(t, vars, wf.Vars(), "Unexpected Vars")
+	})
+}
+
+func TestWorkflow_Rerun(t *testing.T) {
+	t.Parallel()
+
+	withTestWf(func(wf *Workflow) {
+		v := 0.1
+		wf.Rerun(v)
+		assert.Equal(t, v, wf.Feedback.rerun, "Unexpected Rerun")
+	})
+}
+
+func TestWorkflow_Fatal(t *testing.T) {
+	var exit bool
+	exitFunc = func(code int) { exit = true }
+	withTestWf(func(wf *Workflow) {
+		wf.Fatal("")
+		assert.True(t, exit, "Fatal did not exit")
+	})
+
+	exit = false
+	withTestWf(func(wf *Workflow) {
+		wf.FatalError(errors.New("some error"))
+		assert.True(t, exit, "FatalError did not exit")
+	})
+
+	exit = false
+	withTestWf(func(wf *Workflow) {
+		wf.Fatalf("die")
+		assert.True(t, exit, "Fatalf did not exit")
+	})
+}
+
+func TestRunCommand(t *testing.T) {
+	t.Parallel()
+
+	if err := runCommand("/usr/bin/true"); err != nil {
+		t.Errorf(`call "/usr/bin/true" failed: %v`, err)
+	}
+	if err := runCommand("/does/not/exist"); err == nil {
+		t.Errorf(`call to "/does/not/exist" returned no error`)
+	}
 }
 
 // New initialises a Workflow with the default settings. Name,

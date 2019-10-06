@@ -301,9 +301,7 @@ func newModifier(key ...ModKey) *Modifier {
 		if s == "" {
 			continue
 		}
-		if s != "alt" && s != "cmd" && s != "ctrl" &&
-			s != "fn" && s != "opt" && s != "shift" {
-
+		if s != "alt" && s != "cmd" && s != "ctrl" && s != "fn" && s != "shift" {
 			log.Printf("[warning] ignored invalid modifier %q", k)
 			continue
 		}

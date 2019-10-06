@@ -13,8 +13,8 @@ import (
 	"github.com/deanishe/awgo/util"
 )
 
-// TestStoreAndLoad checks that data are stored and loaded correctly
-func TestStoreAndLoad(t *testing.T) {
+// Data are stored and loaded correctly
+func TestCache_Store(t *testing.T) {
 	t.Parallel()
 
 	withTempDir(func(dir string) {
@@ -94,8 +94,8 @@ func TestStoreAndLoad(t *testing.T) {
 	})
 }
 
-// TestLoadOrStore tests LoadOrStore API.
-func TestLoadOrStore(t *testing.T) {
+// LoadOrStore API.
+func TestCache_LoadOrStore(t *testing.T) {
 	t.Parallel()
 
 	s := "this is a test"
@@ -195,8 +195,8 @@ func (td *TestData) Eq(other *TestData) bool {
 	return true
 }
 
-// TestStoreJSON round-trips data through the JSON caching API.
-func TestStoreJSON(t *testing.T) {
+// Round-trip data through the JSON caching API.
+func TestCache_StoreJSON(t *testing.T) {
 	t.Parallel()
 
 	withTempDir(func(dir string) {
@@ -245,7 +245,7 @@ func TestStoreJSON(t *testing.T) {
 }
 
 // TestLoadOrStoreJSON tests JSON serialisation.
-func TestLoadOrStoreJSON(t *testing.T) {
+func TestCache_LoadOrStoreJSON(t *testing.T) {
 	t.Parallel()
 
 	var reloadCalled bool
@@ -338,8 +338,8 @@ func TestLoadOrStoreJSON(t *testing.T) {
 	})
 }
 
-// TestBadReloadError checks reload funcs that return errors
-func TestBadReloadError(t *testing.T) {
+// Reload funcs that return errors
+func TestCache_reloadError(t *testing.T) {
 	t.Parallel()
 
 	reloadB := func() ([]byte, error) {

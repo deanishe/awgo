@@ -75,6 +75,11 @@ var (
 func TestUpdater(t *testing.T) {
 	withTempDir(func(dir string) {
 
+		vStr := "4.0.4"
+		oldVal := os.Getenv("alfred_version")
+		defer func() { os.Setenv("alfred_version", oldVal) }()
+
+		os.Setenv("alfred_version", vStr)
 		u, err := NewUpdater(testSrc1, "0.2.2", dir)
 		if err != nil {
 			t.Fatalf("Error creating updater: %s", err)
@@ -98,6 +103,10 @@ func TestUpdater(t *testing.T) {
 		u.CurrentVersion = mustVersion("0.4.5")
 		if !u.UpdateAvailable() {
 			t.Fatal("Bad update #4")
+		}
+		sv, _ := NewSemVer(vStr)
+		if !sv.Eq(u.AlfredVersion) {
+			t.Errorf("Bad AlfredVersion. Expected=%q, Got=%q", sv, u.AlfredVersion)
 		}
 
 		// Empty cache directory

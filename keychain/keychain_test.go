@@ -69,8 +69,9 @@ func TestParse(t *testing.T) {
 		{in: `password: 0x68C3BC6E74657232  "h\303\274nter2"`, pw: "hünter2"},
 		// Invalid
 		{in: ``, pw: ""},
-		{in: `0x`, pw: ""},
-		{in: `0xinvalid`, pw: ""},
+		{in: `password: `, pw: ""},
+		{in: `password: 0x"`, pw: ""},
+		{in: `password: 0xinvalid`, pw: ""},
 	}
 
 	for _, td := range data {
