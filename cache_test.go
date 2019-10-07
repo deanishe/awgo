@@ -10,6 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/deanishe/awgo/util"
 )
 
@@ -363,15 +365,19 @@ func TestCache_reloadError(t *testing.T) {
 	})
 }
 
-// TestSession tests session-scoped caching.
-func TestSession(t *testing.T) {
+// Session-scoped caching.
+func TestSession_Load(t *testing.T) {
 	t.Parallel()
 
 	withTempDir(func(dir string) {
-		sid := NewSessionID()
-		s := NewSession(dir, sid)
-		data := []byte("this is a test")
-		n := "test.txt"
+		var (
+			sid   = NewSessionID()
+			s     = NewSession(dir, sid)
+			data  = []byte("this is a test")
+			data2 []byte
+			n     = "test.txt"
+			err   error
+		)
 
 		// Sanity checks
 		p := s.cache.path(s.name(n))
@@ -402,13 +408,9 @@ func TestSession(t *testing.T) {
 		}
 
 		// Load data
-		data2, err := s.Load(n)
-		if err != nil {
-			t.Errorf("couldn't load cached data: %v", err)
-		}
-		if bytes.Compare(data, data2) != 0 {
-			t.Errorf("loaded data does not match saved data: expected=%v, got=%v", data, data2)
-		}
+		data2, err = s.Load(n)
+		assert.Nil(t, err, "load cached data failed")
+		assert.Equal(t, data, data2, "loaded data != saved data")
 
 		// Clear session
 		_ = s.Clear(false) // Leave current session data
@@ -418,26 +420,178 @@ func TestSession(t *testing.T) {
 		// Clear this session's data, too
 		_ = s.Clear(true)
 		if util.PathExists(p) {
-			t.Errorf("cache file exists: %s", p)
+			t.Errorf("cleared cache file still exists: %s", p)
 		}
 
 		// Load non-existent cache
 		if _, err := s.Load(n); err == nil {
 			t.Errorf("no error loading non-existent cache")
 		}
+	})
+}
 
-		// Clear old sessions
-		sid1 := NewSessionID()
-		sid2 := NewSessionID()
-		s = NewSession(dir, sid1)
-		_ = s.Store(n, data)
+func TestSession_LoadOrStore(t *testing.T) {
+	withTempDir(func(dir string) {
+		var (
+			sid    = NewSessionID()
+			s      = NewSession(dir, sid)
+			data   = []byte("this is a test")
+			data2  []byte
+			n      = "test.txt"
+			called bool
+			err    error
+		)
+
+		reload := func() ([]byte, error) {
+			called = true
+			return data, nil
+		}
+
+		// Sanity checks
+		p := s.cache.path(s.name(n))
+		if util.PathExists(p) {
+			t.Errorf("cache file already exists: %s", p)
+		}
+
+		// LoadOrStore API
+		data2, err = s.LoadOrStore(n, reload)
+		assert.Nil(t, err, "LoadOrStore return error")
+		assert.Equal(t, data, data2, "returned data != reload data")
+		assert.True(t, called, "reload not called")
+
+		called = false
+		data2, err = s.LoadOrStore(n, reload)
+		assert.Nil(t, err, "LoadOrStore return error")
+		assert.Equal(t, data, data2, "returned data != reload data")
+		assert.False(t, called, "reload called")
+	})
+}
+
+func TestSession_LoadJSON(t *testing.T) {
+	t.Parallel()
+
+	withTempDir(func(dir string) {
+		var (
+			sid   = NewSessionID()
+			s     = NewSession(dir, sid)
+			data  = map[string]string{"foo": "bar"}
+			data2 map[string]string
+			n     = "test.txt"
+			err   error
+		)
+
+		// Sanity checks
+		p := s.cache.path(s.name(n))
+		if util.PathExists(p) {
+			t.Errorf("cache file already exists: %s", p)
+		}
+
+		// Delete non-existent store
+		if err := s.StoreJSON(n, nil); err != nil {
+			t.Errorf("unexpected error clearing cache: %v", err)
+		}
+
+		// Non-existent cache exists
+		if s.Exists(n) {
+			t.Errorf("non-existent cache exists")
+		}
+
+		// Store data
+		if err := s.StoreJSON(n, data); err != nil {
+			t.Errorf("couldn't cache data to %s: %v", n, err)
+		}
+		if !util.PathExists(p) {
+			t.Errorf("cache file does not exist: %s", p)
+		}
+
+		if s.Exists(n) != util.PathExists(p) {
+			t.Errorf("cache file does not exist: %s", p)
+		}
+
+		// Load data
+		err = s.LoadJSON(n, &data2)
+		assert.Nil(t, err, "load cached data failed")
+		assert.Equal(t, data, data2, "loaded data != saved data")
+
+		// Clear session
+		_ = s.Clear(false) // Leave current session data
+		if !util.PathExists(p) {
+			t.Errorf("cache file does not exist: %s", p)
+		}
+		// Clear this session's data, too
+		_ = s.Clear(true)
+		if util.PathExists(p) {
+			t.Errorf("cleared cache file still exists: %s", p)
+		}
+
+		// Load non-existent cache
+		if err := s.LoadJSON(n, &data2); err == nil {
+			t.Errorf("no error loading non-existent cache")
+		}
+	})
+}
+
+func TestSession_LoadOrStoreJSON(t *testing.T) {
+	withTempDir(func(dir string) {
+		var (
+			sid    = NewSessionID()
+			s      = NewSession(dir, sid)
+			data   = map[string]string{"foo": "bar"}
+			data2  map[string]string
+			n      = "test.txt"
+			called bool
+			err    error
+		)
+
+		reload := func() (interface{}, error) {
+			called = true
+			return data, nil
+		}
+
+		// Sanity checks
+		p := s.cache.path(s.name(n))
+		if util.PathExists(p) {
+			t.Errorf("cache file already exists: %s", p)
+		}
+
+		// LoadOrStore API
+		err = s.LoadOrStoreJSON(n, reload, &data2)
+		assert.Nil(t, err, "LoadOrStore return error")
+		assert.Equal(t, data, data2, "returned data != reload data")
+		assert.True(t, called, "reload not called")
+
+		called = false
+		err = s.LoadOrStoreJSON(n, reload, &data2)
+		assert.Nil(t, err, "LoadOrStore return error")
+		assert.Equal(t, data, data2, "returned data != reload data")
+		assert.False(t, called, "reload called")
+	})
+}
+
+func TestSession_Clear(t *testing.T) {
+	withTempDir(func(dir string) {
+		var (
+			sid1 = NewSessionID()
+			sid2 = NewSessionID()
+			data = []byte("this is a test")
+			n    = "test.txt"
+		)
+
+		// "old" session
+		s := NewSession(dir, sid1)
+		if err := s.Store(n, data); err != nil {
+			t.Fatalf("store failed: %v", err)
+		}
 
 		if !s.Exists(n) {
 			t.Errorf("cached data do not exist: %s", n)
 		}
 
+		// "new" session
 		s = NewSession(dir, sid2)
-		_ = s.Clear(false)
+		if err := s.Clear(false); err != nil {
+			t.Fatalf("clear failed: %v", err)
+		}
 
 		if s.Exists(n) {
 			t.Errorf("expired data still exist: %s", n)
