@@ -109,7 +109,7 @@ func (wf *Workflow) OpenHelp() error {
 func findWorkflowRoot(path string) string {
 
 	var (
-		dirs = []string{}        // directories to look in for info.plist
+		dirs []string            // directories to look in for info.plist
 		seen = map[string]bool{} // avoid duplicates in dirs
 	)
 
@@ -117,19 +117,15 @@ func findWorkflowRoot(path string) string {
 	queueTree := func(p string) {
 
 		p = filepath.Clean(p)
-
 		segs := strings.Split(p, "/")
 
 		for i := len(segs) - 1; i > 0; i-- {
-
 			p := strings.Join(segs[0:i], "/")
 
 			if p == "" {
 				p = "/"
 			}
-
 			if !seen[p] {
-
 				seen[p] = true
 				dirs = append(dirs, p)
 			}
@@ -143,9 +139,7 @@ func findWorkflowRoot(path string) string {
 
 	// Return path of first directory that contains an info.plist
 	for _, dir := range dirs {
-
 		p := filepath.Join(dir, "info.plist")
-
 		if _, err := os.Stat(p); err == nil {
 			return dir
 		}

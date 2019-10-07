@@ -24,7 +24,7 @@ type ErrJobExists struct {
 
 // Error implements error interface.
 func (a ErrJobExists) Error() string {
-	return fmt.Sprintf("Job '%s' already running with PID %d", a.Name, a.Pid)
+	return fmt.Sprintf(`job "%s" already running with PID %d`, a.Name, a.Pid)
 }
 
 // IsJobExists returns true if error is of type ErrJobExists.
@@ -60,13 +60,9 @@ func (wf *Workflow) Kill(jobName string) error {
 		return err
 	}
 	p := wf.pidFile(jobName)
-	if err = syscall.Kill(pid, syscall.SIGTERM); err != nil {
-		// Delete stale PID file
-		os.Remove(p)
-		return err
-	}
+	err = syscall.Kill(pid, syscall.SIGTERM)
 	os.Remove(p)
-	return nil
+	return err
 }
 
 // IsRunning returns true if a job with name jobName is currently running.
