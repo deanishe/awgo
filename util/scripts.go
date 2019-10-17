@@ -70,7 +70,6 @@ type Runners []Runner
 
 // CanRun returns true if one of the runners can run this file.
 func (rs Runners) CanRun(filename string) bool {
-
 	for _, r := range rs {
 		if r.CanRun(filename) {
 			return true

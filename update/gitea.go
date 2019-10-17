@@ -37,15 +37,11 @@ type giteaSource struct {
 func (src *giteaSource) Downloads() ([]Download, error) {
 	if src.dls == nil {
 		src.dls = []Download{}
-		// rels := []*Release{}
 		js, err := src.fetch(src.url())
 		if err != nil {
-			// log.Printf("error: fetch GitHub releases: %s", err)
 			return nil, err
 		}
-		// log.Printf("%d bytes of JSON", len(js))
 		if src.dls, err = parseGiteaReleases(js); err != nil {
-			// log.Printf("error: parse GitHub releases: %s", err)
 			return nil, err
 		}
 	}
@@ -102,8 +98,8 @@ type giteaAsset struct {
 // parseGiteaReleases parses Gitea releases JSON.
 func parseGiteaReleases(js []byte) ([]Download, error) {
 	var (
-		rels = []*giteaRelease{}
-		dls  = []Download{}
+		rels []*giteaRelease
+		dls  []Download
 	)
 	if err := json.Unmarshal(js, &rels); err != nil {
 		return nil, err

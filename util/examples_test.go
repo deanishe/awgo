@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"time"
 )
 
 // Shorten paths by replacing user's home directory with ~
@@ -260,4 +261,22 @@ func ExampleRun_scripts() {
 			panic(err)
 		}
 	}
+}
+
+// Timed logs the execution duration of a function with a message.
+// Call with defer and time.Now().
+func ExampleTimed() {
+	doThing := func() {
+		//
+		defer Timed(time.Now(), "long-running thing")
+		fmt.Printf("doing long-running thing ...")
+		// simulate work
+		time.Sleep(time.Second)
+	}
+
+	// Call function. NOTE: the output from deferred functions is not
+	// captured.
+	doThing()
+	// Output:
+	// doing long-running thing ...
 }
