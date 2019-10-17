@@ -360,3 +360,7 @@ func TestHTTPClient(t *testing.T) {
 		}
 	})
 }
+
+func TestRunCommand(t *testing.T) {
+	assert.Nil(t, runCommand("/usr/bin/true"), `exec "/usr/bin/true" returned error`)
+}

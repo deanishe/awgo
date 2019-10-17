@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestExecutableRunner(t *testing.T) {
@@ -107,14 +109,16 @@ func TestRun(t *testing.T) {
 		t.Run(fmt.Sprintf("Run(%s)", script), func(t *testing.T) {
 			t.Parallel()
 			x := filepath.Base(script)
+
+			// test Run
 			out, err := Run(script, x)
-			if err != nil {
-				t.Errorf("failed: %v", err)
-			}
-			v := strings.TrimSpace(string(out))
-			if v != x {
-				t.Errorf("Bad output. Expected=%v, Got=%v", x, v)
-			}
+			assert.Nil(t, err, "script  %q failed: %v", script, err)
+			assert.Equal(t, strings.TrimSpace(string(out)), x, "bad output")
+
+			// test runners
+			out, err = runners.Run(script, x)
+			assert.Nil(t, err, "script  %q failed: %v", script, err)
+			assert.Equal(t, strings.TrimSpace(string(out)), x, "bad output")
 		})
 	}
 }
@@ -131,21 +135,30 @@ func TestNoRun(t *testing.T) {
 		{"testdata/non-existent", false, true},
 		{"testdata/plain.txt", true, false},
 		{"testdata/perl.pl", true, false},
+		{"testdata", true, false},
 	}
 
 	for _, td := range tests {
 		td := td // capture variable
 		t.Run(fmt.Sprintf("Run(%s)", td.in), func(t *testing.T) {
 			t.Parallel()
+
 			_, err := Run(td.in, "blah")
-			if err == nil {
-				t.Errorf("Ran bad script %q", td.in)
+			assert.NotNil(t, err, "ran invalid script %q", td.in)
+			if td.unknown {
+				assert.Equal(t, ErrUnknownFileType, err, "invalid file recognised")
 			}
-			if td.unknown && err != ErrUnknownFileType {
-				t.Errorf("Unknown file recognised %q. Expected=%v, Got=%v", td.in, ErrUnknownFileType, err)
+			if td.missing {
+				assert.True(t, os.IsNotExist(err), "non-existent file accepted")
 			}
-			if td.missing && !os.IsNotExist(err) {
-				t.Errorf("Missing file found %q. Expected=ErrNotExist, Got=%v", td.in, err)
+
+			_, err = runners.Run(td.in, "blah")
+			assert.NotNil(t, err, "ran invalid script %q", td.in)
+			if td.unknown {
+				assert.Equal(t, ErrUnknownFileType, err, "invalid file recognised")
+			}
+			if td.missing {
+				assert.True(t, os.IsNotExist(err), "non-existent file accepted")
 			}
 		})
 	}
@@ -196,13 +209,8 @@ func TestNewScriptRunner(t *testing.T) {
 					bad++
 				}
 			}
-
-			if good != td.good {
-				t.Errorf("Bad good. Expected=%d, Got=%d", td.good, good)
-			}
-			if bad != td.bad {
-				t.Errorf("Bad bad. Expected=%d, Got=%d", td.bad, bad)
-			}
+			assert.Equal(t, td.good, good, "unexpected good count")
+			assert.Equal(t, td.bad, bad, "unexpected bad count")
 		})
 	}
 }
@@ -222,12 +230,6 @@ func TestQuoteJS(t *testing.T) {
 	}
 
 	for _, td := range data {
-
-		s := QuoteJS(td.in)
-
-		if s != td.out {
-			t.Errorf("Bad JS for %#v. Expected=%v, Got=%v", td.in, td.out, s)
-		}
-
+		assert.Equal(t, td.out, QuoteJS(td.in), "unexpected quoted JS")
 	}
 }

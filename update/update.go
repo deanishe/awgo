@@ -25,7 +25,7 @@ var (
 	// UpdateInterval is how often to check for updates.
 	UpdateInterval = time.Duration(24 * time.Hour)
 	// HTTPTimeout is the timeout for establishing an HTTP(S) connection.
-	HTTPTimeout = (60 * time.Second)
+	HTTPTimeout = 60 * time.Second
 
 	// HTTP client used to talk to APIs
 	client *http.Client
@@ -265,7 +265,7 @@ func (u *Updater) clearCache() {
 	util.MustExist(u.cacheDir)
 }
 
-// cacheLastCheck saves time to cachepath.
+// cacheLastCheck saves time to cache.
 func (u *Updater) cacheLastCheck() {
 	data, err := u.LastCheck.MarshalText()
 	if err != nil {

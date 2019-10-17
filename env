@@ -1,0 +1,7 @@
+# env file for Goland & co.
+alfred_workflow_bundleid=net.deanishe.awgo
+alfred_workflow_data=./testenv/data
+alfred_workflow_cache=./testenv/cache
+alfred_workflow_version=1.2.0
+alfred_workflow_name=AwGo
+AW_SESSION_ID=test-session-id

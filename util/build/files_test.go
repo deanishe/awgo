@@ -28,7 +28,11 @@ func withTempDir(fn func(dir string)) {
 
 	fn(path)
 
-	defer os.RemoveAll(tmp)
+	defer func() {
+		if err := os.RemoveAll(tmp); err != nil {
+			panic(fmt.Sprintf("remove temp dir: %v", err))
+		}
+	}()
 }
 
 func TestSymlink(t *testing.T) {
