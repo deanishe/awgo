@@ -114,70 +114,39 @@ func TestCache_LoadOrStore(t *testing.T) {
 
 		// Sanity checks
 		p := c.path(n)
-		if util.PathExists(p) {
-			t.Errorf("cache file already exists: %s", p)
-		}
+		assert.False(t, util.PathExists(p), "cache file already exists")
 
 		// Cache empty
 		data, err := c.LoadOrStore(n, maxAge, reload)
-		if err != nil {
-			t.Errorf("couldn't load/store cached data: %v", err)
-		}
-		if bytes.Compare(data, []byte(s)) != 0 {
-			t.Errorf("unexpected cache data. Expected=%v, Got=%v", []byte(s), data)
-		}
-		if !reloadCalled {
-			t.Errorf("reload wasn't called")
-		}
-
-		if c.Expired(n, maxAge) {
-			t.Errorf("cache expired")
-		}
+		assert.Nil(t, err, "load/store cached data failed")
+		assert.Equal(t, []byte(s), data, "unexpected cache data")
+		assert.True(t, reloadCalled, "reload not called")
+		assert.False(t, c.Expired(n, maxAge), "cache expired")
 
 		// Load cached data
 		reloadCalled = false
 		data, err = c.LoadOrStore(n, maxAge, reload)
-		if err != nil {
-			t.Errorf("couldn't load/store cached data: %v", err)
-		}
-		if bytes.Compare(data, []byte(s)) != 0 {
-			t.Errorf("unexpected cache data. Expected=%v, Got=%v", []byte(s), data)
-		}
-		if reloadCalled {
-			t.Errorf("reload was called")
-		}
+		assert.Nil(t, err, "load/store cached data failed")
+		assert.Equal(t, []byte(s), data, "unexpected cache data")
+		assert.False(t, reloadCalled, "reload called")
 
 		// Load with 0 maxAge
 		reloadCalled = false
 		data, err = c.LoadOrStore(n, 0, reload)
-		if err != nil {
-			t.Errorf("couldn't load/store cached data: %v", err)
-		}
-		if bytes.Compare(data, []byte(s)) != 0 {
-			t.Errorf("unexpected cache data. Expected=%v, Got=%v", []byte(s), data)
-		}
-		if reloadCalled {
-			t.Errorf("reload was called")
-		}
+		assert.Nil(t, err, "load/store cached data failed")
+		assert.Equal(t, []byte(s), data, "unexpected cache data")
+		assert.False(t, reloadCalled, "reload called")
 
 		time.Sleep(time.Duration(time.Second * 1))
 
-		if !c.Expired(n, maxAge) {
-			t.Errorf("cache hasn't expired")
-		}
+		assert.True(t, c.Expired(n, maxAge), "cache not expired")
 
 		// Reload data
 		reloadCalled = false
 		data, err = c.LoadOrStore(n, maxAge, reload)
-		if err != nil {
-			t.Errorf("couldn't load/store cached data: %v", err)
-		}
-		if bytes.Compare(data, []byte(s)) != 0 {
-			t.Errorf("unexpected cache data. Expected=%v, Got=%v", []byte(s), data)
-		}
-		if !reloadCalled {
-			t.Errorf("reload wasn't called")
-		}
+		assert.Nil(t, err, "load/store cached data failed")
+		assert.Equal(t, []byte(s), data, "unexpected cache data")
+		assert.True(t, reloadCalled, "reload not called")
 	})
 }
 
