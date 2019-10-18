@@ -39,6 +39,8 @@ steps:
 - script: |
     env | grep SYSTEM_
     env | grep BUILD_
+    echo "System.PullRequest.SourceCommitId=$(System.PullRequest.SourceCommitId)"
+    echo "Build.SourceVersion=$(Build.SourceVersion)"
   workingDirectory: '$(modulePath)'
   displayName: Environment
 
