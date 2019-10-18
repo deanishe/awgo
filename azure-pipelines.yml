@@ -33,14 +33,15 @@ steps:
     go version
   displayName: 'Set up Go'
 
-- script: |
-    env | grep SYSTEM_ | sort
-    env | grep BUILD_ | sort
-    env | grep CI_ | sort
-    echo 'System.PullRequest.SourceCommitId=$(System.PullRequest.SourceCommitId)'
-    echo 'Build.SourceVersion=$(Build.SourceVersion)'
-  workingDirectory: '$(modulePath)'
-  displayName: Environment
+# Dump environment for debugging
+# - script: |
+#     env | grep SYSTEM_ | sort
+#     env | grep BUILD_ | sort
+#     env | grep CI_ | sort
+#     echo 'System.PullRequest.SourceCommitId=$(System.PullRequest.SourceCommitId)'
+#     echo 'Build.SourceVersion=$(Build.SourceVersion)'
+#   workingDirectory: '$(modulePath)'
+#   displayName: Environment
 
 - script: |
       go get -v -t -d ./...
