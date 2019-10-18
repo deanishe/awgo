@@ -6,11 +6,18 @@
 AwGo — A Go library for Alfred workflows
 ========================================
 
-[![Build Status][travis-icon]][travis-link]
+[![Build Status][build-status-icon]][travis-link]
 [![Go Report Card][goreport-icon]][goreport-link]
-[![Codacy Badge][codacy-icon]][codacy-link]
-[![Coverage Status][coveralls-icon]][coveralls-link]
+[![Codacy coverage][coverage-icon]][codacy-link]
 [![GoDoc][godoc-icon]][godoc-link]
+
+<!--
+[![Build Status][travis-icon]][travis-link]
+[![Codacy Coverage][codacy-coverage-icon]][codacy-link]
+[![Codacy Quality][codacy-quality-icon]][codacy-link]
+[![Coverage Status][coveralls-icon]][coveralls-link]
+-->
+
 
 Full-featured library to build lightning-fast workflows in a jiffy.
 
@@ -151,9 +158,9 @@ The icon is based on the [Go Gopher][gopher] by [Renee French][renee].
 [cache]: https://godoc.org/github.com/deanishe/awgo#hdr-Storing_data
 [cache-api]: https://godoc.org/github.com/deanishe/awgo#Cache
 [run]: https://godoc.org/github.com/deanishe/awgo#Run
-[update]: https://godoc.org/github.com/deanishe/awgo/update
 [keychain]: https://godoc.org/github.com/deanishe/awgo/keychain
 [scripts]: https://godoc.org/github.com/deanishe/awgo/util#hdr-Scripting
+[update]: https://godoc.org/github.com/deanishe/awgo/update
 [update-github]: https://godoc.org/github.com/deanishe/awgo/update#GitHub
 [update-gitea]: https://godoc.org/github.com/deanishe/awgo/update#Gitea
 [logging]: https://godoc.org/github.com/deanishe/awgo#hdr-Logging
@@ -161,15 +168,22 @@ The icon is based on the [Go Gopher][gopher] by [Renee French][renee].
 [icons]: https://godoc.org/github.com/deanishe/awgo#Icon
 [examples-code]: https://github.com/deanishe/awgo/tree/master/_examples
 [examples-docs]: https://godoc.org/github.com/deanishe/awgo/_examples
-[travis-link]: https://travis-ci.org/deanishe/awgo
-[travis-icon]: https://travis-ci.org/deanishe/awgo.svg?branch=master
-[goreport-link]: https://goreportcard.com/report/github.com/deanishe/awgo
-[goreport-icon]: https://goreportcard.com/badge/github.com/deanishe/awgo
-[codacy-icon]: https://api.codacy.com/project/badge/Grade/e785f7b0e830468da6fa2856d62e59ab
-[codacy-link]: https://www.codacy.com/app/deanishe/awgo
-[coveralls-icon]: https://coveralls.io/repos/github/deanishe/awgo/badge.svg?branch=master&v3
-[coveralls-link]: https://coveralls.io/github/deanishe/awgo?branch=master
-[godoc-icon]: https://godoc.org/github.com/deanishe/awgo?status.svg
-[godoc-link]: https://godoc.org/github.com/deanishe/awgo
 [jetbrains]: https://www.jetbrains.com/?from=deanishe/awgo
 [neovim]: https://neovim.io/
+
+[godoc-icon]: https://godoc.org/github.com/deanishe/awgo?status.svg
+[godoc-link]: https://godoc.org/github.com/deanishe/awgo
+[goreport-link]: https://goreportcard.com/report/github.com/deanishe/awgo
+[goreport-icon]: https://goreportcard.com/badge/github.com/deanishe/awgo
+[build-status-icon]: https://img.shields.io/travis/deanishe/awgo
+[coverage-icon]: https://img.shields.io/codacy/coverage/e785f7b0e830468da6fa2856d62e59ab?color=brightgreen
+[travis-link]: https://travis-ci.org/deanishe/awgo
+[codacy-link]: https://www.codacy.com/app/deanishe/awgo
+
+<!--
+[codacy-quality-icon]: https://api.codacy.com/project/badge/Grade/e785f7b0e830468da6fa2856d62e59ab
+[codacy-coverage-icon]: https://api.codacy.com/project/badge/Coverage/e785f7b0e830468da6fa2856d62e59ab
+[coveralls-icon]: https://coveralls.io/repos/github/deanishe/awgo/badge.svg?branch=master&v3
+[coveralls-link]: https://coveralls.io/github/deanishe/awgo?branch=master
+[travis-icon]: https://travis-ci.org/deanishe/awgo.svg?branch=master
+-->
