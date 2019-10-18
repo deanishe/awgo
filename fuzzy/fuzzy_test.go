@@ -32,6 +32,7 @@ func TestSortStrings(t *testing.T) {
 	}
 
 	for _, td := range tests {
+		td := td
 		t.Run(td.q, func(t *testing.T) {
 			data := td.in[:]
 			SortStrings(data, td.q)
@@ -56,6 +57,7 @@ func TestMatchNoMatch(t *testing.T) {
 	}
 
 	for _, td := range tests {
+		td := td
 		t.Run(td.s, func(t *testing.T) {
 			data := []string{td.s}
 			r := SortStrings(data, td.q)
@@ -92,6 +94,7 @@ func TestFirstMatch(t *testing.T) {
 	}
 
 	for _, td := range tests {
+		td := td
 		t.Run(td.q, func(t *testing.T) {
 			data := td.in[:]
 			r := SortStrings(data, td.q)
@@ -123,6 +126,7 @@ func TestStripDiacritics(t *testing.T) {
 	}
 
 	for _, td := range tests {
+		td := td
 		t.Run(fmt.Sprintf("%q=%q", td.q, td.s), func(t *testing.T) {
 			assert.Equal(t, td.x, Match(td.s, td.q, StripDiacritics(td.strip)).Match, "unexpected match")
 		})

@@ -197,6 +197,7 @@ func TestMagicExits(t *testing.T) {
 
 	// test wf.magicActions
 	for _, td := range tests {
+		td := td
 		withTestWf(func(wf *Workflow) {
 			me := &mockExit{}
 			exitFunc = me.Exit
@@ -212,6 +213,7 @@ func TestMagicExits(t *testing.T) {
 
 	// test wf.args
 	for _, td := range tests {
+		td := td
 		withTestWf(func(wf *Workflow) {
 			me := &mockExit{}
 			exitFunc = me.Exit

@@ -6,7 +6,7 @@
 AwGo — A Go library for Alfred workflows
 ========================================
 
-[![Build Status][build-status-icon]][travis-link]
+[![Build Status][azure-status-icon]][azure-link]
 [![Go Report Card][goreport-icon]][goreport-link]
 [![Codacy coverage][coverage-icon]][codacy-link]
 [![GoDoc][godoc-icon]][godoc-link]
@@ -175,12 +175,14 @@ The icon is based on the [Go Gopher][gopher] by [Renee French][renee].
 [godoc-link]: https://godoc.org/github.com/deanishe/awgo
 [goreport-link]: https://goreportcard.com/report/github.com/deanishe/awgo
 [goreport-icon]: https://goreportcard.com/badge/github.com/deanishe/awgo
-[build-status-icon]: https://img.shields.io/travis/deanishe/awgo
+[azure-status-icon]: https://img.shields.io/azure-devops/build/deanishe/6cd8e4fe-7366-4485-aea6-e9d75e7757b2/1
+[azure-link]: https://dev.azure.com/deanishe/AwGo/_build
 [coverage-icon]: https://img.shields.io/codacy/coverage/e785f7b0e830468da6fa2856d62e59ab?color=brightgreen
-[travis-link]: https://travis-ci.org/deanishe/awgo
 [codacy-link]: https://www.codacy.com/app/deanishe/awgo
 
 <!--
+[travis-status-icon]: https://img.shields.io/travis/deanishe/awgo
+[travis-link]: https://travis-ci.org/deanishe/awgo
 [codacy-quality-icon]: https://api.codacy.com/project/badge/Grade/e785f7b0e830468da6fa2856d62e59ab
 [codacy-coverage-icon]: https://api.codacy.com/project/badge/Coverage/e785f7b0e830468da6fa2856d62e59ab
 [coveralls-icon]: https://coveralls.io/repos/github/deanishe/awgo/badge.svg?branch=master&v3

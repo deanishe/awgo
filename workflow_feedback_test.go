@@ -5,11 +5,12 @@ package aw
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestItemHelpers(t *testing.T) {

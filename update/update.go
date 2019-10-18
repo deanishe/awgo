@@ -23,7 +23,7 @@ import (
 
 var (
 	// UpdateInterval is how often to check for updates.
-	UpdateInterval = time.Duration(24 * time.Hour)
+	UpdateInterval = 24 * time.Hour
 	// HTTPTimeout is the timeout for establishing an HTTP(S) connection.
 	HTTPTimeout = 60 * time.Second
 
@@ -302,6 +302,7 @@ func (u *Updater) latest() *Download {
 		return nil
 	}
 	for _, dl := range u.downloads {
+		dl := dl
 		if dl.Prerelease && !u.Prereleases {
 			continue
 		}

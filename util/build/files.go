@@ -101,7 +101,7 @@ func zipFiles(out *zip.Writer, src string) (err error) {
 			}
 		)
 		fh.SetMode(mode.Perm())
-		fh.SetModTime(info.ModTime())
+		fh.Modified = info.ModTime()
 
 		if f, err = os.Open(orig); err != nil {
 			return err

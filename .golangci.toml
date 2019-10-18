@@ -1,0 +1,37 @@
+[run]
+deadline = "5m"
+
+[linters]
+disable-all = true
+enable = [
+  "deadcode",
+  "goconst",
+  "gofmt",
+  "goimports",
+  "ineffassign",
+  "scopelint",
+  "staticcheck",
+  "stylecheck",
+  "unconvert",
+  "unused",
+  # "maligned",
+  # "lll",
+  # "prealloc",
+]
+
+[linter-settings]
+  [linter-settings.errcheck]
+  check-blank = true
+  check-type-assertions = true
+
+  [linter-settings.goimports]
+  local-prefixes = "github.com/deanishe/awgo"
+
+[issues]
+  max-same-issues = 50
+  max-issues-per-linter = 50
+  # exclude = ['ST1005']
+
+  [[issues.exclude-rules]]
+  linters = ['stylecheck']
+  text = "ST1005:"

@@ -137,7 +137,7 @@ func (ma *magicActions) handleArgs(args []string, prefix string) ([]string, bool
 
 			if action != nil {
 
-				log.Printf(action.RunText())
+				log.Print(action.RunText())
 
 				ma.wf.NewItem(action.RunText()).
 					Icon(IconInfo).

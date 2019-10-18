@@ -9,6 +9,7 @@ import (
 	"strings"
 	"unicode"
 
+	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
 )
@@ -316,15 +317,10 @@ func (s strSlice) Sort(query string) []*Result {
 	return Sort(s, query)
 }
 
-// isMn returns true if rune is a non-spacing mark
-func isMn(r rune) bool {
-	return unicode.Is(unicode.Mn, r) // Mn: non-spacing mark
-}
-
 // stripDiacritics removes diacritics.
 // Strings are decomposed, then non-ASCII characters are removed.
 func stripDiacritics(s string) string {
-	stripper := transform.Chain(norm.NFD, transform.RemoveFunc(isMn))
+	stripper := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)))
 	stripped, _, err := transform.String(stripper, s)
 	if err != nil {
 		log.Printf("Couldn't strip diacritics from `%s`: %s", s, err)

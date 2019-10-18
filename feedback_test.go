@@ -321,6 +321,7 @@ func TestEmptyModifiersIgnored(t *testing.T) {
 	}
 
 	for _, td := range tests {
+		td := td
 		t.Run(fmt.Sprintf("%v", td.keys), func(t *testing.T) {
 			it := fb.NewItem("title")
 			require.Equal(t, 0, len(it.mods), "unexpected modifier count")
@@ -365,6 +366,7 @@ func TestMultipleModifiers(t *testing.T) {
 	}
 
 	for _, td := range tests {
+		td := td
 		t.Run(fmt.Sprintf("%v", td.keys), func(t *testing.T) {
 			m := it.NewModifier(td.keys...)
 			assert.Equal(t, td.x, string(m.Key), "unexpected modifier")
