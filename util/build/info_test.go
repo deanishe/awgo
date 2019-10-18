@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -52,18 +55,10 @@ func TestWorkflowInfo(t *testing.T) {
 		version  = "1.2.0"
 	)
 	info, err := NewInfo(LibDir(rootDirV4), testPlist)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if info.Name != name {
-		t.Errorf("Bad Name. Expected=%q, Got=%q", name, info.Name)
-	}
-	if info.BundleID != bundleID {
-		t.Errorf("Bad BundleID. Expected=%q, Got=%q", bundleID, info.BundleID)
-	}
-	if info.Version != version {
-		t.Errorf("Bad Version. Expected=%q, Got=%q", version, info.Version)
-	}
+	require.Nil(t, err, "NewInfo failed")
+	assert.Equal(t, name, info.Name, "unexpected name")
+	assert.Equal(t, bundleID, info.BundleID, "unexpected bundle ID")
+	assert.Equal(t, version, info.Version, "unexpected version")
 
 	// Read workflow data from info.plist
 	env := map[string]string{
@@ -73,18 +68,10 @@ func TestWorkflowInfo(t *testing.T) {
 	}
 	withEnv(env, func() {
 		info, err := NewInfo(LibDir(rootDirV4), testPlist)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if info.Name != name {
-			t.Errorf("Bad Name. Expected=%q, Got=%q", name, info.Name)
-		}
-		if info.BundleID != bundleID {
-			t.Errorf("Bad BundleID. Expected=%q, Got=%q", bundleID, info.BundleID)
-		}
-		if info.Version != version {
-			t.Errorf("Bad Version. Expected=%q, Got=%q", version, info.Version)
-		}
+		require.Nil(t, err, "NewInfo failed")
+		assert.Equal(t, name, info.Name, "unexpected name")
+		assert.Equal(t, bundleID, info.BundleID, "unexpected bundle ID")
+		assert.Equal(t, version, info.Version, "unexpected version")
 	})
 }
 
@@ -117,18 +104,11 @@ func TestAlfredVersion(t *testing.T) {
 			}, func() {
 				info, err := NewInfo(LibDir(td.dir), testPlist)
 				if td.err {
-					if err == nil {
-						t.Error("Error expected")
-					}
+					assert.NotNil(t, err, "expected error")
 					return
 				}
-				if err != nil {
-					t.Fatal(err)
-				}
-				// info := &Info{dir: td.dir}
-				if info.AlfredMajorVersion != td.x {
-					t.Errorf("Bad Version. Expected=%d, Got=%d", td.x, info.AlfredMajorVersion)
-				}
+				require.Nil(t, err, "unexpected error")
+				assert.Equal(t, td.x, info.AlfredMajorVersion, "unexpected version")
 			})
 		})
 	}
@@ -158,9 +138,8 @@ func TestDirs(t *testing.T) {
 				"alfred_workflow_cache": "",
 			}, func() {
 				info, err := NewInfo(LibDir(td.dir), testPlist)
-				if err != nil {
-					t.Fatal(err)
-				}
+				require.Nil(t, err, "NewInfo failed")
+
 				var (
 					syncX  = syncDirV4
 					prefsX = prefsBundleV4
@@ -176,21 +155,11 @@ func TestDirs(t *testing.T) {
 					dataX = dataDirV3
 				}
 
-				if info.AlfredSyncDir != syncX {
-					t.Errorf("Bad SyncDir. Expected=%q, Got=%q", syncX, info.AlfredSyncDir)
-				}
-				if info.AlfredPrefsBundle != prefsX {
-					t.Errorf("Bad PrefsBundle. Expected=%q, Got=%q", prefsX, info.AlfredPrefsBundle)
-				}
-				if info.AlfredWorkflowDir != wfDirX {
-					t.Errorf("Bad WorkflowsDir. Expected=%q, Got=%q", wfDirX, info.AlfredWorkflowDir)
-				}
-				if info.AlfredCacheDir != cacheX {
-					t.Errorf("Bad AlfredCacheDir. Expected=%q, Got=%q", cacheX, info.AlfredCacheDir)
-				}
-				if info.AlfredDataDir != dataX {
-					t.Errorf("Bad AlfredDataDir. Expected=%q, Got=%q", dataX, info.AlfredDataDir)
-				}
+				assert.Equal(t, syncX, info.AlfredSyncDir, "unexpected AlfredSyncDir")
+				assert.Equal(t, prefsX, info.AlfredPrefsBundle, "unexpected PrefsBundle")
+				assert.Equal(t, wfDirX, info.AlfredWorkflowDir, "unexpected AlfredWorkflowDir")
+				assert.Equal(t, cacheX, info.AlfredCacheDir, "unexpected AlfredCacheDir")
+				assert.Equal(t, dataX, info.AlfredDataDir, "unexpected AlfredDataDir")
 			})
 		})
 	}
@@ -200,32 +169,26 @@ func TestEnv(t *testing.T) {
 	t.Parallel()
 
 	info, err := NewInfo(LibDir(rootDirV4), testPlist)
-	if err != nil {
-		t.Fatal(err)
+	require.Nil(t, err, "NewInfo failed")
+
+	tests := []struct {
+		key, x string
+	}{
+		{"alfred_workflow_name", info.Name},
+		{"alfred_workflow_version", info.Version},
+		{"alfred_workflow_bundleid", info.BundleID},
+		{"alfred_workflow_uid", info.BundleID},
+		{"alfred_workflow_cache", info.CacheDir},
+		{"alfred_workflow_data", info.DataDir},
+		{"alfred_preferences", info.AlfredPrefsBundle},
+		{"alfred_version", fmt.Sprintf("%d", info.AlfredMajorVersion)},
 	}
 	env := info.Env()
-	if env["alfred_workflow_name"] != info.Name {
-		t.Errorf("Bad Name. Expected=%q, Got=%q", info.Name, env["alfred_workflow_name"])
-	}
-	if env["alfred_workflow_version"] != info.Version {
-		t.Errorf("Bad Version. Expected=%q, Got=%q", info.Version, env["alfred_workflow_version"])
-	}
-	if env["alfred_workflow_bundleid"] != info.BundleID {
-		t.Errorf("Bad BundleID. Expected=%q, Got=%q", info.BundleID, env["alfred_workflow_bundleid"])
-	}
-	if env["alfred_workflow_uid"] != info.BundleID {
-		t.Errorf("Bad UID. Expected=%q, Got=%q", info.BundleID, env["alfred_workflow_uid"])
-	}
-	if env["alfred_workflow_cache"] != info.CacheDir {
-		t.Errorf("Bad CacheDir. Expected=%q, Got=%q", info.CacheDir, env["alfred_workflow_cache"])
-	}
-	if env["alfred_workflow_data"] != info.DataDir {
-		t.Errorf("Bad DataDir. Expected=%q, Got=%q", info.DataDir, env["alfred_workflow_data"])
-	}
-	if env["alfred_preferences"] != info.AlfredPrefsBundle {
-		t.Errorf("Bad PrefsBundle. Expected=%q, Got=%q", info.AlfredPrefsBundle, env["alfred_preferences"])
-	}
-	if env["alfred_version"] != fmt.Sprintf("%d", info.AlfredMajorVersion) {
-		t.Errorf("Bad Version. Expected=%q, Got=%q", fmt.Sprintf("%d", info.AlfredMajorVersion), env["alfred_version"])
+	for _, td := range tests {
+		td := td
+		t.Run(td.key, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, td.x, env[td.key], "unexpected value")
+		})
 	}
 }

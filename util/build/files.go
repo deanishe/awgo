@@ -49,9 +49,22 @@ func Export(src, dest string) (path string, err error) {
 	if z, err = os.Create(path); err != nil {
 		return
 	}
-	defer z.Close()
+	defer func() {
+		if err := z.Close(); err != nil {
+			panic(err)
+		}
+	}()
 
-	out := zip.NewWriter(z)
+	err = zipFiles(zip.NewWriter(z), src)
+	return
+}
+
+func zipFiles(out *zip.Writer, src string) (err error) {
+	defer func() {
+		if e := out.Close(); e != nil {
+			err = e
+		}
+	}()
 
 	err = filepath.Walk(src, func(path string, fi os.FileInfo, err error) error {
 		if err != nil {
@@ -105,13 +118,7 @@ func Export(src, dest string) (path string, err error) {
 		return nil
 	})
 
-	if err != nil {
-		return
-	}
-
-	err = out.Close()
-
-	return
+	return err
 }
 
 // Glob is a pattern and (relative) destination directory.

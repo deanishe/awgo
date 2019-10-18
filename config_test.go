@@ -8,6 +8,8 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // TestConfigEnv verifies that Config holds the expected values.
@@ -35,18 +37,13 @@ func TestConfigEnv(t *testing.T) {
 	cfg := NewConfig(testEnv)
 
 	v := cfg.GetBool(EnvVarDebug)
-	if v != tDebug {
-		t.Errorf("bad Debug. Expected=%v, Got=%v", tDebug, v)
-	}
+	assert.Equal(t, tDebug, v, "unexpected Debug")
 
 	for _, td := range data {
 		td := td // capture variable
 		t.Run(fmt.Sprintf("Config.Get(%v)", td.name), func(t *testing.T) {
 			t.Parallel()
-			s := cfg.Get(td.key)
-			if s != td.x {
-				t.Errorf("Expected=%v, Got=%v", td.x, s)
-			}
+			assert.Equal(t, td.x, cfg.Get(td.key), "unexpected result")
 		})
 	}
 }
@@ -82,20 +79,14 @@ func TestGet(t *testing.T) {
 	// Verify env is the same
 	for k, x := range env {
 		t.Run(fmt.Sprintf("Config.Get(%q)", k), func(t *testing.T) {
-			v := cfg.Get(k)
-			if v != x {
-				t.Errorf("Expected=%v, Got=%v", x, v)
-			}
+			assert.Equal(t, x, cfg.Get(k), "unexpected value")
 		})
 	}
 
 	// Test Get
 	for _, td := range data {
 		t.Run(fmt.Sprintf("Config.Get(%q)", td.key), func(t *testing.T) {
-			v := cfg.Get(td.key, td.fb...)
-			if v != td.out {
-				t.Errorf("Expected=%v, Got=%v", td.out, v)
-			}
+			assert.Equal(t, td.out, cfg.Get(td.key, td.fb...), "unexpected value")
 		})
 	}
 }
@@ -139,10 +130,7 @@ func TestGetInt(t *testing.T) {
 	// Test GetInt
 	for _, td := range data {
 		t.Run(fmt.Sprintf("Config.GetInt(%v)", td.key), func(t *testing.T) {
-			v := cfg.GetInt(td.key, td.fb...)
-			if v != td.out {
-				t.Errorf("Expected=%v, Got=%v", td.out, v)
-			}
+			assert.Equal(t, td.out, cfg.GetInt(td.key, td.fb...), "unexpected value")
 		})
 	}
 }
@@ -182,10 +170,7 @@ func TestGetFloat(t *testing.T) {
 	// Test GetFloat
 	for _, td := range data {
 		t.Run(fmt.Sprintf("Config.GetFloat(%v)", td.key), func(t *testing.T) {
-			v := cfg.GetFloat(td.key, td.fb...)
-			if v != td.out {
-				t.Errorf("Expected=%v, Got=%v", td.out, v)
-			}
+			assert.Equal(t, td.out, cfg.GetFloat(td.key, td.fb...), "unexpected value")
 		})
 	}
 }
@@ -227,10 +212,7 @@ func TestGetDuration(t *testing.T) {
 	// Test GetDuration
 	for _, td := range data {
 		t.Run(fmt.Sprintf("Config.GetDuration(%v)", td.key), func(t *testing.T) {
-			v := cfg.GetDuration(td.key, td.fb...)
-			if v != td.out {
-				t.Errorf("Expected=%v, Got=%v", td.out, v)
-			}
+			assert.Equal(t, td.out, cfg.GetDuration(td.key, td.fb...), "unexpected value")
 		})
 	}
 }
@@ -276,10 +258,7 @@ func TestGetBool(t *testing.T) {
 	// Test GetBool
 	for _, td := range data {
 		t.Run(fmt.Sprintf("Config.GetBool(%q)", td.key), func(t *testing.T) {
-			v := cfg.GetBool(td.key, td.fb...)
-			if v != td.out {
-				t.Errorf("Expected=%v, Got=%v", td.out, v)
-			}
+			assert.Equal(t, td.out, cfg.GetBool(td.key, td.fb...), "unexpected value")
 		})
 	}
 }
@@ -303,10 +282,7 @@ func TestStringify(t *testing.T) {
 
 	for _, td := range data {
 		t.Run(fmt.Sprintf("stringify(%#v)", td.in), func(t *testing.T) {
-			s := stringify(td.in)
-			if s != td.out {
-				t.Errorf("Expected=%v, Got=%v", td.out, s)
-			}
+			assert.Equal(t, td.out, stringify(td.in), "unexpected value")
 		})
 	}
 }
@@ -314,22 +290,17 @@ func TestStringify(t *testing.T) {
 func TestBundleID(t *testing.T) {
 	cfg := NewConfig()
 	x := "net.deanishe.awgo"
-	v := cfg.getBundleID()
-	if v != x {
-		t.Errorf("Bad BundleID. Expected=%q, Got=%q", x, v)
-	}
+	assert.Equal(t, x, cfg.getBundleID(), "unexpected bundle ID")
+
 	x = "net.deanishe.awgo2"
-	v = cfg.getBundleID(x)
-	if v != x {
-		t.Errorf("Bad BundleID. Expected=%q, Got=%q", x, v)
-	}
+	assert.Equal(t, x, cfg.getBundleID(x), "unexpected bundle ID")
 }
 
 // Basic usage of Config.Get. Returns an empty string if variable is unset.
 func ExampleConfig_Get() {
 	// Set some test variables
-	os.Setenv("TEST_NAME", "Bob Smith")
-	os.Setenv("TEST_ADDRESS", "7, Dreary Lane")
+	_ = os.Setenv("TEST_NAME", "Bob Smith")
+	_ = os.Setenv("TEST_ADDRESS", "7, Dreary Lane")
 
 	// New Config from environment
 	cfg := NewConfig()
@@ -353,9 +324,9 @@ func ExampleConfig_Get() {
 // The fallback value is returned if the variable is unset.
 func ExampleConfig_Get_fallback() {
 	// Set some test variables
-	os.Setenv("TEST_NAME", "Bob Smith")
-	os.Setenv("TEST_ADDRESS", "7, Dreary Lane")
-	os.Setenv("TEST_EMAIL", "")
+	_ = os.Setenv("TEST_NAME", "Bob Smith")
+	_ = os.Setenv("TEST_ADDRESS", "7, Dreary Lane")
+	_ = os.Setenv("TEST_EMAIL", "")
 
 	// New Config from environment
 	cfg := NewConfig()
@@ -377,8 +348,8 @@ func ExampleConfig_Get_fallback() {
 // Getting int values with and without fallbacks.
 func ExampleConfig_GetInt() {
 	// Set some test variables
-	os.Setenv("PORT", "3000")
-	os.Setenv("PING_INTERVAL", "")
+	_ = os.Setenv("PORT", "3000")
+	_ = os.Setenv("PING_INTERVAL", "")
 
 	// New Config from environment
 	cfg := NewConfig()
@@ -399,8 +370,8 @@ func ExampleConfig_GetInt() {
 // Strings are parsed to floats using strconv.ParseFloat().
 func ExampleConfig_GetFloat() {
 	// Set some test variables
-	os.Setenv("TOTAL_SCORE", "172.3")
-	os.Setenv("AVERAGE_SCORE", "7.54")
+	_ = os.Setenv("TOTAL_SCORE", "172.3")
+	_ = os.Setenv("AVERAGE_SCORE", "7.54")
 
 	// New Config from environment
 	cfg := NewConfig()
@@ -419,10 +390,10 @@ func ExampleConfig_GetFloat() {
 // Durations are parsed using time.ParseDuration.
 func ExampleConfig_GetDuration() {
 	// Set some test variables
-	os.Setenv("DURATION_NAP", "20m")
-	os.Setenv("DURATION_EGG", "5m")
-	os.Setenv("DURATION_BIG_EGG", "")
-	os.Setenv("DURATION_MATCH", "1.5h")
+	_ = os.Setenv("DURATION_NAP", "20m")
+	_ = os.Setenv("DURATION_EGG", "5m")
+	_ = os.Setenv("DURATION_BIG_EGG", "")
+	_ = os.Setenv("DURATION_MATCH", "1.5h")
 
 	// New Config from environment
 	cfg := NewConfig()
@@ -455,13 +426,13 @@ func ExampleConfig_GetDuration() {
 func ExampleConfig_GetBool() {
 
 	// Set some test variables
-	os.Setenv("LIKE_PEAS", "t")
-	os.Setenv("LIKE_CARROTS", "true")
-	os.Setenv("LIKE_BEANS", "1")
-	os.Setenv("LIKE_LIVER", "f")
-	os.Setenv("LIKE_TOMATOES", "0")
-	os.Setenv("LIKE_BVB", "false")
-	os.Setenv("LIKE_BAYERN", "FALSE")
+	_ = os.Setenv("LIKE_PEAS", "t")
+	_ = os.Setenv("LIKE_CARROTS", "true")
+	_ = os.Setenv("LIKE_BEANS", "1")
+	_ = os.Setenv("LIKE_LIVER", "f")
+	_ = os.Setenv("LIKE_TOMATOES", "0")
+	_ = os.Setenv("LIKE_BVB", "false")
+	_ = os.Setenv("LIKE_BAYERN", "FALSE")
 
 	// New Config from environment
 	cfg := NewConfig()
@@ -501,6 +472,6 @@ func ExampleConfig_GetBool() {
 
 func unsetEnv(keys ...string) {
 	for _, key := range keys {
-		os.Unsetenv(key)
+		panicOnErr(os.Unsetenv(key))
 	}
 }

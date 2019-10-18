@@ -102,17 +102,16 @@ func TestNonMagicArgs(t *testing.T) {
 	}
 
 	for _, td := range data {
+		td := td
+		t.Run(fmt.Sprintf("%v", td.in), func(t *testing.T) {
+			t.Parallel()
+			wf := New()
+			ma := wf.magicActions
 
-		wf := New()
-		ma := wf.magicActions
-
-		args, handled := ma.handleArgs(td.in, DefaultMagicPrefix)
-
-		if handled {
-			t.Error("handled")
-		}
-
-		assert.Equal(t, td.x, args, "unexpected non-magic arguments")
+			args, handled := ma.handleArgs(td.in, DefaultMagicPrefix)
+			assert.False(t, handled, "handled")
+			assert.Equal(t, td.x, args, "unexpected non-magic arguments")
+		})
 	}
 
 }
@@ -235,23 +234,13 @@ func TestMagicUpdate(t *testing.T) {
 
 	// Incomplete keyword = search query
 	_, v := ma.handleArgs([]string{"workflow:upda"}, DefaultMagicPrefix)
-	if !v {
-		t.Errorf("Bad handled. Expected=%v, Got=%v", true, v)
-	}
+	assert.True(t, v, "non-magic arguments handled")
 
 	// Keyword of update MA
 	_, v = ma.handleArgs([]string{"workflow:update"}, DefaultMagicPrefix)
-	if !v {
-		t.Errorf("Bad handled. Expected=%v, Got=%v", true, v)
-	}
+	assert.True(t, v, "non-magic arguments handled")
 
-	if !u.checkForUpdateCalled {
-		t.Errorf("Bad update. CheckForUpdate not called")
-	}
-	if !u.updateAvailableCalled {
-		t.Errorf("Bad update. UpdateAvailable not called")
-	}
-	if !u.installCalled {
-		t.Errorf("Bad update. Install not called")
-	}
+	assert.True(t, u.checkForUpdateCalled, "CheckForUpdate not called")
+	assert.True(t, u.updateAvailableCalled, "UpdateAvailable not called")
+	assert.True(t, u.installCalled, "Install not called")
 }

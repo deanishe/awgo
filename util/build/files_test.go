@@ -13,6 +13,9 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func withTempDir(fn func(dir string)) {
@@ -54,30 +57,19 @@ func TestSymlink(t *testing.T) {
 				t.Parallel()
 				err := Symlink(td.link, td.target, td.relative)
 				if td.err {
-					if err == nil {
-						t.Error("Expected error")
-					}
+					assert.NotNil(t, err, "expected error")
 					return
 				}
-				if err != nil {
-					t.Fatalf("Unexpected error: %v", err)
-				}
-
-				if _, err := os.Stat(td.link); err != nil {
-					t.Fatal(err)
-				}
+				assert.Nil(t, err, "unexpected error")
+				_, err = os.Stat(td.link)
+				require.Nil(t, err, "stat symlink failed")
 
 				p, err := filepath.EvalSymlinks(td.link)
-				if err != nil {
-					t.Fatal(err)
-				}
+				require.Nil(t, err, "EvalSymlinks failed")
+
 				target, err := filepath.Abs(td.target)
-				if err != nil {
-					t.Fatal(err)
-				}
-				if p != target {
-					t.Errorf("Bad Symlink. Expected=%q, Got=%q", target, p)
-				}
+				require.Nil(t, err, "filepath.Abs failed")
+				assert.Equal(t, target, p, "unexpected symlink")
 			})
 		}
 	})
@@ -107,19 +99,10 @@ func TestGlobs(t *testing.T) {
 				t.Parallel()
 
 				g := Globs(td.pattern)[0]
-				if g.Pattern != td.pattern {
-					t.Errorf("Bad Pattern. Expected=%q, Got=%q", td.pattern, g.Pattern)
-				}
-
-				if err := SymlinkGlobs(dir, g); err != nil {
-					t.Fatal(err)
-				}
-
-				for _, p1 := range td.files {
-					p2 := filepath.Join(dir, p1)
-					if err := compareFiles(p1, p2); err != nil {
-						t.Errorf("Bad File (%s): %v", p1, err)
-					}
+				assert.Equal(t, td.pattern, g.Pattern, "unexpected pattern")
+				require.Nil(t, SymlinkGlobs(dir, g), "SymlinkGlobs failed")
+				for _, p := range td.files {
+					assert.Nil(t, compareFiles(p, filepath.Join(dir, p)), "files not equal")
 				}
 			})
 		})
@@ -143,31 +126,19 @@ func TestExport(t *testing.T) {
 						path string
 						err  error
 					)
-					if err = os.Mkdir(xdir, 0700); err != nil {
-						t.Fatal(err)
-					}
-					if path, err = Export(src, dir); err != nil {
-						t.Fatal(err)
-					}
+					require.Nil(t, os.Mkdir(xdir, 0700), "create build dir failed")
 
-					if _, err = os.Stat(path); err != nil {
-						t.Fatal(err)
-					}
+					path, err = Export(src, dir)
+					require.Nil(t, err, "export failed")
+					_, err = os.Stat(path)
+					require.Nil(t, err, "stat workflow failed")
 
-					name := filepath.Base(path)
-					x := "AwGo-1.2.0.alfredworkflow"
-					if name != x {
-						t.Errorf("Bad Name. Expected=%q, Got=%q", x, name)
-					}
+					assert.Equal(t, "AwGo-1.2.0.alfredworkflow", filepath.Base(path),
+						"unexpected workflow name")
 
 					cmd := exec.Command("unzip", path, "-d", xdir)
-					if err = cmd.Run(); err != nil {
-						t.Fatal(err)
-					}
-
-					if err = compareDirs(src, xdir); err != nil {
-						t.Fatal(err)
-					}
+					require.Nil(t, cmd.Run(), "unzip failed")
+					require.Nil(t, compareDirs(src, xdir), "src and unzipped workflow differ")
 				})
 			})
 		})
@@ -185,7 +156,6 @@ type fileInfo struct {
 
 func TestCompareDirs(t *testing.T) {
 	t.Parallel()
-
 	if err := compareDirs("./testdata/workflow", "./testdata/workflow-symlinked"); err != nil {
 		t.Error(err)
 	}
@@ -300,11 +270,17 @@ func hashFile(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer f.Close()
+	defer closeOrPanic(f)
 
 	h := sha256.New()
 	if _, err := io.Copy(h, f); err != nil {
 		return "", err
 	}
 	return fmt.Sprintf("%x", h.Sum(nil)), nil
+}
+
+func closeOrPanic(c io.Closer) {
+	if err := c.Close(); err != nil {
+		panic(err)
+	}
 }

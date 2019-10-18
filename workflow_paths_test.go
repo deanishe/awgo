@@ -8,68 +8,44 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestReset(t *testing.T) {
 	withTestWf(func(wf *Workflow) {
 		s := wf.Dir()
 		x, err := os.Getwd()
-		if err != nil {
-			t.Fatalf("[ERROR] %v", err)
-		}
-		if s != x {
-			t.Errorf("Bad Dir. Expected=%v, Got=%v", x, s)
-		}
+		require.Nil(t, err, "Getwd failed")
+		assert.Equal(t, x, s, "unexpected dir")
 
 		name := "xyz.json"
 		data := []byte("muh bytes")
-		if err := wf.Cache.Store(name, data); err != nil {
-			t.Fatal(err)
-		}
-		if err := wf.Data.Store(name, data); err != nil {
-			t.Fatal(err)
-		}
-		if err := wf.Session.Store(name, data); err != nil {
-			t.Fatal(err)
-		}
+		err = wf.Cache.Store(name, data)
+		assert.Nil(t, err, "cache store failed")
+		err = wf.Data.Store(name, data)
+		assert.Nil(t, err, "data store failed")
+		err = wf.Session.Store(name, data)
+		assert.Nil(t, err, "session store failed")
 
-		if !wf.Cache.Exists(name) {
-			t.Fatal("Cache does not exist")
-		}
-		if !wf.Data.Exists(name) {
-			t.Fatal("Data do not exist")
-		}
-		if !wf.Session.Exists(name) {
-			t.Fatal("Session cache does not exist")
-		}
+		assert.True(t, wf.Cache.Exists(name), "cache data do not exist")
+		assert.True(t, wf.Data.Exists(name), "data do not exist")
+		assert.True(t, wf.Session.Exists(name), "session data do not exist")
 
-		if err := wf.Reset(); err != nil {
-			t.Fatal(err)
-		}
+		require.Nil(t, wf.Reset(), "reset failed")
 
-		if wf.Cache.Exists(name) {
-			t.Fatal("Cache exists")
-		}
-		if wf.Data.Exists(name) {
-			t.Fatal("Data exist")
-		}
-		if wf.Session.Exists(name) {
-			t.Fatal("Session cache exists")
-		}
+		assert.False(t, wf.Cache.Exists(name), "cache data exist")
+		assert.False(t, wf.Data.Exists(name), "data exist")
+		assert.False(t, wf.Session.Exists(name), "session data exist")
 	})
 }
 
 func TestWorkflowRoot(t *testing.T) {
 	withTestWf(func(wf *Workflow) {
 		wd, err := os.Getwd()
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.Nil(t, err, "Getwd failed")
 
 		p := findWorkflowRoot(wd)
-		if p != wd {
-			t.Errorf("Bad Workflow directory. Expected=%q, Got=%q", wd, p)
-		}
+		assert.Equal(t, wd, p, "unexpected workflow directory")
 	})
 }
 
@@ -100,7 +76,7 @@ func TestOpen(t *testing.T) {
 		for _, td := range tests {
 			me := &mockExec{}
 			wf.execFunc = me.Run
-			td.fn()
+			td.fn() // call command
 			assert.Equal(t, td.name, me.name, "Wrong command name")
 			assert.Equal(t, td.args, me.args, "Wrong command args")
 		}

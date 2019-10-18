@@ -5,6 +5,7 @@ package util
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -59,7 +60,7 @@ func WriteFile(filename string, data []byte, perm os.FileMode) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer closeOrPanic(f)
 
 	name = f.Name()
 	defer func() {
@@ -76,4 +77,10 @@ func WriteFile(filename string, data []byte, perm os.FileMode) error {
 	}
 
 	return os.Rename(name, filename)
+}
+
+func closeOrPanic(c io.Closer) {
+	if err := c.Close(); err != nil {
+		panic(err)
+	}
 }

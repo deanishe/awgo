@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/deanishe/awgo/util"
 )
@@ -25,43 +26,43 @@ func TestWorkflow_RunInBackground(t *testing.T) {
 
 		cmd := exec.Command("sleep", "5")
 		// Sanity check
-		assert.False(t, wf.IsRunning(jobName), "job %q is already running", jobName)
+		require.False(t, wf.IsRunning(jobName), "job already running")
 
 		// Start job
-		assert.Nil(t, wf.RunInBackground(jobName, cmd), "failed to start job %q", jobName)
+		require.Nil(t, wf.RunInBackground(jobName, cmd), "start job failed")
 
 		// Job running?
-		assert.True(t, wf.IsRunning(jobName), "job %q is not running", jobName)
+		assert.True(t, wf.IsRunning(jobName), "job is not running")
 
 		pid, err := wf.getPid(jobName)
-		assert.Nil(t, err, "get PID for job %q failed", jobName)
+		assert.Nil(t, err, "get PID failed")
 
 		p := wf.pidFile(jobName)
-		assert.True(t, util.PathExists(p), "no PID file for %q", jobName)
+		assert.True(t, util.PathExists(p), "PID file does not exist")
 
 		// Duplicate job fails?
 		cmd = exec.Command("sleep", "5")
 		err = wf.RunInBackground("sleep", cmd)
-		assert.NotNil(t, err, "start duplicate job did not fail")
-
+		require.NotNil(t, err, "start duplicate job did not fail")
 		_, ok := err.(ErrJobExists)
-		assert.True(t, ok, "RunInBackground didn't return ErrAlreadyRunning")
-		assert.True(t, IsJobExists(err), "IsAlreadyRunning did not identity ErrAlreadyRunning")
-
+		require.True(t, ok, "RunInBackground did not return ErrJobExists")
+		assert.True(t, IsJobExists(err), "IsJobExist failed to identify ErrJobExists")
 		assert.NotEqual(t, -1, strings.Index(err.Error(), fmt.Sprintf("%d", pid)), "PID not found in error")
 
 		// Job killed OK?
-		assert.Nil(t, wf.Kill("sleep"), "failed to kill job")
+		require.Nil(t, wf.Kill(jobName), "kill job failed")
 
 		// Killing dead job fails?
-		assert.NotNil(t, wf.Kill("sleep"), "no error killing dead job %q", jobName)
+		require.NotNil(t, wf.Kill(jobName), "kill dead job succeeded")
 
 		// Job has exited and tidied up?
-		assert.False(t, wf.IsRunning("sleep"), "job %q still running", jobName)
-		assert.False(t, util.PathExists(p), "PID file for %q not deleted", jobName)
+		assert.False(t, wf.IsRunning(jobName), "job still running")
+		assert.False(t, util.PathExists(p), "PID file not deleted")
 
 		// Invalid PID returns error?
-		assert.Nil(t, ioutil.WriteFile(p, []byte("bad PID"), 0600), "failed to write PID file")
+		err = ioutil.WriteFile(p, []byte("bad PID"), 0600)
+		require.Nil(t, err, "write PID file failed")
+
 		assert.NotNil(t, wf.Kill(jobName), "invalid PID did not cause error")
 	})
 }
@@ -72,8 +73,6 @@ func TestWorkflow_RunInBackground_badJob(t *testing.T) {
 
 	withTestWf(func(wf *Workflow) {
 		cmd := exec.Command("/does/not/exist")
-		if err := wf.RunInBackground("badJob", cmd); err == nil {
-			t.Fatal(`run "/does/not/exist" succeeded`)
-		}
+		assert.NotNil(t, wf.RunInBackground("badJob", cmd), `run "/does/not/exist" succeeded`)
 	})
 }

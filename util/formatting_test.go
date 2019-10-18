@@ -4,8 +4,9 @@
 package util
 
 import (
-	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSlugify(t *testing.T) {
@@ -30,12 +31,9 @@ func TestSlugify(t *testing.T) {
 
 	for _, td := range tests {
 		td := td
-		t.Run(fmt.Sprintf("input=%q", td.in), func(t *testing.T) {
+		t.Run(td.in, func(t *testing.T) {
 			t.Parallel()
-			v := Slugify(td.in)
-			if v != td.x {
-				t.Errorf("Bad slug. Expected=%q, Got=%q", td.x, v)
-			}
+			assert.Equal(t, td.x, Slugify(td.in), "unexpected slug")
 		})
 	}
 }
@@ -61,9 +59,11 @@ func TestPadLeft(t *testing.T) {
 		{"powwow", " ", 3, "powwow"},
 	}
 	for _, td := range padLeftTests {
-		if out := PadLeft(td.str, td.pad, td.n); out != td.x {
-			t.Fatalf("PadLeft output incorrect. Expected=%v, Got=%v", td.x, out)
-		}
+		td := td
+		t.Run(td.str, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, td.x, PadLeft(td.str, td.pad, td.n), "unexpected output")
+		})
 	}
 }
 
@@ -81,9 +81,11 @@ func TestPadRight(t *testing.T) {
 		{"powwow", " ", 3, "powwow"},
 	}
 	for _, td := range padRightTests {
-		if out := PadRight(td.str, td.pad, td.n); out != td.x {
-			t.Fatalf("PadRight output incorrect. Expected=%v, Got=%v", td.x, out)
-		}
+		td := td
+		t.Run(td.str, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, td.x, PadRight(td.str, td.pad, td.n), "unexpected output")
+		})
 	}
 }
 
@@ -103,8 +105,10 @@ func TestPad(t *testing.T) {
 		{"powwow", " ", 3, "powwow"},
 	}
 	for _, td := range padTests {
-		if out := Pad(td.str, td.pad, td.n); out != td.x {
-			t.Fatalf("Pad output incorrect. Expected=%v, Got=%v", td.x, out)
-		}
+		td := td
+		t.Run(td.str, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, td.x, Pad(td.str, td.pad, td.n), "unexpected output")
+		})
 	}
 }

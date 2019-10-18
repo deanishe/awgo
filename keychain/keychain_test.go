@@ -6,9 +6,14 @@ package keychain
 import (
 	"os/exec"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestKeychain(t *testing.T) {
+	t.Parallel()
+
 	var (
 		service   = "net.deanishe.awgo"
 		name      = "test_password"
@@ -20,45 +25,32 @@ func TestKeychain(t *testing.T) {
 	// ensure test account doesn't exist
 	cmd := exec.Command("/usr/bin/security", "delete-generic-password", "-s", service, "-a", name)
 	if err := cmd.Run(); err != nil {
-		if cmd.ProcessState.ExitCode() != 44 {
-			t.Fatal(err)
-		}
+		require.Equal(t, 44, cmd.ProcessState.ExitCode(), "unexpected exit code")
 	}
 
 	// Missing items
-	if err := kc.Delete(name); err != ErrNotFound {
-		t.Errorf("Delete missing item. Expected=ErrNotFound, Got=%v", err)
-	}
-	if _, err := kc.Get(name); err != ErrNotFound {
-		t.Errorf("Get missing item. Expected=ErrNotFound, Got=%v", err)
-	}
+	assert.Equal(t, ErrNotFound, kc.Delete(name), "delete missing item did not fail")
+	_, err := kc.Get(name)
+	assert.Equal(t, ErrNotFound, err, "retrieve missing item did not fail")
 
 	// Set password
-	if err := kc.Set(name, password); err != nil {
-		t.Errorf("Set password. Expected=nil, Got=%v", err)
-	}
-	if v, err := kc.Get(name); err != nil {
-		t.Errorf("Get password. Expected=nil, Got=%v", err)
-	} else if v != password {
-		t.Errorf("Get password. Expected=%q, Got=%q", password, v)
-	}
+	assert.Nil(t, kc.Set(name, password), "set password failed")
+	v, err := kc.Get(name)
+	assert.Nil(t, err, "get password failed")
+	assert.Equal(t, password, v, "unexpected password")
 
 	// Change password
-	if err := kc.Set(name, password2); err != nil {
-		t.Errorf("Change password. Expected=nil, Got=%v", err)
-	}
-	if v, err := kc.Get(name); err != nil {
-		t.Errorf("Get changed password. Expected=nil, Got=%v", err)
-	} else if v != password2 {
-		t.Errorf("Get changed password. Expected=%q, Got=%q", password2, v)
-	}
+	assert.Nil(t, kc.Set(name, password2), "change password failed")
+	v, err = kc.Get(name)
+	assert.Nil(t, err, "get changed password failed")
+	assert.Equal(t, password2, v, "unexpected password")
 
-	if err := kc.Delete(name); err != nil && err != ErrNotFound {
-		t.Fatal(err)
-	}
+	assert.Nil(t, kc.Delete(name), "delete failed")
 }
 
 func TestParse(t *testing.T) {
+	t.Parallel()
+
 	data := []struct {
 		in string
 		pw string
@@ -75,9 +67,10 @@ func TestParse(t *testing.T) {
 	}
 
 	for _, td := range data {
-		v := parseSecret(td.in)
-		if v != td.pw {
-			t.Errorf("Bad Secret. Expected=%v, Got=%v", td.pw, v)
-		}
+		td := td
+		t.Run(td.in, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, td.pw, parseSecret(td.in), "unexpected password")
+		})
 	}
 }

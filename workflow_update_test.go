@@ -7,6 +7,8 @@ import (
 	"errors"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // ensure mockUpdater implements Updater
@@ -64,44 +66,20 @@ func TestWorkflowUpdater(t *testing.T) {
 
 	wf := New()
 	// false/fail when Updater is unset
-	if wf.UpdateCheckDue() {
-		t.Error("Bad UpdateCheckDue. Expected=false, Got=true")
-	}
-	if wf.UpdateAvailable() {
-		t.Error("Bad UpdateAvailable. Expected=false, Got=true")
-	}
-	if err := wf.CheckForUpdate(); err == nil {
-		t.Error("CheckForUpdate() succeeded, expected failure")
-	}
-	if err := wf.InstallUpdate(); err == nil {
-		t.Error("InstallUpdate() succeeded, expected failure")
-	}
+	assert.False(t, wf.UpdateCheckDue(), "unexpected UpdateCheckDue")
+	assert.False(t, wf.UpdateAvailable(), "unexpected UpdateAvailable")
+	assert.NotNil(t, wf.CheckForUpdate(), "CheckForUpdate succeeded")
+	assert.NotNil(t, wf.InstallUpdate(), "InstallUpdate succeeded")
 
 	// true/success with mockUpdater
 	u := &mockUpdater{}
 	_ = wf.Configure(Update(u))
-	if !wf.UpdateCheckDue() {
-		t.Error("Bad UpdateCheckDue. Expected=true, Got=false")
-	}
-	if !u.checkDueCalled {
-		t.Error("Bad Update. CheckDue not called")
-	}
-	if !wf.UpdateAvailable() {
-		t.Error("Bad UpdateAvailable. Expected=true, Got=false")
-	}
-	if !u.updateAvailableCalled {
-		t.Error("Bad Update. UpdateAvailable not called")
-	}
-	if err := wf.CheckForUpdate(); err != nil {
-		t.Error("CheckForUpdate() failed")
-	}
-	if !u.checkForUpdateCalled {
-		t.Error("Bad Update. CheckForUpdate not called")
-	}
-	if err := wf.InstallUpdate(); err != nil {
-		t.Error("InstallUpdate() failed")
-	}
-	if !u.installCalled {
-		t.Error("Bad Update. Install not called")
-	}
+	assert.True(t, wf.UpdateCheckDue(), "unexpected UpdateCheckDue")
+	assert.True(t, u.checkDueCalled, "checkDue not called")
+	assert.True(t, wf.UpdateAvailable(), "unexpected UpdateAvailable")
+	assert.True(t, u.updateAvailableCalled, "updateAvailable not called")
+	assert.Nil(t, wf.CheckForUpdate(), "CheckForUpdate failed")
+	assert.True(t, u.checkForUpdateCalled, "checkForUpdate not called")
+	assert.Nil(t, wf.InstallUpdate(), "InstallUpdate failed")
+	assert.True(t, u.installCalled, "installCalled not called")
 }

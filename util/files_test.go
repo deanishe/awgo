@@ -7,8 +7,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func inTempDir(fun func(dir string)) error {
@@ -58,33 +60,23 @@ func TestMustExist(t *testing.T) {
 
 		// Create directory
 		s := MustExist(name)
-		if s != name {
-			t.Errorf("Bad Dirname. Expected=%s, Got=%s", name, s)
-		}
+		assert.Equal(t, name, s, "unexpected dirname")
 
-		if _, err := os.Stat(s); err != nil {
-			t.Errorf("Couldn't stat dir %#v: %v", s, err)
-		}
+		_, err := os.Stat(s)
+		assert.Nil(t, err, "stat dir failed")
 
 		// Check path is as expected
 		p := filepath.Join(dir, name)
 		p2, err := filepath.Abs(s)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if p != p2 {
-			t.Errorf("Bad Path. Expected=%v, Got=%v", p2, p)
-		}
-
+		require.Nil(t, err, "filepath.Abs failed")
+		assert.Equal(t, p, p2, "unexpected path")
 	})
 
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.Nil(t, err, "inTempDir failed")
 }
 
 func TestPathExists(t *testing.T) {
+	t.Parallel()
 
 	err := inTempDir(func(dir string) {
 
@@ -93,9 +85,7 @@ func TestPathExists(t *testing.T) {
 		badName := "nodir"
 		badPath := filepath.Join(dir, badName)
 
-		if err := os.MkdirAll(name, 0700); err != nil {
-			t.Fatal(err)
-		}
+		require.Nil(t, os.MkdirAll(name, 0700), "MkdirAll failed")
 
 		data := []struct {
 			p string
@@ -109,51 +99,36 @@ func TestPathExists(t *testing.T) {
 		}
 
 		for _, td := range data {
-			v := PathExists(td.p)
-			if v != td.x {
-				t.Errorf("Bad PathExists for %#v. Expected=%v, Got=%v", td.p, td.x, v)
-			}
-
+			assert.Equal(t, td.x, PathExists(td.p), "unexpected result")
 		}
 
 	})
 
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.Nil(t, err, "inTempDir failed")
 }
 
 func TestClearDirectory(t *testing.T) {
 	err := inTempDir(func(dir string) {
 		names := []string{"./root/one", "./root/two", "./root/three"}
 		for _, s := range names {
-			if err := os.MkdirAll(s, 0700); err != nil {
-				t.Fatal(err)
-			}
+			require.Nil(t, os.MkdirAll(s, 0700), "MkdirAll failed")
 		}
 
 		for _, s := range names {
 			_, err := os.Stat(s)
-			if err != nil {
-				t.Error(err)
-			}
+			assert.Nil(t, err, "stat failed")
 		}
-
-		if err := ClearDirectory("./root"); err != nil {
-			t.Error(err)
-		}
+		assert.Nil(t, ClearDirectory("./root"), "ClearDirectory failed")
 
 		for _, s := range names {
-			_, err := os.Stat(s)
-			if !os.IsNotExist(err) {
-				t.Errorf("file %q exists", s)
-			}
+			t.Run(s, func(t *testing.T) {
+				_, err := os.Stat(s)
+				assert.True(t, os.IsNotExist(err), "file exists")
+			})
 		}
 
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.Nil(t, err, "inTempDir failed")
 }
 
 func TestWriteFile(t *testing.T) {
@@ -163,45 +138,22 @@ func TestWriteFile(t *testing.T) {
 			content = []byte(`test`)
 		)
 
-		if PathExists(name) {
-			t.Fatal("Path already exists.")
-		}
-
-		if err := WriteFile(name, content, 0600); err != nil {
-			t.Fatal(err)
-		}
-
-		if !PathExists(name) {
-			t.Errorf("Path doesn't exist: %s", name)
-		}
+		require.False(t, PathExists(name), "path already exists")
+		require.Nil(t, WriteFile(name, content, 0600), "WriteFile failed")
+		require.True(t, PathExists(name), "path does not exist")
 
 		data, err := ioutil.ReadFile(name)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.Nil(t, err, "read file failed")
 
-		if !reflect.DeepEqual(data, content) {
-			t.Errorf("Bad Content. Expected=%q, Got=%q.", string(content), string(data))
-		}
+		assert.Equal(t, content, data, "unexpected file content")
 
 		fi, err := os.Stat(name)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if fi.Mode() != 0600 {
-			t.Errorf("Bad FileMode. Expected=0600, Got=%v", fi.Mode())
-		}
+		require.Nil(t, err, "stat file failed")
+		assert.Equal(t, os.FileMode(0600), fi.Mode(), "unexpected file mode")
 
 		infos, err := ioutil.ReadDir(".")
-		if err != nil {
-			t.Fatal(err)
-		}
-		if len(infos) != 1 {
-			t.Errorf("Bad no. of files. Expected=1, Got=%d", len(infos))
-		}
-
+		require.Nil(t, err, "ReadDir failed")
+		assert.Equal(t, 1, len(infos), "unexpected no. of files")
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.Nil(t, err, "inTempDir failed")
 }
