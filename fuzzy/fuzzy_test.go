@@ -3,10 +3,16 @@
 
 package fuzzy
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 // TestSortStrings tests that strings are sorted correctly.
 func TestSortStrings(t *testing.T) {
+	t.Parallel()
 
 	tests := []struct {
 		q   string
@@ -26,19 +32,17 @@ func TestSortStrings(t *testing.T) {
 	}
 
 	for _, td := range tests {
-		// t.Logf("query=%#v, in=%#v, expected=%#v", td.q, td.in, td.out)
-		data := td.in[:]
-		SortStrings(data, td.q)
-		for i := 0; i < len(data); i++ {
-			if data[i] != td.out[i] {
-				t.Errorf("query=%#v, in=%#v, expected=%#v, actual=%#v", td.q, td.in, td.out, data)
-			}
-		}
+		t.Run(td.q, func(t *testing.T) {
+			data := td.in[:]
+			SortStrings(data, td.q)
+			assert.Equal(t, td.out, data, "unexpected sort results")
+		})
 	}
 }
 
 // TestMatchNoMatch tests queries and strings for match status.
 func TestMatchNoMatch(t *testing.T) {
+	t.Parallel()
 
 	tests := []struct {
 		q string
@@ -52,11 +56,11 @@ func TestMatchNoMatch(t *testing.T) {
 	}
 
 	for _, td := range tests {
-		data := []string{td.s}
-		r := SortStrings(data, td.q)
-		if r[0].Match != td.m {
-			t.Errorf("query=%#v, str=%#v => %v, expected=%v", td.q, td.s, r[0].Match, td.m)
-		}
+		t.Run(td.s, func(t *testing.T) {
+			data := []string{td.s}
+			r := SortStrings(data, td.q)
+			assert.Equal(t, td.m, r[0].Match, "unexpected match")
+		})
 	}
 }
 
@@ -88,36 +92,39 @@ func TestFirstMatch(t *testing.T) {
 	}
 
 	for _, td := range tests {
-		data := td.in[:]
-		r := SortStrings(data, td.q)
-		for i, s := range data {
-			if r[i].Match {
-				if s != td.first {
-					t.Errorf("query=%#v => %#v, expected=%#v", td.q, s, td.first)
+		t.Run(td.q, func(t *testing.T) {
+			data := td.in[:]
+			r := SortStrings(data, td.q)
+			for i, s := range data {
+				if r[i].Match {
+					assert.Equal(t, td.first, s, "unexpected first result")
+					break
 				}
-				break
 			}
-		}
-
+		})
 	}
 }
 
 // TestStripDiacritics
 func TestStripDiacritics(t *testing.T) {
+	t.Parallel()
 
-	// Non-ASCII query and data
-	if r := Match("fün", "fün"); r.Match == false {
-		t.Fatalf("fün != fün (diacritic stripping on): %+v", r)
+	tests := []struct {
+		s, q     string
+		strip, x bool
+	}{
+		// non-ASCII query and data
+		{"fün", "fün", true, true},
+		// non-ASCII data
+		{"fün", "fun", true, true},
+		// no stripping
+		{"fün", "fün", false, true},
+		{"fün", "fun", false, false},
 	}
-	// Non-ASCII data
-	if r := Match("fün", "fun"); r.Match == false {
-		t.Fatalf("fun != fün (diacritic stripping on): %+v", r)
-	}
-	// No diacritic stripping
-	if r := Match("fün", "fün", StripDiacritics(false)); r.Match == false {
-		t.Fatalf("fün != fün (diacritic stripping off): %+v", r)
-	}
-	if r := Match("fün", "fun", StripDiacritics(false)); r.Match == true {
-		t.Fatalf("fun != fün (diacritic stripping off): %+v", r)
+
+	for _, td := range tests {
+		t.Run(fmt.Sprintf("%q=%q", td.q, td.s), func(t *testing.T) {
+			assert.Equal(t, td.x, Match(td.s, td.q, StripDiacritics(td.strip)).Match, "unexpected match")
+		})
 	}
 }

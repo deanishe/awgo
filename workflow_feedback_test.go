@@ -23,25 +23,17 @@ func TestItemHelpers(t *testing.T) {
 
 	it := wf.NewWarningItem("Warn Title", "Warn subtitle")
 	x := `{"title":"Warn Title","subtitle":"Warn subtitle","valid":false,"icon":{"path":"/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/AlertCautionIcon.icns"}}`
-	if data, err = json.Marshal(it); err != nil {
-		t.Fatalf("marshal Item: %v", err)
-	}
+	data, err = json.Marshal(it)
+	assert.Nil(t, err, "marshal Item failed")
 	js := string(data)
-
-	if js != x {
-		t.Errorf("Bad Warning Item. Expected=%v, Got=%v", x, js)
-	}
+	assert.Equal(t, x, js, "unexpected Warning item")
 
 	it = wf.NewFileItem("/Volumes")
 	x = `{"title":"Volumes","subtitle":"/Volumes","autocomplete":"Volumes","arg":"/Volumes","uid":"/Volumes","valid":true,"type":"file","icon":{"path":"/Volumes","type":"fileicon"}}`
-	if data, err = json.Marshal(it); err != nil {
-		t.Fatalf("marshal Item: %v", err)
-	}
+	data, err = json.Marshal(it)
+	assert.Nil(t, err, "marshal Item failed")
 	js = string(data)
-
-	if js != x {
-		t.Errorf("Bad File Item. Expected=%v, Got=%v", x, js)
-	}
+	assert.Equal(t, x, js, "unexpected File item")
 }
 
 func TestNewFileItem(t *testing.T) {
@@ -55,29 +47,12 @@ func TestNewFileItem(t *testing.T) {
 		it = wf.NewFileItem(ipPath)
 	)
 
-	if it.title != "info.plist" {
-		t.Fatalf("Incorrect title: %v", it.title)
-	}
-
-	if *it.subtitle != ipShort {
-		t.Fatalf("Incorrect subtitle: %v", *it.subtitle)
-	}
-
-	if *it.uid != ipPath {
-		t.Fatalf("Incorrect UID: %v", *it.uid)
-	}
-
-	if it.file != true {
-		t.Fatalf("Incorrect file: %v", it.file)
-	}
-
-	if it.icon.Type != "fileicon" {
-		t.Fatalf("Incorrect type: %v", it.icon.Type)
-	}
-
-	if it.icon.Value != ipPath {
-		t.Fatalf("Incorrect Value: %v", it.icon.Value)
-	}
+	assert.Equal(t, "info.plist", it.title, "unexpected title")
+	assert.Equal(t, ipShort, *it.subtitle, "unexpected subtitle")
+	assert.Equal(t, ipPath, *it.uid, "unexpected UID")
+	assert.True(t, it.file, "unexpected file")
+	assert.Equal(t, IconType("fileicon"), it.icon.Type, "unexpected value type")
+	assert.Equal(t, ipPath, it.icon.Value, "unexpected icon value")
 }
 
 // WarnEmpty adds an item

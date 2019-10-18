@@ -6,9 +6,13 @@ package aw
 import (
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIcons(t *testing.T) {
+	t.Parallel()
+
 	icons := []*Icon{
 		IconAccount,
 		IconBurn,
@@ -35,17 +39,16 @@ func TestIcons(t *testing.T) {
 		IconWeb,
 	}
 	for _, icon := range icons {
-		if icon.Type != "" {
-			t.Fatalf("icon.Type is not empty: %v", icon.Value)
-		}
-		// Skip path validation on Travis because it's a Linux box
-		if os.Getenv("TRAVIS") != "" {
-			continue
-		}
-		_, err := os.Stat(icon.Value)
-		if err != nil {
-			t.Fatalf("Couldn't stat %v: %v", icon.Value, err)
-		}
+		icon := icon
+		t.Run(icon.Value, func(t *testing.T) {
+			assert.Equal(t, IconType(""), icon.Type, "icon.Type is not empty")
 
+			// Skip path validation on Travis because it's a Linux box
+			if os.Getenv("TRAVIS") != "" {
+				return
+			}
+			_, err := os.Stat(icon.Value)
+			assert.Nil(t, err, "stat failed")
+		})
 	}
 }

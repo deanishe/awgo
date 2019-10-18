@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/stretchr/testify/require"
+
 	"log"
 	"os"
 	"strings"
@@ -21,13 +23,8 @@ func TestWorkflowValues(t *testing.T) {
 	t.Parallel()
 
 	withTestWf(func(wf *Workflow) {
-
-		if wf.Name() != tName {
-			t.Errorf("Bad Name. Expected=%s, Got=%s", tName, wf.Name())
-		}
-		if wf.BundleID() != tBundleID {
-			t.Errorf("Bad BundleID. Expected=%s, Got=%s", tBundleID, wf.BundleID())
-		}
+		assert.Equal(t, tName, wf.Name(), "unexpected name")
+		assert.Equal(t, tBundleID, wf.BundleID(), "unexpected bundle ID")
 	})
 }
 
@@ -96,10 +93,7 @@ func TestNew(t *testing.T) {
 		t.Run(fmt.Sprintf("Option(%#v)", td.opt), func(t *testing.T) {
 			t.Parallel()
 			wf := New(td.opt)
-
-			if !td.test(wf) {
-				t.Errorf("option %s failed", td.desc)
-			}
+			assert.True(t, td.test(wf), "option failed")
 		})
 	}
 }
@@ -136,9 +130,8 @@ func TestWorkflow_Dir(t *testing.T) {
 		err error
 	)
 
-	if cwd, err = os.Getwd(); err != nil {
-		t.Fatalf("[ERROR] %v", err)
-	}
+	cwd, err = os.Getwd()
+	require.Nil(t, err, "Getwd failed")
 
 	tests := []struct {
 		in, x string
@@ -152,18 +145,12 @@ func TestWorkflow_Dir(t *testing.T) {
 	for _, td := range tests {
 		t.Run(fmt.Sprintf("findWorkflowRoot(%q)", td.in), func(t *testing.T) {
 			t.Parallel()
-			v := findWorkflowRoot(td.in)
-			if v != td.x {
-				t.Errorf("Expected=%v, Got=%v", td.x, v)
-			}
+			assert.Equal(t, td.x, findWorkflowRoot(td.in), "unexpected root")
 		})
 	}
 
 	wf := New()
-	v := wf.Dir()
-	if v != cwd {
-		t.Errorf("Bad Workflow.Dir. Expected=%q, Got=%q", cwd, v)
-	}
+	assert.Equal(t, cwd, wf.Dir(), "unexpected workflow dir")
 }
 
 // Check that AW's directories exist
@@ -251,12 +238,10 @@ func TestWorkflow_Fatal(t *testing.T) {
 func TestRunCommand(t *testing.T) {
 	t.Parallel()
 
-	if err := runCommand("/usr/bin/true"); err != nil {
-		t.Errorf(`call "/usr/bin/true" failed: %v`, err)
-	}
-	if err := runCommand("/does/not/exist"); err == nil {
-		t.Errorf(`call to "/does/not/exist" returned no error`)
-	}
+	err := runCommand("/usr/bin/true")
+	assert.Nil(t, err, `call "/usr/bin/true" failed`)
+	err = runCommand("/does/not/exist")
+	assert.NotNil(t, err, `call to "/does/not/exist" returned no error`)
 }
 
 // New initialises a Workflow with the default settings. Name,

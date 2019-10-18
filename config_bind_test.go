@@ -5,7 +5,6 @@ package aw
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"reflect"
 	"sort"
@@ -13,6 +12,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // testHost is the tagged struct tests load from and into.
@@ -104,36 +104,6 @@ func (dst *testDest) GetString(key string, fallback ...string) string {
 	return dst.Cfg.GetString(key, fallback...)
 }
 
-// Verify checks that dst.Saves has the same content as saves.
-func (dst *testDest) Verify(saves map[string]string) error {
-
-	var err error
-
-	for k, x := range saves {
-
-		s, ok := dst.Saves[k]
-		if !ok {
-			err = fmt.Errorf("Key %s was not set", k)
-			break
-		}
-
-		if s != x {
-			err = fmt.Errorf("Bad %s. Expected=%v, Got=%v", k, x, s)
-			break
-		}
-
-	}
-
-	if err == nil && len(dst.Saves) != len(saves) {
-		err = fmt.Errorf("Different lengths. Expected=%d, Got=%d", len(saves), len(dst.Saves))
-	}
-
-	if err != nil {
-		log.Printf("Expected=\n%#v\nGot=\n%#v", saves, dst.Saves)
-	}
-	return err
-}
-
 // Returns a test implementation of Env
 func bindTestEnv() MapEnv {
 
@@ -166,14 +136,8 @@ func TestExtract(t *testing.T) {
 	}
 
 	binds, err := extract(th)
-	if err != nil {
-		t.Fatalf("couldn't extract testHost: %v", err)
-	}
-
-	if len(binds) != testFieldCount {
-		t.Errorf("Bad Bindings count. Expected=%d, Got=%d",
-			testFieldCount, len(binds))
-	}
+	assert.Nil(t, err, "extract testHost failed")
+	assert.Equal(t, testFieldCount, len(binds), "unexpected binding count")
 
 	x := map[string]string{}
 	for _, bind := range binds {
@@ -189,18 +153,15 @@ func TestExtract(t *testing.T) {
 	}{}
 
 	binds, err = extract(&st)
-	if err != nil {
-		t.Fatalf("couldn't extract struct: %v", err)
-	}
+	assert.Nil(t, err, "extract failed")
+
 	// Change field numbers
 	for _, bind := range binds {
 		bind.FieldNum = bind.FieldNum + 1000
 	}
 	// Fail to load fields
 	for _, bind := range binds {
-		if err := bind.Import(cfg); err == nil {
-			t.Errorf("Accepted bad binding (%s)", bind.Name)
-		}
+		assert.NotNil(t, bind.Import(cfg), "accepted bad binding")
 	}
 }
 
@@ -212,42 +173,15 @@ func TestConfig_To(t *testing.T) {
 	e := bindTestEnv()
 	cfg := NewConfig(e)
 
-	if err := cfg.To(h); err != nil {
-		t.Fatal(err)
-	}
-
-	if h.ID != "" { // ID is ignored
-		t.Errorf("Bad ID. Expected=, Got=%v", h.ID)
-	}
-
-	if h.Hostname != testHostname {
-		t.Errorf("Bad Hostname. Expected=%v, Got=%v", testHostname, h.Hostname)
-	}
-
-	if h.Online != testOnline {
-		t.Errorf("Bad Online. Expected=%v, Got=%v", testOnline, h.Online)
-	}
-
-	if h.Port != testPort {
-		t.Errorf("Bad Port. Expected=%v, Got=%v", testPort, h.Port)
-	}
-
-	if h.Score != testScore {
-		t.Errorf("Bad Score. Expected=%v, Got=%v", testScore, h.Score)
-	}
-
-	if h.FreeSpace != testFreeSpace {
-		t.Errorf("Bad FreeSpace. Expected=%v, Got=%v", testFreeSpace, h.FreeSpace)
-	}
-
-	if h.PingInterval != testPingInterval {
-		t.Errorf("Bad PingInterval. Expected=%v, Got=%v", testPingInterval, h.PingInterval)
-	}
-
-	if h.PingAverage != testPingAverage {
-		t.Errorf("Bad PingAverage. Expected=%v, Got=%v", testPingAverage, h.PingAverage)
-	}
-
+	require.Nil(t, cfg.To(h), "cfg.To failed")
+	assert.Equal(t, "", h.ID, "unexpected ID") // ID is ignored
+	assert.Equal(t, testHostname, h.Hostname, "unexpected Hostname")
+	assert.Equal(t, testOnline, h.Online, "unexpected Online")
+	assert.Equal(t, testPort, h.Port, "unexpected Port")
+	assert.Equal(t, testScore, h.Score, "unexpected Score")
+	assert.Equal(t, testFreeSpace, h.FreeSpace, "unexpected FreeSpace")
+	assert.Equal(t, testPingInterval, h.PingInterval, "unexpected PingInterval")
+	assert.Equal(t, testPingAverage, h.PingAverage, "unexpected PingAverage")
 }
 
 // generated script
@@ -270,9 +204,7 @@ func TestConfig_Do(t *testing.T) {
 	for _, k := range keys {
 		cfg.Set(k, privTestEnv[k], false)
 	}
-	if err := cfg.Do(); err != nil {
-		t.Errorf("couldn't create test env: %v", err)
-	}
+	assert.Nil(t, cfg.Do(), "create test env failed")
 
 	x := `Application("com.runningwithcrayons.Alfred").setConfiguration("AWGO_TEST_BOOL", {"exportable":false,"inWorkflow":"net.deanishe.awgo","toValue":"true"});
 Application("com.runningwithcrayons.Alfred").setConfiguration("AWGO_TEST_DURATION", {"exportable":false,"inWorkflow":"net.deanishe.awgo","toValue":"5m0s"});
@@ -284,16 +216,12 @@ Application("com.runningwithcrayons.Alfred").setConfiguration("AWGO_TEST_QUOTED"
 	assert.Equal(t, x, mj.script, "bad script")
 
 	// no scripts, should return error
-	if err := cfg.Do(); err == nil {
-		t.Error("empty scripts didn't return error")
-	}
+	assert.NotNil(t, cfg.Do(), "empty scripts did not return error")
 
 	for _, k := range keys {
 		cfg.Unset(k)
 	}
-	if err := cfg.Do(); err != nil {
-		t.Errorf("couldn't delete test env: %v", err)
-	}
+	assert.Nil(t, cfg.Do(), "delete test env failed")
 
 	x = `Application("com.runningwithcrayons.Alfred").removeConfiguration("AWGO_TEST_BOOL", {"inWorkflow":"net.deanishe.awgo"});
 Application("com.runningwithcrayons.Alfred").removeConfiguration("AWGO_TEST_DURATION", {"inWorkflow":"net.deanishe.awgo"});
@@ -325,10 +253,7 @@ func TestConfig_From(t *testing.T) {
 
 	// Check Config is set up correctly
 	for k, v := range e {
-		s := cfg.Get(k)
-		if s != v {
-			t.Errorf("Bad %s. Expected=%v, Got=%v", k, v, s)
-		}
+		assert.Equal(t, v, cfg.Get(k), "unexpected value")
 	}
 
 	var (
@@ -362,17 +287,10 @@ func TestConfig_From(t *testing.T) {
 		dst := &testDest{cfg, map[string]string{}}
 
 		variables, err := cfg.bindVars(v)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if err := dst.setMulti(variables, false); err != nil {
-			t.Fatal(err)
-		}
-
-		if err := dst.Verify(x); err != nil {
-			t.Errorf("%s", err)
-		}
+		assert.Nil(t, err, "bindVars failed")
+		err = dst.setMulti(variables, false)
+		require.Nil(t, err, "setMulti failed")
+		assert.Equal(t, x, dst.Saves, "unexpected saves")
 	}
 
 	// Expected testDest value
@@ -417,9 +335,7 @@ func TestConfig_From_script(t *testing.T) {
 		EnvVarBundleID:      "net.deanishe.awgo",
 	})
 
-	if err := cfg.From(privTestSrc); err != nil {
-		t.Fatal(err)
-	}
+	require.Nil(t, cfg.From(privTestSrc), "cfg.From failed")
 
 	x := `Application("com.runningwithcrayons.Alfred").setConfiguration("TEST_BOOL", {"exportable":false,"inWorkflow":"net.deanishe.awgo","toValue":"true"});
 Application("com.runningwithcrayons.Alfred").setConfiguration("TEST_DURATION", {"exportable":false,"inWorkflow":"net.deanishe.awgo","toValue":"5m0s"});
@@ -463,10 +379,10 @@ func TestEnvVarForField(t *testing.T) {
 func ExampleConfig_To() {
 
 	// Set some test values
-	os.Setenv("USERNAME", "dave")
-	os.Setenv("API_KEY", "hunter2")
-	os.Setenv("INTERVAL", "5m")
-	os.Setenv("FORCE", "1")
+	_ = os.Setenv("USERNAME", "dave")
+	_ = os.Setenv("API_KEY", "hunter2")
+	_ = os.Setenv("INTERVAL", "5m")
+	_ = os.Setenv("FORCE", "1")
 
 	// Program settings to load from env
 	type Settings struct {
@@ -601,10 +517,7 @@ func TestZeroValue(t *testing.T) {
 			field := typ.Field(i)
 			value := rv.Field(i)
 
-			v := isZeroValue(value)
-			if v != true {
-				t.Errorf("Bad %s. Expected=true, Got=false", field.Name)
-			}
+			assert.Truef(t, isZeroValue(value), "zero value not recognised for %q", field.Name)
 		}
 	})
 
@@ -618,10 +531,7 @@ func TestZeroValue(t *testing.T) {
 			field := typ.Field(i)
 			value := rv.Field(i)
 
-			v := isZeroValue(value)
-			if v == true {
-				t.Errorf("Bad %s. Expected=false, Got=true", field.Name)
-			}
+			assert.Falsef(t, isZeroValue(value), "non-zero value not recognised for %q", field.Name)
 		}
 	})
 }
@@ -720,10 +630,7 @@ func TestZeroString(t *testing.T) {
 		td := td // capture variable
 		t.Run(fmt.Sprintf("%q", td.in), func(t *testing.T) {
 			t.Parallel()
-			v := isZeroString(td.in, td.kind)
-			if v != td.x {
-				t.Errorf("Expected=%v, Got=%v", td.x, v)
-			}
+			assert.Equal(t, td.x, isZeroString(td.in, td.kind), "unexpected value")
 		})
 	}
 }
@@ -753,10 +660,7 @@ func TestIsCamelCase(t *testing.T) {
 		td := td // capture variable
 		t.Run(fmt.Sprintf("isCamelCase(%q)", td.in), func(t *testing.T) {
 			t.Parallel()
-			v := isCamelCase(td.in)
-			if v != td.x {
-				t.Errorf("Expected=%v, Got=%v", td.x, v)
-			}
+			assert.Equal(t, td.x, isCamelCase(td.in), "unexpected camelcase")
 		})
 	}
 }
@@ -786,10 +690,7 @@ func TestSplitCamelCase(t *testing.T) {
 		td := td // capture variable
 		t.Run(fmt.Sprintf("splitCamelCase(%q)", td.in), func(t *testing.T) {
 			t.Parallel()
-			s := splitCamelCase(td.in)
-			if s != td.x {
-				t.Errorf("Expected=%q, Got=%q", td.x, s)
-			}
+			assert.Equal(t, td.x, splitCamelCase(td.in), "unexpected split")
 		})
 	}
 }
@@ -825,10 +726,7 @@ func TestIsBindable(t *testing.T) {
 		td := td // capture variable
 		t.Run(fmt.Sprintf("IsBindable(%v)", td.in), func(t *testing.T) {
 			t.Parallel()
-			v := isBindable(td.in)
-			if v != td.x {
-				t.Errorf("Bad Bindable for %v. Expected=%v, Got=%v", td.in, td.x, v)
-			}
+			assert.Equal(t, td.x, isBindable(td.in), "unexpected bindable")
 		})
 	}
 }

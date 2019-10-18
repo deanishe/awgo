@@ -9,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -64,6 +66,12 @@ func (me *mockExec) Run(name string, arg ...string) error {
 	return nil
 }
 
+func panicOnErr(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
 // create a temporary directory, call function fn, delete the directory.
 func withTempDir(fn func(dir string)) {
 	p, err := ioutil.TempDir("", "awgo-")
@@ -73,7 +81,7 @@ func withTempDir(fn func(dir string)) {
 	if p, err = filepath.EvalSymlinks(p); err != nil {
 		panic(err)
 	}
-	defer os.RemoveAll(p)
+	defer panicOnErr(os.RemoveAll(p))
 	fn(p)
 }
 
@@ -172,15 +180,12 @@ func TestWithTestWf(t *testing.T) {
 			{"Config.Localhash", tLocalhash, wf.Config.Get(EnvVarLocalhash)},
 		}
 
-		if wf.Debug() != tDebug {
-			t.Errorf("Bad Debug(). Expected=%v, Got=%v", tDebug, wf.Debug())
-		}
+		assert.Equal(t, tDebug, wf.Debug(), "unexpected debug")
 
 		for _, td := range data {
-			if td.v != td.x {
-				t.Errorf("Bad %s. Expected=%#v, Got=%#v", td.name, td.x, td.v)
-			}
+			t.Run(td.name, func(t *testing.T) {
+				assert.Equal(t, td.x, td.v, "unexpected variable")
+			})
 		}
-
 	})
 }

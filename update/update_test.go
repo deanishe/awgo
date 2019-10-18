@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // Mock exec.Command
@@ -63,7 +64,7 @@ func withTempDir(fn func(dir string)) {
 	if err != nil {
 		panic(err)
 	}
-	defer os.RemoveAll(dir)
+	defer panicOnError(os.RemoveAll(dir))
 	fn(dir)
 }
 
@@ -91,43 +92,30 @@ func TestUpdater(t *testing.T) {
 
 		vStr := "4.0.4"
 		oldVal := os.Getenv("alfred_version")
-		defer func() { os.Setenv("alfred_version", oldVal) }()
+		defer panicOnError(os.Setenv("alfred_version", oldVal))
 
-		os.Setenv("alfred_version", vStr)
+		panicOnError(os.Setenv("alfred_version", vStr))
+
 		u, err := NewUpdater(testSrc1, "0.2.2", dir)
-		if err != nil {
-			t.Fatalf("Error creating updater: %s", err)
-		}
-		if err := u.CheckForUpdate(); err != nil {
-			t.Fatalf("Error getting releases: %s", err)
-		}
+		assert.Nil(t, err, "create updater failed")
+		assert.Nil(t, u.CheckForUpdate(), "get releases failed")
+
 		u.CurrentVersion = mustVersion("1")
-		if u.UpdateAvailable() {
-			t.Fatal("Bad update #1")
-		}
+		assert.False(t, u.UpdateAvailable(), "unexpected update")
 		u.CurrentVersion = mustVersion("0.5")
-		if u.UpdateAvailable() {
-			t.Fatal("Bad update #2")
-		}
+		assert.False(t, u.UpdateAvailable(), "unexpected update")
 		u.CurrentVersion = mustVersion("0.4.5")
-		if u.UpdateAvailable() {
-			t.Fatal("Bad update #3")
-		}
+		assert.False(t, u.UpdateAvailable(), "unexpected update")
+
 		u.Prereleases = true
-		u.CurrentVersion = mustVersion("0.4.5")
-		if !u.UpdateAvailable() {
-			t.Fatal("Bad update #4")
-		}
+		assert.True(t, u.UpdateAvailable(), "unexpected update")
+
 		sv, _ := NewSemVer(vStr)
-		if !sv.Eq(u.AlfredVersion) {
-			t.Errorf("Bad AlfredVersion. Expected=%q, Got=%q", sv, u.AlfredVersion)
-		}
+		assert.True(t, sv.Eq(u.AlfredVersion), "unexpected Alfred version")
 
 		// Empty cache directory
 		u, err = NewUpdater(testSrc1, "0.2.2", "")
-		if err == nil {
-			t.Fatal("Updater accepted empty cacheDir")
-		}
+		assert.NotNil(t, err, "Updater accepted empty cacheDir")
 	})
 }
 
@@ -137,21 +125,15 @@ func TestUpdaterPreOnly(t *testing.T) {
 
 	withTempDir(func(dir string) {
 		u, err := NewUpdater(testSrc2, "0.2.2", dir)
-		if err != nil {
-			t.Fatalf("Error creating updater: %s", err)
-		}
-		if err := u.CheckForUpdate(); err != nil {
-			t.Fatalf("Error getting releases: %s", err)
-		}
+		require.Nil(t, err, "create updater failed")
+		require.Nil(t, u.CheckForUpdate(), "get releases failed")
+
 		u.CurrentVersion = mustVersion("1")
-		if u.UpdateAvailable() {
-			t.Fatal("Bad update #1")
-		}
+		assert.False(t, u.UpdateAvailable(), "unexpected update")
+
 		u.Prereleases = true
 		u.CurrentVersion = mustVersion("0.4.5")
-		if !u.UpdateAvailable() {
-			t.Fatal("Bad update #2")
-		}
+		assert.True(t, u.UpdateAvailable(), "unexpected update")
 	})
 }
 
@@ -166,32 +148,20 @@ func testUpdateIntervalSuccess(t *testing.T) {
 	t.Parallel()
 	withTempDir(func(dir string) {
 		u, err := NewUpdater(testSource{}, "0.2.2", dir)
-		if err != nil {
-			t.Fatalf("Error creating updater: %s", err)
-		}
+		require.Nil(t, err, "create updater failed")
 
 		// UpdateInterval is set
-		if !u.LastCheck.IsZero() {
-			t.Fatalf("LastCheck is not zero.")
-		}
-		if !u.CheckDue() {
-			t.Fatalf("Update is not due.")
-		}
+		assert.True(t, u.LastCheck.IsZero(), "LastCheck is not zero")
+		assert.True(t, u.CheckDue(), "update check is not due")
+
 		// LastCheck is updated
-		if err := u.CheckForUpdate(); err != nil {
-			t.Fatalf("Error fetching releases: %s", err)
-		}
-		if u.LastCheck.IsZero() {
-			t.Fatalf("LastCheck is zero.")
-		}
-		if u.CheckDue() {
-			t.Fatalf("Update is due.")
-		}
+		assert.Nil(t, u.CheckForUpdate(), "fetch releases failed")
+		assert.False(t, u.LastCheck.IsZero(), "LastCheck is zero")
+		assert.False(t, u.CheckDue(), "update check is due")
+
 		// Changing UpdateInterval
 		u.updateInterval = time.Duration(1 * time.Nanosecond)
-		if !u.CheckDue() {
-			t.Fatalf("Update is not due.")
-		}
+		assert.True(t, u.CheckDue(), "update check is not due")
 	})
 }
 
@@ -199,32 +169,20 @@ func testUpdateIntervalFail(t *testing.T) {
 	t.Parallel()
 	withTempDir(func(dir string) {
 		u, err := NewUpdater(testFailSource{}, "0.2.2", dir)
-		if err != nil {
-			t.Fatalf("Error creating updater: %s", err)
-		}
+		require.Nil(t, err, "create updater failed")
 
 		// UpdateInterval is set
-		if !u.LastCheck.IsZero() {
-			t.Fatal("LastCheck is not zero.")
-		}
-		if !u.CheckDue() {
-			t.Fatal("Update is not due.")
-		}
+		assert.True(t, u.LastCheck.IsZero(), "LastCheck is not zero")
+		assert.True(t, u.CheckDue(), "update check is not due")
+
 		// LastCheck is updated
-		if err := u.CheckForUpdate(); err == nil {
-			t.Fatal("Fetch succeeded")
-		}
-		if u.LastCheck.IsZero() {
-			t.Fatalf("LastCheck is zero.")
-		}
-		if u.CheckDue() {
-			t.Fatalf("Update is due.")
-		}
+		assert.NotNil(t, u.CheckForUpdate(), "fetch releases succeeded")
+		assert.False(t, u.LastCheck.IsZero(), "LastCheck is zero")
+		assert.False(t, u.CheckDue(), "update check is due")
+
 		// Changing UpdateInterval
 		u.updateInterval = time.Duration(1 * time.Nanosecond)
-		if !u.CheckDue() {
-			t.Fatalf("Update is not due.")
-		}
+		assert.True(t, u.CheckDue(), "update check is not due")
 	})
 }
 
@@ -243,21 +201,12 @@ func TestUpdater_Install(t *testing.T) {
 	withTempDir(func(dir string) {
 
 		u, err := NewUpdater(testSrc1, "0.2.2", dir)
-		if err != nil {
-			t.Fatalf("Error creating updater: %s", err)
-		}
+		require.Nil(t, err, "create updater failed")
 
 		assert.False(t, u.UpdateAvailable(), "empty updater has update")
-		if err := u.Install(); err == nil {
-			t.Fatalf("empty updater installed")
-		}
-		if err := u.CheckForUpdate(); err != nil {
-			t.Fatalf("Error getting releases: %s", err)
-		}
-		if err := u.Install(); err != nil {
-			t.Fatalf("install failed: %v", err)
-		}
-
+		assert.NotNil(t, u.Install(), "empty updater installed")
+		assert.Nil(t, u.CheckForUpdate(), "get releases failed")
+		assert.Nil(t, u.Install(), "install failed")
 		assert.Equal(t, "open", me.name, "wrong command called")
 	})
 }
@@ -269,20 +218,17 @@ func TestHTTPClient(t *testing.T) {
 		t.Parallel()
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintln(w, "hello")
+			if _, err := fmt.Fprintln(w, "hello"); err != nil {
+				panic(err)
+			}
 		}))
 		defer ts.Close()
 
 		data, err := getURL(ts.URL)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.Nil(t, err, "getURL failed")
 		ts.Close()
 
-		s := string(data)
-		if s != "hello\n" {
-			t.Errorf("Expected=%q, Got=%q", "hello", s)
-		}
+		assert.Equal(t, "hello\n", string(data), "unexpected response")
 	})
 
 	t.Run("HTTP(404)", func(t *testing.T) {
@@ -294,9 +240,7 @@ func TestHTTPClient(t *testing.T) {
 		defer ts.Close()
 
 		_, err := getURL(ts.URL)
-		if err == nil {
-			t.Errorf("404 request succeeded")
-		}
+		assert.NotNil(t, err, "404 request succeeded")
 		ts.Close()
 	})
 
@@ -304,15 +248,13 @@ func TestHTTPClient(t *testing.T) {
 		t.Parallel()
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			http.NotFound(w, r)
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		}))
 		URL := ts.URL
 		ts.Close()
 
 		_, err := getURL(URL)
-		if err == nil {
-			t.Errorf("bad request succeeded")
-		}
+		assert.NotNil(t, err, "bad request succeeded")
 		ts.Close()
 	})
 
@@ -320,47 +262,46 @@ func TestHTTPClient(t *testing.T) {
 		t.Parallel()
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintln(w, "contents")
+			if _, err := fmt.Fprintln(w, "contents"); err != nil {
+				panic(err)
+			}
 		}))
 		defer ts.Close()
 
 		f, err := ioutil.TempFile("", "awgo-*-test")
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer f.Close()
+		require.Nil(t, err, "read tempfile failed")
+		defer panicOnError(f.Close())
 
 		err = download(ts.URL, f.Name())
-		if err != nil {
-			t.Fatalf("[ERROR] download: %v", err)
-		}
+		require.Nil(t, err, "download failed")
 
 		data, err := ioutil.ReadFile(f.Name())
-		if err != nil {
-			t.Fatalf("[ERROR] open file: %v", err)
-		}
-		s := string(data)
-		if s != "contents\n" {
-			t.Errorf("Expected=%q, Got=%q", "contents\n", s)
-		}
+		require.Nil(t, err, "read file failed")
+		assert.Equal(t, "contents\n", string(data), "unexpected file contents")
 	})
 
 	t.Run("HTTP(download fails)", func(t *testing.T) {
 		t.Parallel()
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintln(w, "contents")
+			if _, err := fmt.Fprintln(w, "contents"); err != nil {
+				panic(err)
+			}
 		}))
 		URL := ts.URL
 		ts.Close()
 
 		err := download(URL, "")
-		if err == nil {
-			t.Fatal("Bad download didn't return error")
-		}
+		require.NotNil(t, err, "bad download succeeded")
 	})
 }
 
 func TestRunCommand(t *testing.T) {
 	assert.Nil(t, runCommand("/usr/bin/true"), `exec "/usr/bin/true" returned error`)
+}
+
+func panicOnError(err error) {
+	if err != nil {
+		panic(err)
+	}
 }

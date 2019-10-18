@@ -6,9 +6,10 @@ package update
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	aw "github.com/deanishe/awgo"
 )
@@ -84,26 +85,13 @@ func TestParseGitea(t *testing.T) {
 		fetch: func(URL string) ([]byte, error) {
 			return ioutil.ReadFile("testdata/empty.json")
 		}}
-	if dls, err = src.Downloads(); err != nil {
-		t.Fatal("parse empty JSON")
-	}
-	if len(dls) != 0 {
-		t.Fatal("releases in empty JSON")
-	}
+	dls, err = src.Downloads()
+	require.Nil(t, err, "parse empty JSON failed")
+	assert.Equal(t, 0, len(dls), "releases in empty JSON")
 
-	if dls, err = parseGiteaReleases(data); err != nil {
-		t.Fatal("parse Gitea JSON.")
-	}
-	if len(dls) != len(testGiteaDownloads) {
-		t.Fatalf("Wrong download count. Expected=%d, Got=%d", len(testGiteaDownloads), len(dls))
-	}
-
-	for i, w := range dls {
-		w2 := testGiteaDownloads[i]
-		if !reflect.DeepEqual(w, w2) {
-			t.Fatalf("Download mismatch at pos %d. Expected=%#v, Got=%#v", i, w2, w)
-		}
-	}
+	dls, err = parseGiteaReleases(data)
+	require.Nil(t, err, "parse Gitea JSON failed")
+	assert.Equal(t, testGiteaDownloads, dls, "unexpected downloads")
 }
 
 func makeGiteaSource() *giteaSource {
@@ -135,19 +123,12 @@ func TestGiteaURL(t *testing.T) {
 	}
 
 	for _, td := range data {
-		src := &giteaSource{Repo: td.repo}
-		u := src.url()
-		if u == "" {
-			if td.url != "" {
-				t.Errorf("Bad API URL for %q. Expected=%q, Got=nil", td.repo, td.url)
-			}
-			continue
-		}
-
-		v := src.url()
-		if v != td.url {
-			t.Errorf("Bad API URL. Expected=%v, Got=%v", td.url, v)
-		}
+		td := td
+		t.Run(td.repo, func(t *testing.T) {
+			t.Parallel()
+			src := &giteaSource{Repo: td.repo}
+			assert.Equal(t, td.url, src.url(), "unexpected URL")
+		})
 	}
 }
 
@@ -156,46 +137,27 @@ func TestGiteaUpdater(t *testing.T) {
 	withTempDir(func(dir string) {
 		src := makeGiteaSource()
 		dls, err := src.Downloads()
-		if err != nil {
-			t.Fatal(err)
-		}
-		if len(dls) != len(testGiteaDownloads) {
-			t.Errorf("Wrong no. of downloads. Expected=%v, Got=%v", len(testGiteaDownloads), len(dls))
-			for i, dl := range dls {
-				log.Printf("download %d: %s", i, dl.Filename)
-			}
-		}
+		require.Nil(t, err, "src.Downloads() failed")
+		assert.Equal(t, testGiteaDownloads, dls, "unexpected downloads")
 
 		// invalid versions
-		if _, err := NewUpdater(src, "", dir); err == nil {
-			t.Errorf("Accepted empty version")
-		}
-		if _, err := NewUpdater(src, "stan", dir); err == nil {
-			t.Errorf("Accepted invalid version")
-		}
+		_, err = NewUpdater(src, "", dir)
+		assert.NotNil(t, err, "accepted empty version")
+		_, err = NewUpdater(src, "stan", dir)
+		assert.NotNil(t, err, "accepted invalid version")
 
 		u, err := NewUpdater(src, "0.2.2", dir)
-		if err != nil {
-			t.Fatalf("create updater: %v", err)
-		}
+		require.Nil(t, err, "create updater failed")
 
 		// Update releases
-		if err := u.CheckForUpdate(); err != nil {
-			t.Fatalf("Couldn't retrieve releases: %s", err)
-		}
+		err = u.CheckForUpdate()
+		require.Nil(t, err, "retrieve releases failed")
 
 		// Check info is cached
 		u2, err := NewUpdater(src, "0.2.2", dir)
-		if err != nil {
-			t.Fatalf("create updater: %v", err)
-		}
-		if u2.CurrentVersion != u.CurrentVersion {
-			t.Errorf("Differing versions. Expected=%v, Got=%v", u.CurrentVersion, u2.CurrentVersion)
-		}
-		if !u2.LastCheck.Equal(u.LastCheck) {
-			t.Errorf("Differing LastCheck. Expected=%v, Got=%v", u.LastCheck, u2.LastCheck)
-		}
-
+		require.Nil(t, err, "create updater failed")
+		assert.Equal(t, u.CurrentVersion, u2.CurrentVersion, "differing versions")
+		assert.True(t, u2.LastCheck.Equal(u.LastCheck), "differing LastCheck")
 		testUpdater("gitea", u, t)
 	})
 }

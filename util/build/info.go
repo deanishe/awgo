@@ -201,7 +201,11 @@ func (info *Info) readPlist() error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if er := file.Close(); er != nil {
+			err = er
+		}
+	}()
 
 	data, err := ioutil.ReadAll(file)
 	if err != nil {

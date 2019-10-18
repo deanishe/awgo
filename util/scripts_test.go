@@ -40,17 +40,14 @@ func TestExecutableRunner(t *testing.T) {
 		td := td // capture variable
 		t.Run(fmt.Sprintf("CanRun(%s)", td.in), func(t *testing.T) {
 			t.Parallel()
-			v := r.CanRun(td.in)
-			if v != td.valid {
-				t.Errorf("Bad CanRun for %#v. Expected=%v, Got=%v", td.in, td.valid, v)
-			}
+			assert.Equal(t, td.valid, r.CanRun(td.in), "unexpected validity")
+
 			// Also test runners
 			cmd := runners.Cmd(td.in)
-			if td.valid && cmd == nil {
-				t.Errorf("Bad Cmd for %#v. Expected=*exec.Cmd, Got=nil", td.in)
-			}
-			if !td.valid && cmd != nil {
-				t.Errorf("Bad Cmd for %#v. Expected=nil, Got=*exec.Cmd", td.in)
+			if td.valid {
+				assert.NotNil(t, cmd, "valid command rejected")
+			} else {
+				assert.Nil(t, cmd, "invalid command accepted")
 			}
 		})
 	}
@@ -83,10 +80,7 @@ func TestScriptRunner(t *testing.T) {
 		td := td // capture variable
 		t.Run(fmt.Sprintf("CanRun(%s)", td.in), func(t *testing.T) {
 			t.Parallel()
-			v := r.CanRun(td.in)
-			if v != td.valid {
-				t.Errorf("Expected=%v, Got=%v", td.valid, v)
-			}
+			assert.Equal(t, td.valid, r.CanRun(td.in), "unexpected validity")
 		})
 	}
 }
