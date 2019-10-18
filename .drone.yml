@@ -14,7 +14,7 @@ steps:
   - name: build
     image: "golang:1.13"
     commands:
-      - sudo apt-get install -y zsh
+      - apt-get install -y zsh
       - go get github.com/schrej/godacov
       - ./run-tests.sh -ic ./...
       - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=drone.io; true
