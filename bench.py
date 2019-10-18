@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # encoding: utf-8
 #
 # Copyright (c) 2018 Dean Jackson <deanishe@deanishe.net>
@@ -33,14 +33,14 @@ MULTI_ALT = True
 BUNDLE_ID = 'net.deanishe.awgo'
 
 TPL_ONE = """\
-Application('Alfred 3').setConfiguration('{key}', {{
+Application('com.runningwithcrayons.Alfred').setConfiguration('{key}', {{
     toValue: '{value}',
     inWorkflow: '{bid}'
 }});
 """
 
 TPL_MANY = """\
-var alfred = Application('Alfred 3');
+var alfred = Application('com.runningwithcrayons.Alfred');
 """
 
 TPL_LINE = """\
@@ -127,7 +127,7 @@ def main():
     logs = []
 
     if SINGLE:
-        for i in range(REPS):
+        for _ in range(REPS):
             start = time()
             single()
             cumone += time() - start
@@ -135,7 +135,7 @@ def main():
         logs.append('single: %0.1fs (%0.3fs/rep)' % (cumone, cumone / REPS))
 
     if MULTI:
-        for i in range(REPS):
+        for _ in range(REPS):
             start = time()
             multiple()
             cumall += time() - start
@@ -143,7 +143,7 @@ def main():
         logs.append('multi: %0.1fs (%0.3fs/rep)' % (cumall, cumall / REPS))
 
     if MULTI_ALT:
-        for i in range(REPS):
+        for _ in range(REPS):
             start = time()
             multiple_alt()
             cumalt += time() - start
