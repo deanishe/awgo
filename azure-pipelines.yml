@@ -37,8 +37,8 @@ steps:
   displayName: 'Set up Go'
 
 - script: |
-    env | grep SYSTEM_
-    env | grep BUILD_
+    env | grep SYSTEM_ | sort
+    env | grep BUILD_ | sort
     echo "System.PullRequest.SourceCommitId=$(System.PullRequest.SourceCommitId)"
     echo "Build.SourceVersion=$(Build.SourceVersion)"
   workingDirectory: '$(modulePath)'
