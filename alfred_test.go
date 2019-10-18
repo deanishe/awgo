@@ -4,118 +4,87 @@
 package aw
 
 import (
+	"fmt"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAlfred(t *testing.T) {
-	t.Parallel()
-
 	var (
-		a   = NewAlfred()
-		x   string
-		err error
+		a = NewAlfred()
+		x string
 	)
 
-	defer os.Setenv("alfred_version", os.Getenv("alfred_version"))
-	os.Setenv("alfred_version", "")
+	defer func() {
+		if err := os.Setenv("alfred_version", ""); err != nil {
+			panic(fmt.Sprintf("setenv failed: %v", err))
+		}
+	}()
+	assert.Nil(t, os.Setenv("alfred_version", ""), "setenv failed")
 	a.noRunScripts = true
 
 	x = `Application("com.runningwithcrayons.Alfred").search("");`
-	if err = a.Search(""); err != nil {
-		t.Error(err)
-	}
-	if a.lastScript != x {
-		t.Errorf("Bad Search. Expected=%q, Got=%q", x, a.lastScript)
-	}
+	assert.Nil(t, a.Search(""), "Alfred call failed")
+	assert.Equal(t, x, a.lastScript, "search failed")
 
 	x = `Application("com.runningwithcrayons.Alfred").search("awgo alfred");`
-	if err := a.Search("awgo alfred"); err != nil {
-		t.Error(err)
-	}
-	if a.lastScript != x {
-		t.Errorf("Bad Search. Expected=%q, Got=%q", x, a.lastScript)
-	}
+	assert.Nil(t, a.Search("awgo alfred"), "Alfred call failed")
+	assert.Equal(t, x, a.lastScript, "search failed")
 
 	x = `Application("com.runningwithcrayons.Alfred").action(["/","/Volumes"]);`
-	if err := a.Action("/", "/Volumes"); err != nil {
-		t.Error(err)
-	}
-	if a.lastScript != x {
-		t.Errorf("Bad Action. Expected=%q, Got=%q", x, a.lastScript)
-	}
+	assert.Nil(t, a.Action("/", "/Volumes"), "Alfred call failed")
+	assert.Equal(t, x, a.lastScript, "action failed")
 
 	x = `Application("com.runningwithcrayons.Alfred").browse("/Users");`
-	if err := a.Browse("/Users"); err != nil {
-		t.Error(err)
-	}
-	if a.lastScript != x {
-		t.Errorf("Bad Search. Expected=%q, Got=%q", x, a.lastScript)
-	}
+	assert.Nil(t, a.Browse("/Users"), "Alfred call failed")
+	assert.Equal(t, x, a.lastScript, "browse failed")
 
 	x = `Application("com.runningwithcrayons.Alfred").runTrigger("test", {"inWorkflow":"net.deanishe.awgo","withArgument":"AwGo, yo!"});`
-	if err := a.RunTrigger("test", "AwGo, yo!"); err != nil {
-		t.Error(err)
-	}
-	if a.lastScript != x {
-		t.Errorf("Bad Trigger. Expected=%q, Got=%q", x, a.lastScript)
-	}
+	assert.Nil(t, a.RunTrigger("test", "AwGo, yo!"), "Alfred call failed")
+	assert.Equal(t, x, a.lastScript, "run trigger failed")
 
 	x = `Application("com.runningwithcrayons.Alfred").setTheme("Alfred Notepad");`
-	if err := a.SetTheme("Alfred Notepad"); err != nil {
-		t.Error(err)
-	}
-	if a.lastScript != x {
-		t.Errorf("Bad Theme. Expected=%q, Got=%q", x, a.lastScript)
-	}
+	assert.Nil(t, a.SetTheme("Alfred Notepad"), "Alfred call failed")
+	assert.Equal(t, x, a.lastScript, "run trigger failed")
+}
 
-	os.Setenv("alfred_version", "3.8.1")
+func TestAlfred3(t *testing.T) {
+	var (
+		a = NewAlfred()
+		x string
+	)
+
+	defer func() {
+		if err := os.Setenv("alfred_version", ""); err != nil {
+			panic(fmt.Sprintf("setenv failed: %v", err))
+		}
+	}()
+	a.noRunScripts = true
+
+	assert.Nil(t, os.Setenv("alfred_version", "3.8.1"), "setenv failed")
 	x = `Application("Alfred 3").search("");`
-	if err = a.Search(""); err != nil {
-		t.Error(err)
-	}
-	if a.lastScript != x {
-		t.Errorf("Bad Search. Expected=%q, Got=%q", x, a.lastScript)
-	}
+	assert.Nil(t, a.Search(""), "Alfred call failed")
+	assert.Equal(t, x, a.lastScript, "search failed")
 
 	x = `Application("Alfred 3").search("awgo alfred");`
-	if err := a.Search("awgo alfred"); err != nil {
-		t.Error(err)
-	}
-	if a.lastScript != x {
-		t.Errorf("Bad Search. Expected=%q, Got=%q", x, a.lastScript)
-	}
+	assert.Nil(t, a.Search("awgo alfred"), "Alfred call failed")
+	assert.Equal(t, x, a.lastScript, "search failed")
 
 	x = `Application("Alfred 3").action(["/","/Volumes"]);`
-	if err := a.Action("/", "/Volumes"); err != nil {
-		t.Error(err)
-	}
-	if a.lastScript != x {
-		t.Errorf("Bad Action. Expected=%q, Got=%q", x, a.lastScript)
-	}
+	assert.Nil(t, a.Action("/", "/Volumes"), "Alfred call failed")
+	assert.Equal(t, x, a.lastScript, "action failed")
 
 	x = `Application("Alfred 3").browse("/Users");`
-	if err := a.Browse("/Users"); err != nil {
-		t.Error(err)
-	}
-	if a.lastScript != x {
-		t.Errorf("Bad Search. Expected=%q, Got=%q", x, a.lastScript)
-	}
+	assert.Nil(t, a.Browse("/Users"), "Alfred call failed")
+	assert.Equal(t, x, a.lastScript, "browse failed")
 
 	x = `Application("Alfred 3").runTrigger("test", {"inWorkflow":"net.deanishe.awgo","withArgument":"AwGo, yo!"});`
-	if err := a.RunTrigger("test", "AwGo, yo!"); err != nil {
-		t.Error(err)
-	}
-	if a.lastScript != x {
-		t.Errorf("Bad Trigger. Expected=%q, Got=%q", x, a.lastScript)
-	}
+	assert.Nil(t, a.RunTrigger("test", "AwGo, yo!"), "Alfred call failed")
+	assert.Equal(t, x, a.lastScript, "run trigger failed")
 
 	x = `Application("Alfred 3").setTheme("Alfred Notepad");`
-	if err := a.SetTheme("Alfred Notepad"); err != nil {
-		t.Error(err)
-	}
-	if a.lastScript != x {
-		t.Errorf("Bad Theme. Expected=%q, Got=%q", x, a.lastScript)
-	}
-
+	assert.Nil(t, a.SetTheme("Alfred Notepad"), "Alfred call failed")
+	assert.Equal(t, x, a.lastScript, "run trigger failed")
 }

@@ -26,73 +26,43 @@ func TestCache_Store(t *testing.T) {
 
 		// Sanity checks
 		p := c.path(n)
-		if util.PathExists(p) {
-			t.Errorf("cache file already exists: %s", p)
-		}
+		assert.False(t, util.PathExists(p), "cache file already exists")
 
 		// Delete non-existent store
-		if err := c.Store(n, nil); err != nil {
-			t.Errorf("unexpected error clearing cache: %v", err)
-		}
+		assert.Nil(t, c.Store(n, nil), "clearing cache failed")
 
 		// Non-existent cache exists
-		if c.Exists(n) {
-			t.Errorf("non-existent cache exists")
-		}
+		assert.False(t, c.Exists(n), "non-existent cache exists")
 
 		// Non-existent cache has expired
-		if !c.Expired(n, 0) {
-			t.Errorf("non-existent cache hasn't expired")
-		}
+		assert.True(t, c.Expired(n, 0), "non-existent cache not expired")
 
 		// Store data
 		data := []byte(s)
-		if err := c.Store(n, data); err != nil {
-			t.Errorf("couldn't cache data to %s: %v", n, err)
-		}
-		if !util.PathExists(p) {
-			t.Errorf("cache file does not exist: %s", p)
-		}
-
-		if c.Exists(n) != util.PathExists(p) {
-			t.Errorf("cache file does not exist: %s", p)
-		}
+		assert.Nil(t, c.Store(n, data), "cache data failed")
+		assert.True(t, util.PathExists(p), "cache file does not exist")
+		assert.Equal(t, c.Exists(n), util.PathExists(p), "cache file does not exist")
 
 		// Load data
 		data2, err := c.Load(n)
-		if err != nil {
-			t.Errorf("couldn't load cached data: %v", err)
-		}
-		if bytes.Compare(data, data2) != 0 {
-			t.Errorf("loaded data does not match saved data: expected=%v, got=%v", data, data2)
-		}
+		assert.Nil(t, err, "load cached data failed")
+		assert.Equal(t, data, data2, "loaded data does not match saved data")
 
 		// Data age
 		age, err := c.Age(n)
-		if err != nil {
-			t.Errorf("couldn't get age of cache %s: %v", n, err)
-		}
-		if age == 0 {
-			t.Errorf("age is zero")
-		}
+		assert.Nil(t, err, "get cache age failed")
+		assert.NotEqual(t, 0, age, "age is zero")
 
 		// Delete data
-		if err := c.Store(n, nil); err != nil {
-			t.Errorf("couldn't delete cache %s: %v", p, err)
-		}
+		assert.Nil(t, c.Store(n, nil), "delete cache failed")
 
 		_, err = c.Age(n)
-		if err == nil {
-			t.Errorf("no error getting age of non-existent cache %s: %v", n, err)
-		}
-		if !os.IsNotExist(err) {
-			t.Errorf("deleted cache exists %s: %v", n, err)
-		}
+		assert.NotNil(t, err, "got age of non-existent cache")
+		assert.True(t, os.IsNotExist(err), "deleted cache exists")
 
 		// Load non-existent cache
-		if _, err := c.Load(n); err == nil {
-			t.Errorf("no error loading non-existent cache")
-		}
+		_, err = c.Load(n)
+		assert.NotNil(t, err, "no error loading non-existent cache")
 	})
 }
 
@@ -265,78 +235,43 @@ func TestCache_LoadOrStoreJSON(t *testing.T) {
 
 		// Sanity checks
 		p := c.path(n)
-		if util.PathExists(p) {
-			t.Errorf("cache file already exists: %s", p)
-		}
+		assert.False(t, util.PathExists(p), "cache file already exists")
 
 		a = &TestData{"one", "two"}
 		b = &TestData{}
 		// Cache empty
-		err := c.LoadOrStoreJSON(n, maxAge, reload, b)
-		if err != nil {
-			t.Errorf("couldn't load/store cached data: %v", err)
-		}
-		if !a.Eq(b) {
-			t.Errorf("unexpected cache data. Expected=%v, Got=%v", a, b)
-		}
-		if !reloadCalled {
-			t.Errorf("reload wasn't called")
-		}
-
-		if c.Expired(n, maxAge) {
-			t.Errorf("cache expired")
-		}
+		assert.Nil(t, c.LoadOrStoreJSON(n, maxAge, reload, b), "load/store cached data failed")
+		assert.Equal(t, a, b, "unexpected cache data")
+		assert.True(t, reloadCalled, "reload not called")
+		assert.False(t, c.Expired(n, maxAge), "cache expired")
 
 		// Load cached data
 		reloadCalled = false
 		a = &TestData{"one", "two"}
 		b = &TestData{}
-		err = c.LoadOrStoreJSON(n, maxAge, reload, b)
-		if err != nil {
-			t.Errorf("couldn't load/store cached data: %v", err)
-		}
-		if !b.Eq(a) {
-			t.Errorf("unexpected cache data. Expected=%v, Got=%v", a, b)
-		}
-		if reloadCalled {
-			t.Errorf("reload was called")
-		}
+		assert.Nil(t, c.LoadOrStoreJSON(n, maxAge, reload, b), "load/store cached data failed")
+		assert.Equal(t, a, b, "unexpected cache data")
+		assert.False(t, reloadCalled, "reload was called")
 
 		// Load with 0 maxAge
 		reloadCalled = false
 		a = &TestData{"one", "two"}
 		b = &TestData{}
-		err = c.LoadOrStoreJSON(n, 0, reload, b)
-		if err != nil {
-			t.Errorf("couldn't load/store cached data: %v", err)
-		}
-		if !b.Eq(a) {
-			t.Errorf("unexpected cache data. Expected=%v, Got=%v", a, b)
-		}
-		if reloadCalled {
-			t.Errorf("reload was called")
-		}
+		assert.Nil(t, c.LoadOrStoreJSON(n, 0, reload, b), "load/store cached data failed")
+		assert.Equal(t, a, b, "unexpected cache data")
+		assert.False(t, reloadCalled, "reload was called")
 
 		time.Sleep(time.Duration(time.Second * 1))
 
-		if !c.Expired(n, maxAge) {
-			t.Errorf("cache hasn't expired")
-		}
+		assert.True(t, c.Expired(n, maxAge), "cache has not expired")
 
 		// Reload data
 		reloadCalled = false
 		a = &TestData{"one", "two"}
 		b = &TestData{}
-		err = c.LoadOrStoreJSON(n, maxAge, reload, b)
-		if err != nil {
-			t.Errorf("couldn't load/store cached data: %v", err)
-		}
-		if !b.Eq(a) {
-			t.Errorf("unexpected cache data. Expected=%v, Got=%v", a, b)
-		}
-		if !reloadCalled {
-			t.Errorf("reload wasn't called")
-		}
+		assert.Nil(t, c.LoadOrStoreJSON(n, maxAge, reload, b), "load/store failed")
+		assert.Equal(t, a, b, "unexpected cache data")
+		assert.True(t, reloadCalled, "reload not called")
 	})
 }
 
@@ -359,9 +294,7 @@ func TestCache_reloadError(t *testing.T) {
 			t.Error("no error returned by reloadB")
 		}
 		v := &TestData{}
-		if err := c.LoadOrStoreJSON(n, 0, reloadJSON, v); err == nil {
-			t.Error("no error returned by reloadJSON")
-		}
+		assert.NotNil(t, c.LoadOrStoreJSON(n, 0, reloadJSON, v), "no error returned")
 	})
 }
 
@@ -381,31 +314,18 @@ func TestSession_Load(t *testing.T) {
 
 		// Sanity checks
 		p := s.cache.path(s.name(n))
-		if util.PathExists(p) {
-			t.Errorf("cache file already exists: %s", p)
-		}
+		assert.False(t, util.PathExists(p), "cache file already exists")
 
 		// Delete non-existent store
-		if err := s.Store(n, nil); err != nil {
-			t.Errorf("unexpected error clearing cache: %v", err)
-		}
+		assert.Nil(t, s.Store(n, nil), "clearing cache failed")
 
 		// Non-existent cache exists
-		if s.Exists(n) {
-			t.Errorf("non-existent cache exists")
-		}
+		assert.False(t, s.Exists(n), "non-existent cache exists")
 
 		// Store data
-		if err := s.Store(n, data); err != nil {
-			t.Errorf("couldn't cache data to %s: %v", n, err)
-		}
-		if !util.PathExists(p) {
-			t.Errorf("cache file does not exist: %s", p)
-		}
-
-		if s.Exists(n) != util.PathExists(p) {
-			t.Errorf("cache file does not exist: %s", p)
-		}
+		assert.Nil(t, s.Store(n, data), "cache data failed")
+		assert.True(t, util.PathExists(p), "cache file does not exist")
+		assert.Equal(t, util.PathExists(p), s.Exists(n), "cache file does not exist")
 
 		// Load data
 		data2, err = s.Load(n)
@@ -413,20 +333,16 @@ func TestSession_Load(t *testing.T) {
 		assert.Equal(t, data, data2, "loaded data != saved data")
 
 		// Clear session
-		_ = s.Clear(false) // Leave current session data
-		if !util.PathExists(p) {
-			t.Errorf("cache file does not exist: %s", p)
-		}
+		assert.Nil(t, s.Clear(false), "clear cache failed") // Leave current session data
+		assert.True(t, util.PathExists(p), "cache file does not exist")
+
 		// Clear this session's data, too
-		_ = s.Clear(true)
-		if util.PathExists(p) {
-			t.Errorf("cleared cache file still exists: %s", p)
-		}
+		assert.Nil(t, s.Clear(true), "error clearing session")
+		assert.False(t, util.PathExists(p), "cleared cache file still exists")
 
 		// Load non-existent cache
-		if _, err := s.Load(n); err == nil {
-			t.Errorf("no error loading non-existent cache")
-		}
+		_, err = s.Load(n)
+		assert.NotNil(t, err, "no error loading non-existent data")
 	})
 }
 
@@ -449,9 +365,7 @@ func TestSession_LoadOrStore(t *testing.T) {
 
 		// Sanity checks
 		p := s.cache.path(s.name(n))
-		if util.PathExists(p) {
-			t.Errorf("cache file already exists: %s", p)
-		}
+		assert.False(t, util.PathExists(p), "cache file already exists")
 
 		// LoadOrStore API
 		data2, err = s.LoadOrStore(n, reload)
@@ -482,9 +396,7 @@ func TestSession_LoadJSON(t *testing.T) {
 
 		// Sanity checks
 		p := s.cache.path(s.name(n))
-		if util.PathExists(p) {
-			t.Errorf("cache file already exists: %s", p)
-		}
+		assert.False(t, util.PathExists(p), "cache file already exists")
 
 		// Delete non-existent store
 		if err := s.StoreJSON(n, nil); err != nil {
@@ -515,19 +427,14 @@ func TestSession_LoadJSON(t *testing.T) {
 
 		// Clear session
 		_ = s.Clear(false) // Leave current session data
-		if !util.PathExists(p) {
-			t.Errorf("cache file does not exist: %s", p)
-		}
+		assert.True(t, util.PathExists(p), "cache file does not exist")
+
 		// Clear this session's data, too
 		_ = s.Clear(true)
-		if util.PathExists(p) {
-			t.Errorf("cleared cache file still exists: %s", p)
-		}
+		assert.False(t, util.PathExists(p), "cleared cache file still exists")
 
 		// Load non-existent cache
-		if err := s.LoadJSON(n, &data2); err == nil {
-			t.Errorf("no error loading non-existent cache")
-		}
+		assert.NotNil(t, s.LoadJSON(n, &data2), "no error loading non-existent cache")
 	})
 }
 
@@ -550,9 +457,7 @@ func TestSession_LoadOrStoreJSON(t *testing.T) {
 
 		// Sanity checks
 		p := s.cache.path(s.name(n))
-		if util.PathExists(p) {
-			t.Errorf("cache file already exists: %s", p)
-		}
+		assert.False(t, util.PathExists(p), "cache file already exists")
 
 		// LoadOrStore API
 		err = s.LoadOrStoreJSON(n, reload, &data2)
@@ -579,22 +484,12 @@ func TestSession_Clear(t *testing.T) {
 
 		// "old" session
 		s := NewSession(dir, sid1)
-		if err := s.Store(n, data); err != nil {
-			t.Fatalf("store failed: %v", err)
-		}
-
-		if !s.Exists(n) {
-			t.Errorf("cached data do not exist: %s", n)
-		}
+		assert.Nil(t, s.Store(n, data), "store failed")
+		assert.True(t, s.Exists(n), "cached data do not exist")
 
 		// "new" session
 		s = NewSession(dir, sid2)
-		if err := s.Clear(false); err != nil {
-			t.Fatalf("clear failed: %v", err)
-		}
-
-		if s.Exists(n) {
-			t.Errorf("expired data still exist: %s", n)
-		}
+		assert.Nil(t, s.Clear(false), "clear failed")
+		assert.False(t, s.Exists(n), "expired data still exist")
 	})
 }
