@@ -347,7 +347,7 @@ func TestSession_LoadJSON(t *testing.T) {
 
 		// Sanity checks
 		p := s.cache.path(s.name(n))
-		require.False(t, util.PathExists(p), "cache file already exists")
+		require.False(t, util.PathExists(p), "cache file already exists"
 
 		// Delete non-existent store
 		assert.Nil(t, s.StoreJSON(n, nil), "clear cache failed")
@@ -368,14 +368,11 @@ func TestSession_LoadJSON(t *testing.T) {
 
 		// Clear session
 		_ = s.Clear(false) // Leave current session data
-		if !util.PathExists(p) {
-			t.Errorf("cache file does not exist: %s", p)
-		}
+		assert.True(t, util.PathExists(p), "cache file does not exist")
+
 		// Clear this session's data, too
 		_ = s.Clear(true)
-		if util.PathExists(p) {
-			t.Errorf("cleared cache file still exists: %s", p)
-		}
+		assert.False(t, util.PathExists(p), "cleared cache file still exists")
 
 		// Load non-existent cache
 		assert.NotNil(t, s.LoadJSON(n, &data2), "load non-existent cache succeeded")
