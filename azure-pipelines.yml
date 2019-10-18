@@ -41,6 +41,8 @@ steps:
     env | grep BUILD_ | sort
     echo "System.PullRequest.SourceCommitId=$(System.PullRequest.SourceCommitId)"
     echo "Build.SourceVersion=$(Build.SourceVersion)"
+    echo "PR_COMMIT=$PR_COMMIT"
+    echo "BASE_COMMIT=$BASE_COMMIT"
   workingDirectory: '$(modulePath)'
   displayName: Environment
 
