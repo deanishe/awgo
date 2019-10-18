@@ -42,13 +42,6 @@ func mustVersion(s string) SemVer {
 	return v
 }
 
-// versioned is a test implementation of Versioned
-type versioned struct {
-	version string
-}
-
-func (v *versioned) Version() string { return v.version }
-
 type testSource struct {
 	dls []Download
 }
@@ -114,7 +107,7 @@ func TestUpdater(t *testing.T) {
 		assert.True(t, sv.Eq(u.AlfredVersion), "unexpected Alfred version")
 
 		// Empty cache directory
-		u, err = NewUpdater(testSrc1, "0.2.2", "")
+		_, err = NewUpdater(testSrc1, "0.2.2", "")
 		assert.NotNil(t, err, "Updater accepted empty cacheDir")
 	})
 }
@@ -160,7 +153,7 @@ func testUpdateIntervalSuccess(t *testing.T) {
 		assert.False(t, u.CheckDue(), "update check is due")
 
 		// Changing UpdateInterval
-		u.updateInterval = time.Duration(1 * time.Nanosecond)
+		u.updateInterval = time.Nanosecond
 		assert.True(t, u.CheckDue(), "update check is not due")
 	})
 }
@@ -181,7 +174,7 @@ func testUpdateIntervalFail(t *testing.T) {
 		assert.False(t, u.CheckDue(), "update check is due")
 
 		// Changing UpdateInterval
-		u.updateInterval = time.Duration(1 * time.Nanosecond)
+		u.updateInterval = time.Nanosecond
 		assert.True(t, u.CheckDue(), "update check is not due")
 	})
 }

@@ -82,7 +82,7 @@ func TestCache_LoadOrStore(t *testing.T) {
 	withTempDir(func(dir string) {
 		c := NewCache(dir)
 		n := "test.txt"
-		maxAge := time.Duration(time.Second * 1)
+		maxAge := time.Second
 
 		// Sanity checks
 		p := c.path(n)
@@ -109,7 +109,7 @@ func TestCache_LoadOrStore(t *testing.T) {
 		assert.Equal(t, []byte(s), data, "unexpected cache data")
 		assert.False(t, reloadCalled, "reload called")
 
-		time.Sleep(time.Duration(time.Second * 1))
+		time.Sleep(time.Second)
 
 		assert.True(t, c.Expired(n, maxAge), "cache not expired")
 
@@ -183,7 +183,7 @@ func TestCache_LoadOrStoreJSON(t *testing.T) {
 	withTempDir(func(dir string) {
 		n := "test.json"
 		c := NewCache(dir)
-		maxAge := time.Duration(time.Second * 1)
+		maxAge := time.Second
 
 		// Sanity checks
 		require.False(t, util.PathExists(c.path(n)), "cache file already exists")
@@ -212,7 +212,7 @@ func TestCache_LoadOrStoreJSON(t *testing.T) {
 		assert.Equal(t, a, b, "unexpected cache data")
 		assert.False(t, reloadCalled, "reload was called")
 
-		time.Sleep(time.Duration(time.Second * 1))
+		time.Sleep(time.Second)
 
 		assert.True(t, c.Expired(n, maxAge), "cache has not expired")
 

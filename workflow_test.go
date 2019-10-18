@@ -6,16 +6,17 @@ package aw
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/stretchr/testify/require"
 
 	"log"
 	"os"
 	"strings"
 	"testing"
 
-	"github.com/deanishe/awgo/util"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/deanishe/awgo/util"
 )
 
 // TestWorkflowValues tests workflow name, bundle ID etc.
@@ -143,6 +144,7 @@ func TestWorkflow_Dir(t *testing.T) {
 	}
 
 	for _, td := range tests {
+		td := td
 		t.Run(fmt.Sprintf("findWorkflowRoot(%q)", td.in), func(t *testing.T) {
 			t.Parallel()
 			assert.Equal(t, td.x, findWorkflowRoot(td.in), "unexpected root")

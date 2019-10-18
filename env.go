@@ -67,7 +67,7 @@ func validateEnv(env Env) error {
 	}
 
 	if issues != nil {
-		return fmt.Errorf("Invalid Workflow environment: %s", strings.Join(issues, ", "))
+		return fmt.Errorf("invalid Workflow environment: %s", strings.Join(issues, ", "))
 	}
 
 	return nil

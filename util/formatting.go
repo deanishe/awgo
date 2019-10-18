@@ -9,6 +9,7 @@ import (
 	"strings"
 	"unicode"
 
+	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
 )
@@ -26,14 +27,9 @@ func Slugify(s string) string {
 	return s
 }
 
-// isMn returns true if rune is a non-spacing mark
-func isMn(r rune) bool {
-	return unicode.Is(unicode.Mn, r) // Mn: non-spacing mark
-}
-
 // fold strips diacritics from string.
 func fold(s string) string {
-	stripper := transform.Chain(norm.NFD, transform.RemoveFunc(isMn))
+	stripper := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)))
 	ascii, _, err := transform.String(stripper, s)
 	if err != nil {
 		panic(err)

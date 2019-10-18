@@ -78,6 +78,7 @@ func TestGet(t *testing.T) {
 
 	// Verify env is the same
 	for k, x := range env {
+		k, x := k, x
 		t.Run(fmt.Sprintf("Config.Get(%q)", k), func(t *testing.T) {
 			assert.Equal(t, x, cfg.Get(k), "unexpected value")
 		})
@@ -85,6 +86,7 @@ func TestGet(t *testing.T) {
 
 	// Test Get
 	for _, td := range data {
+		td := td
 		t.Run(fmt.Sprintf("Config.Get(%q)", td.key), func(t *testing.T) {
 			assert.Equal(t, td.out, cfg.Get(td.key, td.fb...), "unexpected value")
 		})
@@ -129,6 +131,7 @@ func TestGetInt(t *testing.T) {
 	cfg := NewConfig(env)
 	// Test GetInt
 	for _, td := range data {
+		td := td
 		t.Run(fmt.Sprintf("Config.GetInt(%v)", td.key), func(t *testing.T) {
 			assert.Equal(t, td.out, cfg.GetInt(td.key, td.fb...), "unexpected value")
 		})
@@ -169,6 +172,7 @@ func TestGetFloat(t *testing.T) {
 	cfg := NewConfig(env)
 	// Test GetFloat
 	for _, td := range data {
+		td := td
 		t.Run(fmt.Sprintf("Config.GetFloat(%v)", td.key), func(t *testing.T) {
 			assert.Equal(t, td.out, cfg.GetFloat(td.key, td.fb...), "unexpected value")
 		})
@@ -211,6 +215,7 @@ func TestGetDuration(t *testing.T) {
 
 	// Test GetDuration
 	for _, td := range data {
+		td := td
 		t.Run(fmt.Sprintf("Config.GetDuration(%v)", td.key), func(t *testing.T) {
 			assert.Equal(t, td.out, cfg.GetDuration(td.key, td.fb...), "unexpected value")
 		})
@@ -257,6 +262,7 @@ func TestGetBool(t *testing.T) {
 
 	// Test GetBool
 	for _, td := range data {
+		td := td
 		t.Run(fmt.Sprintf("Config.GetBool(%q)", td.key), func(t *testing.T) {
 			assert.Equal(t, td.out, cfg.GetBool(td.key, td.fb...), "unexpected value")
 		})
@@ -281,6 +287,7 @@ func TestStringify(t *testing.T) {
 	}
 
 	for _, td := range data {
+		td := td
 		t.Run(fmt.Sprintf("stringify(%#v)", td.in), func(t *testing.T) {
 			assert.Equal(t, td.out, stringify(td.in), "unexpected value")
 		})

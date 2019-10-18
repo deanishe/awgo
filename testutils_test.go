@@ -183,6 +183,7 @@ func TestWithTestWf(t *testing.T) {
 		assert.Equal(t, tDebug, wf.Debug(), "unexpected debug")
 
 		for _, td := range data {
+			td := td
 			t.Run(td.name, func(t *testing.T) {
 				assert.Equal(t, td.x, td.v, "unexpected variable")
 			})

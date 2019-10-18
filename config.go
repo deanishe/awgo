@@ -145,7 +145,7 @@ func (cfg *Config) GetInt(key string, fallback ...int) int {
 		return fb
 	}
 
-	return int(i)
+	return i
 }
 
 // GetFloat returns the value for envvar "key" as a float.

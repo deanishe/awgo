@@ -121,6 +121,7 @@ func TestClearDirectory(t *testing.T) {
 		assert.Nil(t, ClearDirectory("./root"), "ClearDirectory failed")
 
 		for _, s := range names {
+			s := s
 			t.Run(s, func(t *testing.T) {
 				_, err := os.Stat(s)
 				assert.True(t, os.IsNotExist(err), "file exists")
