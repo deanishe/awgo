@@ -37,8 +37,8 @@ steps:
     env | grep SYSTEM_ | sort
     env | grep BUILD_ | sort
     env | grep CI_ | sort
-    echo "System.PullRequest.SourceCommitId=$(System.PullRequest.SourceCommitId)"
-    echo "Build.SourceVersion=$(Build.SourceVersion)"
+    echo 'System.PullRequest.SourceCommitId=$(System.PullRequest.SourceCommitId)'
+    echo 'Build.SourceVersion=$(Build.SourceVersion)'
   workingDirectory: '$(modulePath)'
   displayName: Environment
 
@@ -67,13 +67,14 @@ steps:
 #   displayName: 'coveralls.io'
 - script: |
     go get github.com/schrej/godacov
-    if [[ "$(System.PullRequest.SourceCommitId)" != "" ]]; then
-      echo "submitting PR commit $(System.PullRequest.SourceCommitId) ..."
-      godacov -r coverage.out -t $(CodacyToken) -c $(System.PullRequest.SourceCommitId); true
+    if [[ '$(System.PullRequest.SourceCommitId)' != "" ]]; then
+      COMMIT='$(System.PullRequest.SourceCommitId)'
+      echo "submitting PR commit $COMMIT ..."
     else
-      echo "submitting master commit $(Build.SourceVersion) ..."
-      godacov -r coverage.out -t $(CodacyToken) -c $(Build.SourceVersion); true
+      COMMIT='$(Build.SourceVersion)'
+      echo "submitting master commit $COMMIT ..."
     fi
+    godacov -r coverage.out -t '$(CodacyToken)' -c "$COMMIT"; true
     bash <(curl -s https://codecov.io/bash); true
   workingDirectory: '$(modulePath)'
   displayName: Coverage
