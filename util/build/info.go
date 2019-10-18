@@ -272,9 +272,8 @@ func findSyncFolder(v int, dir string) (string, error) {
 				return p, nil
 			}
 			return defaultSyncDirV4, nil
-		} else {
-			return "", fmt.Errorf("no syncfolder for version %d", v)
 		}
+		return "", fmt.Errorf("no syncfolder for version %d", v)
 	}
 
 	// Look for Alfred 3 preferences plist

@@ -303,7 +303,7 @@ func (wf *Workflow) SessionID() string {
 // Debug returns true if Alfred's debugger is open.
 func (wf *Workflow) Debug() bool { return wf.Config.GetBool(EnvVarDebug) }
 
-// args returns command-line arguments passed to the program.
+// Args returns command-line arguments passed to the program.
 // It intercepts "magic args" and runs the corresponding actions, terminating
 // the workflow. See MagicAction for full documentation.
 func (wf *Workflow) Args() []string {
