@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/deanishe/awgo/util"
 )
 
@@ -23,69 +25,44 @@ func TestWorkflow_RunInBackground(t *testing.T) {
 
 		cmd := exec.Command("sleep", "5")
 		// Sanity check
-		if wf.IsRunning(jobName) {
-			t.Fatalf("Job %q is already running", jobName)
-		}
+		assert.False(t, wf.IsRunning(jobName), "job %q is already running", jobName)
 
 		// Start job
-		if err := wf.RunInBackground(jobName, cmd); err != nil {
-			t.Fatalf("Error starting job %q: %s", jobName, err)
-		}
+		assert.Nil(t, wf.RunInBackground(jobName, cmd), "failed to start job %q", jobName)
 
 		// Job running?
-		if !wf.IsRunning(jobName) {
-			t.Fatalf("Job %q is not running", jobName)
-		}
+		assert.True(t, wf.IsRunning(jobName), "job %q is not running", jobName)
+
 		pid, err := wf.getPid(jobName)
-		if err != nil {
-			t.Fatalf("get PID for job: %v", err)
-		}
+		assert.Nil(t, err, "get PID for job %q failed", jobName)
+
 		p := wf.pidFile(jobName)
-		if !util.PathExists(p) {
-			t.Fatalf("No PID file for %q", jobName)
-		}
+		assert.True(t, util.PathExists(p), "no PID file for %q", jobName)
 
 		// Duplicate job fails?
 		cmd = exec.Command("sleep", "5")
 		err = wf.RunInBackground("sleep", cmd)
-		if err == nil {
-			t.Fatal("Starting duplicate 'sleep' job didn't error")
-		}
-		if _, ok := err.(ErrJobExists); !ok {
-			t.Fatal("RunInBackground didn't return ErrAlreadyRunning")
-		}
-		if !IsJobExists(err) {
-			t.Errorf("IsAlreadyRunning didn't identify ErrAlreadyRunning")
-		}
-		if strings.Index(err.Error(), fmt.Sprintf("%d", pid)) == -1 {
-			t.Errorf(`PID not found in error`)
-		}
+		assert.NotNil(t, err, "start duplicate job did not fail")
+
+		_, ok := err.(ErrJobExists)
+		assert.True(t, ok, "RunInBackground didn't return ErrAlreadyRunning")
+		assert.True(t, IsJobExists(err), "IsAlreadyRunning did not identity ErrAlreadyRunning")
+
+		assert.NotEqual(t, -1, strings.Index(err.Error(), fmt.Sprintf("%d", pid)), "PID not found in error")
 
 		// Job killed OK?
-		if err := wf.Kill("sleep"); err != nil {
-			t.Fatalf("Error killing job %q: %s", jobName, err)
-		}
+		assert.Nil(t, wf.Kill("sleep"), "failed to kill job")
+
 		// Killing dead job fails?
-		if err := wf.Kill("sleep"); err == nil {
-			t.Fatalf("No error killing dead job %q", jobName)
-		}
+		assert.NotNil(t, wf.Kill("sleep"), "no error killing dead job %q", jobName)
 
 		// Job has exited and tidied up?
-		if wf.IsRunning("sleep") {
-			t.Fatalf("%q job still running", jobName)
-		}
-		if util.PathExists(p) {
-			t.Fatalf("PID file for %q not deleted", jobName)
-		}
+		assert.False(t, wf.IsRunning("sleep"), "job %q still running", jobName)
+		assert.False(t, util.PathExists(p), "PID file for %q not deleted", jobName)
 
 		// Invalid PID returns error?
-		if err := ioutil.WriteFile(p, []byte("bad PID"), 0600); err != nil {
-			t.Fatalf("failed to write PID file %q: %v", p, err)
-		}
-
-		if err := wf.Kill(jobName); err == nil {
-			t.Fatal("invalid PID did not cause error")
-		}
+		assert.Nil(t, ioutil.WriteFile(p, []byte("bad PID"), 0600), "failed to write PID file")
+		assert.NotNil(t, wf.Kill(jobName), "invalid PID did not cause error")
 	})
 }
 

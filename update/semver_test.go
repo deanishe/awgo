@@ -5,8 +5,9 @@ package update
 
 import (
 	"fmt"
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestVersionValid(t *testing.T) {
@@ -60,13 +61,9 @@ func TestVersionValid(t *testing.T) {
 			t.Parallel()
 			v, err := NewSemVer(td.in)
 			if err != nil {
-				if td.valid {
-					t.Error("parse valid failed")
-				}
+				assert.False(t, td.valid, "valid rejected")
 			} else {
-				if v.String() != td.x {
-					t.Errorf("Expected=%s, Got=%s", td.x, v)
-				}
+				assert.Equal(t, td.x, v.String(), "valid rejected")
 			}
 		})
 	}
@@ -114,39 +111,20 @@ func TestSemVer_Compare(t *testing.T) {
 				t.Fatalf("Different errors. v1=%s, v2=%s", err1, err2)
 			}
 			r := v1.Compare(v2)
-			if r != td.r {
-				t.Fatalf("Expected=%d, Got=%d", td.r, r)
-			}
-			if td.r == 0 {
-				if !v1.Eq(v2) {
-					t.Fatal("[EQ] Did not compare as equal")
-				}
-				if !v1.Gte(v2) {
-					t.Fatal("[GTE] Did not compare as equal")
-				}
-				if !v1.Lte(v2) {
-					t.Fatal("[LTE] Did not compare as equal")
-				}
-			} else if td.r == 1 {
-				if v1.Eq(v2) {
-					t.Fatal("[EQ] Compared as equal")
-				}
-				if !v1.Gte(v2) {
-					t.Fatal("[GTE] Did not compare as greater")
-				}
-				if v1.Lte(v2) {
-					t.Fatal("[LTE] Compared as LTE")
-				}
-			} else if td.r == -1 {
-				if v1.Eq(v2) {
-					t.Fatal("[EQ] Compared as equal")
-				}
-				if v1.Gte(v2) {
-					t.Fatal("[GTE] Compared as GTE")
-				}
-				if !v1.Lte(v2) {
-					t.Fatal("[LTE] Did not compare as LTE")
-				}
+			assert.Equal(t, td.r, r, "unexpected comparison")
+			switch td.r {
+			case 0:
+				assert.True(t, v1.Eq(v2), "[EQ] did not compare as equal")
+				assert.True(t, v1.Gte(v2), "[GTE] did not compare as equal")
+				assert.True(t, v1.Lte(v2), "[LTE] did not compare as equal")
+			case 1:
+				assert.False(t, v1.Eq(v2), "[EQ] compared as equal")
+				assert.True(t, v1.Gte(v2), "[GTE] did not compare as greater")
+				assert.False(t, v1.Lte(v2), "[LTE] compared as less than")
+			case -1:
+				assert.False(t, v1.Eq(v2), "[EQ] compared as equal")
+				assert.False(t, v1.Gte(v2), "[GTE] compared as greater")
+				assert.True(t, v1.Lte(v2), "[LTE] did not compare as less than")
 			}
 		})
 	}
@@ -173,9 +151,7 @@ func TestSemVer_IsZero(t *testing.T) {
 
 	for _, td := range tests {
 		v, _ := NewSemVer(td.v)
-		if v.IsZero() != td.zero {
-			t.Errorf("Bad IsZero for %q. Expected=%v, Got=%v", td.v, td.zero, v.IsZero())
-		}
+		assert.Equal(t, td.zero, v.IsZero(), "unexpected IsZero")
 	}
 }
 func TestSortSemVer(t *testing.T) {
@@ -200,8 +176,10 @@ func TestSortSemVer(t *testing.T) {
 		td := td // capture variable
 		t.Run(fmt.Sprintf("%#v", td.in), func(t *testing.T) {
 			t.Parallel()
-			vin := []SemVer{}
-			out := []string{}
+			var (
+				vin []SemVer
+				out []string
+			)
 			for _, s := range td.in {
 				v, _ := NewSemVer(s)
 				vin = append(vin, v)
@@ -210,9 +188,7 @@ func TestSortSemVer(t *testing.T) {
 			for _, v := range vin {
 				out = append(out, v.String())
 			}
-			if !reflect.DeepEqual(out, td.out) {
-				t.Errorf("Expected=%#v, Got=%#v", td.out, out)
-			}
+			assert.Equal(t, td.out, out, "not equal")
 		})
 	}
 }
