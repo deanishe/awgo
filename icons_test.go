@@ -43,8 +43,8 @@ func TestIcons(t *testing.T) {
 		t.Run(icon.Value, func(t *testing.T) {
 			assert.Equal(t, IconType(""), icon.Type, "icon.Type is not empty")
 
-			// Skip path validation on Travis because it's a Linux box
-			if os.Getenv("TRAVIS") != "" {
+			// Skip path validation on CI because it's a Linux box
+			if os.Getenv("TRAVIS") != "" || os.Getenv("DRONE") != "" {
 				return
 			}
 			_, err := os.Stat(icon.Value)
