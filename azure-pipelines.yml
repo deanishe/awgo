@@ -37,6 +37,12 @@ steps:
   displayName: 'Set up Go'
 
 - script: |
+    env | grep SYSTEM_
+    env | grep BUILD_
+  workingDirectory: '$(modulePath)'
+  displayName: Environment
+
+- script: |
       go get -v -t -d ./...
   workingDirectory: '$(modulePath)'
   displayName: Fetch Code
