@@ -13,7 +13,6 @@ import (
 
 // Shorten paths by replacing user's home directory with ~
 func ExamplePrettyPath() {
-
 	paths := []string{
 		"",
 		"$HOME",
@@ -52,7 +51,6 @@ func ExamplePad() {
 }
 
 func ExamplePathExists() {
-
 	name := "my-test-file.txt"
 
 	// Non-existent file
@@ -99,7 +97,6 @@ func ExampleQuoteAS() {
 }
 
 func ExampleRunAS() {
-
 	// Some test words
 	data := []string{
 		"Hello, AppleScript!",
@@ -109,7 +106,6 @@ func ExampleRunAS() {
 	}
 
 	for _, input := range data {
-
 		// Simple script to return input
 		// QuoteAS adds quotation marks, so don't add any more
 		quoted := QuoteAS(input)
@@ -134,12 +130,10 @@ func ExampleRunAS() {
 	// < He said, "I'm fine!" then died :(
 	// > "
 	// < "
-
 }
 
 // You can pass additional arguments to your scripts.
 func ExampleRunJS_arguments() {
-
 	// Some test values
 	argv := []string{"angular", "react", "vue"}
 
@@ -159,7 +153,6 @@ func ExampleRunJS_arguments() {
 
 // Run calls any executable file. It does *not* use $PATH to find commands.
 func ExampleRun() {
-
 	// Create a simple test script
 	filename := "test-script"
 	script := `#!/bin/bash
@@ -190,7 +183,6 @@ func ExampleRun() {
 
 // You can pass arguments to the program/script you run.
 func ExampleRun_arguments() {
-
 	// Run an executable with arguments
 	out, err := Run("/bin/bash", "-c", "echo -n Stringfellow Hawke")
 	if err != nil {
@@ -206,7 +198,6 @@ func ExampleRun_arguments() {
 // Run recognises certain kinds of script files and knows which
 // interpreter to run them with.
 func ExampleRun_scripts() {
-
 	// Test scripts that output $1.
 	// Run will run them based on their file extension.
 	scripts := []struct {
@@ -228,12 +219,10 @@ func ExampleRun_scripts() {
 
 	// Run scripts
 	for _, script := range scripts {
-
 		// Run runs file based on file extension
 		// Pass script's own name as $1
 		data, err := Run(script.name, script.name)
 		if err != nil {
-
 			// We're expecting 2 unknown types
 			if err == ErrUnknownFileType {
 				fmt.Printf("[err] %s: %s\n", err, script.name)

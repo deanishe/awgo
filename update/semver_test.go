@@ -172,7 +172,6 @@ func TestSortSemVer(t *testing.T) {
 	}
 
 	for _, td := range tests {
-
 		td := td // capture variable
 		t.Run(fmt.Sprintf("%#v", td.in), func(t *testing.T) {
 			t.Parallel()

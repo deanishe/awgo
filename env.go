@@ -49,7 +49,6 @@ func (e sysEnv) Lookup(key string) (string, bool) { return os.LookupEnv(key) }
 
 // Check that minimum required values are set.
 func validateEnv(env Env) error {
-
 	var (
 		issues   []string
 		required = []string{

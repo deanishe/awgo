@@ -14,7 +14,6 @@ import (
 )
 
 func inTempDir(fun func(dir string)) error {
-
 	curdir, err := os.Getwd()
 	if err != nil {
 		return err
@@ -53,9 +52,7 @@ func inTempDir(fun func(dir string)) error {
 }
 
 func TestMustExist(t *testing.T) {
-
 	err := inTempDir(func(dir string) {
-
 		name := "testdir"
 
 		// Create directory
@@ -79,7 +76,6 @@ func TestPathExists(t *testing.T) {
 	t.Parallel()
 
 	err := inTempDir(func(dir string) {
-
 		name := "existingdir"
 		path := filepath.Join(dir, name)
 		badName := "nodir"
@@ -101,7 +97,6 @@ func TestPathExists(t *testing.T) {
 		for _, td := range data {
 			assert.Equal(t, td.x, PathExists(td.p), "unexpected result")
 		}
-
 	})
 
 	require.Nil(t, err, "inTempDir failed")
@@ -127,7 +122,6 @@ func TestClearDirectory(t *testing.T) {
 				assert.True(t, os.IsNotExist(err), "file exists")
 			})
 		}
-
 	})
 	require.Nil(t, err, "inTempDir failed")
 }

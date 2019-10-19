@@ -100,9 +100,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestWorkflow_Run(t *testing.T) {
-
 	withTestWf(func(wf *Workflow) {
-
 		var called bool
 
 		run := func() { called = true }
@@ -174,7 +172,6 @@ func TestWorkflow_awDirs(t *testing.T) {
 func TestWorkflow_logRotate(t *testing.T) {
 	logInitialized = false // ensure log is created
 	withTestWf(func(wf *Workflow) {
-
 		wf.Configure(MaxLogSize(10))
 		log.Print("more than 10 bytes")
 

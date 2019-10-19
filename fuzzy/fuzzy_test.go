@@ -34,9 +34,8 @@ func TestSortStrings(t *testing.T) {
 	for _, td := range tests {
 		td := td
 		t.Run(td.q, func(t *testing.T) {
-			data := td.in[:]
-			SortStrings(data, td.q)
-			assert.Equal(t, td.out, data, "unexpected sort results")
+			SortStrings(td.in, td.q)
+			assert.Equal(t, td.out, td.in, "unexpected sort results")
 		})
 	}
 }
@@ -68,7 +67,6 @@ func TestMatchNoMatch(t *testing.T) {
 
 // TestFirstMatch tests the expected matching result is first.
 func TestFirstMatch(t *testing.T) {
-
 	simpleHostnames := []string{
 		"www.example.com",
 		"one.example.com",
@@ -96,9 +94,8 @@ func TestFirstMatch(t *testing.T) {
 	for _, td := range tests {
 		td := td
 		t.Run(td.q, func(t *testing.T) {
-			data := td.in[:]
-			r := SortStrings(data, td.q)
-			for i, s := range data {
+			r := SortStrings(td.in, td.q)
+			for i, s := range td.in {
 				if r[i].Match {
 					assert.Equal(t, td.first, s, "unexpected first result")
 					break

@@ -90,7 +90,6 @@ func (wf *Workflow) Fatalf(format string, args ...interface{}) {
 // FatalError()/Fatal(), this does not terminate the workflow,
 // but you can't send any more results to Alfred.
 func (wf *Workflow) Warn(title, subtitle string) *Workflow {
-
 	// Remove any existing items
 	wf.Feedback.Clear()
 
@@ -128,7 +127,6 @@ func (wf *Workflow) Filter(query string) []*fuzzy.Result {
 //     WarnEmpty()  // only sends if there are no items
 //
 func (wf *Workflow) SendFeedback() *Workflow {
-
 	// Set session ID
 	wf.Var("AW_SESSION_ID", wf.SessionID())
 

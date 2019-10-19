@@ -109,7 +109,6 @@ func (ma *magicActions) unregister(actions ...MagicAction) {
 //
 // If no magic actions are found, it returns args.
 func (ma *magicActions) args(args []string, prefix string) []string {
-
 	args, handled := ma.handleArgs(args, prefix)
 
 	if handled {
@@ -123,20 +122,16 @@ func (ma *magicActions) args(args []string, prefix string) []string {
 // handleArgs checks args for the magic prefix. Returns args and true if
 // it found and handled a magic argument.
 func (ma *magicActions) handleArgs(args []string, prefix string) ([]string, bool) {
-
 	var handled bool
 
 	for _, arg := range args {
-
 		arg = strings.TrimSpace(arg)
 
 		if strings.HasPrefix(arg, prefix) {
-
 			query := arg[len(prefix):]
 			action := ma.actions[query]
 
 			if action != nil {
-
 				log.Print(action.RunText())
 
 				ma.wf.NewItem(action.RunText()).
@@ -151,10 +146,8 @@ func (ma *magicActions) handleArgs(args []string, prefix string) ([]string, bool
 				}
 
 				handled = true
-
 			} else {
 				for kw, action := range ma.actions {
-
 					ma.wf.NewItem(action.Keyword()).
 						Subtitle(action.Description()).
 						Valid(false).

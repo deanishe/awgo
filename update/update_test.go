@@ -82,7 +82,6 @@ var (
 
 func TestUpdater(t *testing.T) {
 	withTempDir(func(dir string) {
-
 		vStr := "4.0.4"
 		oldVal := os.Getenv("alfred_version")
 		defer panicOnError(os.Setenv("alfred_version", oldVal))
@@ -192,7 +191,6 @@ func TestUpdater_Install(t *testing.T) {
 	download = func(URL, path string) error { return nil }
 
 	withTempDir(func(dir string) {
-
 		u, err := NewUpdater(testSrc1, "0.2.2", dir)
 		require.Nil(t, err, "create updater failed")
 

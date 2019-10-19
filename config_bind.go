@@ -16,7 +16,6 @@ import (
 
 // To populates (tagged) struct v with values from the environment.
 func (cfg *Config) To(v interface{}) error {
-
 	binds, err := extract(v)
 	if err != nil {
 		return err
@@ -36,7 +35,6 @@ func (cfg *Config) To(v interface{}) error {
 // All supported and unignored fields are saved, although empty variables
 // (i.e. "") are not overwritten with Go zero values, e.g. "0" or "false".
 func (cfg *Config) From(v interface{}) error {
-
 	variables, err := cfg.bindVars(v)
 	if err != nil {
 		return err
@@ -47,7 +45,6 @@ func (cfg *Config) From(v interface{}) error {
 
 // extract binding values as {ENVVAR: value} map.
 func (cfg *Config) bindVars(v interface{}) (map[string]string, error) {
-
 	variables := map[string]string{}
 
 	binds, err := extract(v)
@@ -66,13 +63,12 @@ func (cfg *Config) bindVars(v interface{}) (map[string]string, error) {
 
 // setMulti batches the saving of multiple variables.
 func (cfg *Config) setMulti(variables map[string]string, export bool) error {
-
 	// sort keys to make the output testable
 	var keys []string
 	for k := range variables {
 		keys = append(keys, k)
 	}
-	sort.Sort(sort.StringSlice(keys))
+	sort.Strings(keys)
 
 	for _, k := range keys {
 		cfg.Set(k, variables[k], export)
@@ -105,7 +101,6 @@ type bindDest interface {
 
 // Import populates the target struct from src.
 func (bind *binding) Import(src bindSource) error {
-
 	rv := reflect.Indirect(reflect.ValueOf(bind.Target))
 
 	if bind.FieldNum > rv.NumField() {
@@ -124,7 +119,6 @@ func (bind *binding) Import(src bindSource) error {
 
 // GetVar populates dst from target struct.
 func (bind *binding) GetVar(dst bindDest) (key, value string, ok bool) {
-
 	rv := reflect.Indirect(reflect.ValueOf(bind.Target))
 
 	if bind.FieldNum > rv.NumField() {
@@ -154,9 +148,7 @@ func (bind *binding) GetVar(dst bindDest) (key, value string, ok bool) {
 }
 
 func (bind *binding) setValue(rv *reflect.Value, src bindSource) error {
-
 	switch bind.Kind {
-
 	case reflect.Bool:
 		b := src.GetBool(bind.EnvVar)
 		reflect.Indirect(*rv).SetBool(b)
@@ -176,16 +168,10 @@ func (bind *binding) setValue(rv *reflect.Value, src bindSource) error {
 		s := src.GetString(bind.EnvVar)
 
 		if _, err := strconv.ParseInt(s, 10, 64); err == nil {
-
 			i := src.GetInt(bind.EnvVar)
 			reflect.Indirect(*rv).SetInt(int64(i))
-
-		} else {
-
-			if d, err := time.ParseDuration(s); err == nil {
-				reflect.Indirect(*rv).SetInt(int64(d))
-			}
-
+		} else if d, err := time.ParseDuration(s); err == nil {
+			reflect.Indirect(*rv).SetInt(int64(d))
 		}
 
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32:
@@ -211,11 +197,9 @@ func (bind *binding) setValue(rv *reflect.Value, src bindSource) error {
 	}
 
 	return nil
-
 }
 
 func extract(v interface{}) ([]*binding, error) {
-
 	var binds []*binding
 
 	rv := reflect.ValueOf(v)
@@ -231,7 +215,6 @@ func extract(v interface{}) ([]*binding, error) {
 	typ := rv.Type()
 
 	for i := 0; i < rv.NumField(); i++ {
-
 		var (
 			ok      bool
 			field   reflect.StructField
@@ -267,7 +250,6 @@ func extract(v interface{}) ([]*binding, error) {
 			Kind:     field.Type.Kind(),
 		}
 		binds = append(binds, bind)
-
 	}
 
 	return binds, nil
@@ -291,13 +273,11 @@ var bindableKinds = map[reflect.Kind]bool{
 }
 
 func isBindable(kind reflect.Kind) bool {
-
 	_, ok := bindableKinds[kind]
 	return ok
 }
 
 func isZeroValue(rv reflect.Value) bool {
-
 	if !rv.IsValid() {
 		return true
 	}
@@ -306,7 +286,6 @@ func isZeroValue(rv reflect.Value) bool {
 	kind := typ.Kind()
 
 	switch kind {
-
 	case reflect.Ptr:
 		return rv.IsNil()
 
@@ -314,7 +293,7 @@ func isZeroValue(rv reflect.Value) bool {
 		return rv.String() == ""
 
 	case reflect.Bool:
-		return rv.Bool() == false
+		return !rv.Bool()
 
 	case reflect.Float32, reflect.Float64:
 		return rv.Float() == 0.0
@@ -327,14 +306,12 @@ func isZeroValue(rv reflect.Value) bool {
 
 	default:
 		log.Printf("[pull] unknown kind: %v", kind)
-
 	}
 
 	return false
 }
 
 func isZeroString(s string, kind reflect.Kind) bool {
-
 	if s == "" {
 		return true
 	}
@@ -347,7 +324,7 @@ func isZeroString(s string, kind reflect.Kind) bool {
 			log.Printf("couldn't convert %s to bool: %v", s, err)
 			return false
 		}
-		return v == false
+		return !v
 
 	case reflect.Float32, reflect.Float64:
 		v, err := strconv.ParseFloat(s, 64)
@@ -387,7 +364,6 @@ func isZeroString(s string, kind reflect.Kind) bool {
 			return false
 		}
 		return v == 0
-
 	}
 
 	return false
@@ -413,7 +389,6 @@ func isCamelCase(s string) bool {
 }
 
 func splitCamelCase(name string) string {
-
 	var (
 		i     int
 		re    *regexp.Regexp
@@ -438,7 +413,6 @@ func splitCamelCase(name string) string {
 
 	re = regexp.MustCompile("[a-z][0-9_]*([A-Z])")
 	for {
-
 		if idx := re.FindStringSubmatchIndex(rest); idx != nil {
 			i = idx[2]
 			s := rest[:i]

@@ -79,5 +79,4 @@ func TestOptions(t *testing.T) {
 	if s.StripDiacritics != false {
 		t.Errorf("Bad StripDiacritics. Expected=%v, Got=%v", false, s.StripDiacritics)
 	}
-
 }

@@ -49,7 +49,6 @@ func (a *mockMA) Run() error {
 // Returns an error if the MA wasn't "shown".
 // That means magicActions didn't show a list of actions.
 func (a *mockMA) ValidateShown() error {
-
 	if !a.keyCalled {
 		return errors.New("Keyword() not called")
 	}
@@ -71,7 +70,6 @@ func (a *mockMA) ValidateShown() error {
 
 // Returns an error if the MA wasn't run.
 func (a *mockMA) ValidateRun() error {
-
 	if !a.keyCalled {
 		return errors.New("Keyword() not called")
 	}
@@ -113,7 +111,6 @@ func TestNonMagicArgs(t *testing.T) {
 			assert.Equal(t, td.x, args, "unexpected non-magic arguments")
 		})
 	}
-
 }
 
 func TestMagicDefaults(t *testing.T) {
@@ -152,7 +149,6 @@ func TestMagicDefaults(t *testing.T) {
 }
 
 func TestMagicActions(t *testing.T) {
-
 	tests := []struct {
 		in    string
 		shown bool
@@ -206,7 +202,7 @@ func TestMagicExits(t *testing.T) {
 		})
 	}
 
-	origArgs := os.Args[:]
+	origArgs := os.Args
 	defer func() {
 		os.Args = origArgs
 	}()

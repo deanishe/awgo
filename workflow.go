@@ -151,7 +151,6 @@ func New(opts ...Option) *Workflow { return NewFromEnv(nil, opts...) }
 // NewFromEnv creates a new Workflows from the specified Env.
 // If env is nil, the system environment is used.
 func NewFromEnv(env Env, opts ...Option) *Workflow {
-
 	if env == nil {
 		env = sysEnv{}
 	}
@@ -213,7 +212,6 @@ func (wf *Workflow) Configure(opts ...Option) (previous Option) {
 // initializeLogging ensures future log messages are written to
 // workflow's log file.
 func (wf *Workflow) initializeLogging() {
-
 	if logInitialized { // All Workflows use the same global logger
 		return
 	}
@@ -221,11 +219,9 @@ func (wf *Workflow) initializeLogging() {
 	// Rotate log file if larger than MaxLogSize
 	fi, err := os.Stat(wf.LogFile())
 	if err == nil {
-
 		if fi.Size() >= int64(wf.maxLogSize) {
-
-			new := wf.LogFile() + ".1"
-			if err := os.Rename(wf.LogFile(), new); err != nil {
+			newlog := wf.LogFile() + ".1"
+			if err := os.Rename(wf.LogFile(), newlog); err != nil {
 				fmt.Fprintf(os.Stderr, "Error rotating log: %v\n", err)
 			}
 
@@ -261,7 +257,6 @@ func (wf *Workflow) initializeLogging() {
 // work without a bundle ID, which is set in the workflow's main
 // setup sheet in Alfred Preferences.
 func (wf *Workflow) BundleID() string {
-
 	s := wf.Config.Get(EnvVarBundleID)
 	if s == "" {
 		wf.Fatal("No bundle ID set. You *must* set a bundle ID to use AwGo.")
@@ -285,9 +280,7 @@ func (wf *Workflow) Version() string { return wf.Config.Get(EnvVarVersion) }
 // means that the session expires as soon as Alfred closes or the user
 // runs a different workflow.
 func (wf *Workflow) SessionID() string {
-
 	if wf.sessionID == "" {
-
 		ev := os.Getenv(wf.sessionName)
 
 		if ev != "" {
@@ -317,7 +310,6 @@ func (wf *Workflow) Args() []string {
 // Run runs your workflow function, catching any errors.
 // If the workflow panics, Run rescues and displays an error message in Alfred.
 func (wf *Workflow) Run(fn func()) {
-
 	vstr := wf.Name()
 
 	if wf.Version() != "" {
@@ -346,9 +338,7 @@ func (wf *Workflow) Run(fn func()) {
 	// Catch any `panic` and display an error in Alfred.
 	// Fatal(msg) will terminate the process (via log.Fatal).
 	defer func() {
-
 		if r := recover(); r != nil {
-
 			log.Println(util.Pad(" FATAL ERROR ", "-", 50))
 			log.Printf("%s : %s", r, debug.Stack())
 			log.Println(util.Pad(" END STACK TRACE ", "-", 50))
@@ -405,9 +395,7 @@ func (wf *Workflow) awCacheDir() string {
 
 // finishLog outputs the workflow duration
 func finishLog(fatal bool) {
-
-	elapsed := time.Now().Sub(startTime)
-	s := util.Pad(fmt.Sprintf(" %v ", elapsed), "-", 50)
+	s := util.Pad(fmt.Sprintf(" %v ", time.Since(startTime)), "-", 50)
 
 	if fatal {
 		log.Println(s)

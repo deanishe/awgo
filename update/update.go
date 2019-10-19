@@ -206,7 +206,7 @@ func (u *Updater) CheckDue() bool {
 		// log.Println("never checked for updates")
 		return true
 	}
-	elapsed := time.Now().Sub(u.LastCheck)
+	elapsed := time.Since(u.LastCheck)
 	log.Printf("%s since last check for update", elapsed)
 	return elapsed > u.updateInterval
 }
@@ -339,8 +339,8 @@ func makeHTTPClient() *http.Client {
 }
 
 // getURL returns the contents of a URL.
-func getURL(URL string) ([]byte, error) {
-	res, err := openURL(URL)
+func getURL(url string) ([]byte, error) {
+	res, err := openURL(url)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -350,16 +350,16 @@ func getURL(URL string) ([]byte, error) {
 
 // openURL returns an http.Response. It will return an error if the
 // HTTP status code > 299.
-func openURL(URL string) (*http.Response, error) {
-	log.Printf("fetching %s ...", URL)
+func openURL(url string) (*http.Response, error) {
+	log.Printf("fetching %s ...", url)
 	if client == nil {
 		client = makeHTTPClient()
 	}
-	r, err := client.Get(URL)
+	r, err := client.Get(url)
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("[%d] %s", r.StatusCode, URL)
+	log.Printf("[%d] %s", r.StatusCode, url)
 	if r.StatusCode > 299 {
 		r.Body.Close()
 		return nil, errors.New(r.Status)

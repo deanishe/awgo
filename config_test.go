@@ -431,7 +431,6 @@ func ExampleConfig_GetDuration() {
 
 // Strings are parsed using strconv.ParseBool().
 func ExampleConfig_GetBool() {
-
 	// Set some test variables
 	_ = os.Setenv("LIKE_PEAS", "t")
 	_ = os.Setenv("LIKE_CARROTS", "true")

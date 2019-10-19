@@ -52,7 +52,6 @@ type Alfred struct {
 // It accepts one optional Env argument. If an Env is passed, Alfred
 // is initialised from that instead of the system environment.
 func NewAlfred(env ...Env) *Alfred {
-
 	var e Env
 
 	if len(env) > 0 {
@@ -71,7 +70,6 @@ func (a *Alfred) Search(query string) error {
 
 // Browse tells Alfred to open path in navigation mode.
 func (a *Alfred) Browse(path string) error {
-
 	var err error
 
 	if path, err = filepath.Abs(path); err != nil {
@@ -88,7 +86,6 @@ func (a *Alfred) SetTheme(name string) error {
 
 // Action tells Alfred to show File Actions for path(s).
 func (a *Alfred) Action(path ...string) error {
-
 	if len(path) == 0 {
 		return nil
 	}
@@ -96,7 +93,6 @@ func (a *Alfred) Action(path ...string) error {
 	var paths []string
 
 	for _, p := range path {
-
 		p, err := filepath.Abs(p)
 		if err != nil {
 			return fmt.Errorf("[action] couldn't make path absolute (%s): %v", p, err)
@@ -114,7 +110,6 @@ func (a *Alfred) Action(path ...string) error {
 // workflow whose trigger should be run.
 // If not specified, it defaults to the current workflow's.
 func (a *Alfred) RunTrigger(name, query string, bundleID ...string) error {
-
 	var bid string
 	if len(bundleID) > 0 {
 		bid = bundleID[0]

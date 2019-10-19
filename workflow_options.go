@@ -33,16 +33,16 @@ func (opts options) apply(wf *Workflow) Option {
 // ("Get help at http://…").
 // Set this to the URL of an issue tracker/forum thread where users can
 // ask for help.
-func HelpURL(URL string) Option {
+func HelpURL(url string) Option {
 	return func(wf *Workflow) Option {
 		prev := wf.helpURL
 		ma := &helpMA{wf}
-		if URL != "" {
+		if url != "" {
 			wf.magicActions.register(ma)
 		} else {
 			wf.magicActions.unregister(ma)
 		}
-		wf.helpURL = URL
+		wf.helpURL = url
 		return HelpURL(prev)
 	}
 }
@@ -112,9 +112,7 @@ func TextErrors(on bool) Option {
 //
 // _examples/fuzzy contains an example workflow using fuzzy sort.
 func SortOptions(opts ...fuzzy.Option) Option {
-
 	return func(wf *Workflow) Option {
-
 		prev := wf.sortOptions
 		wf.sortOptions = opts
 
@@ -127,9 +125,7 @@ func SortOptions(opts ...fuzzy.Option) Option {
 // This is useful if you have multiple Script Filters chained together that
 // you don't want to use the same cache.
 func SessionName(name string) Option {
-
 	return func(wf *Workflow) Option {
-
 		prev := wf.sessionName
 		wf.sessionName = name
 

@@ -76,7 +76,7 @@ func TestOpen(t *testing.T) {
 		for _, td := range tests {
 			me := &mockExec{}
 			wf.execFunc = me.Run
-			td.fn() // call command
+			assert.Nil(t, td.fn(), "test command failed")
 			assert.Equal(t, td.name, me.name, "Wrong command name")
 			assert.Equal(t, td.args, me.args, "Wrong command args")
 		}

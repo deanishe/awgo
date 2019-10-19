@@ -8,6 +8,7 @@ covjson="${root}/coverage.json"
 covhtml="${root}/coverage.html"
 
 verbose=false
+runlint=false
 runtests=true
 opencover=false
 usegocov=false
@@ -64,12 +65,14 @@ Run unit tests in a workflow-like environment.
 
 Usage:
     run-tests.sh [-v|-V] [-c] [-C] [-i] [-g]
+    run-tests.sh -l
     run-tests.sh [-g] -r
     run-tests.sh -h
 
 Options:
     -c      Write coverage report
     -C      Open HTML coverage report
+    -l      Lint project
     -r      Just open coverage report
     -g      Use gocov for coverage report (implies -c)
     -i      Create a dummy info.plist
@@ -79,7 +82,7 @@ Options:
 EOF
 }
 
-while getopts ":CcghirvV" opt; do
+while getopts ":CcghilrvV" opt; do
   case $opt in
     c)
       cover=true
@@ -94,6 +97,10 @@ while getopts ":CcghirvV" opt; do
       ;;
     i)
       mkip=true
+      ;;
+    l)
+      runlint=true
+      runtests=false
       ;;
     r)
       opencover=true
@@ -117,6 +124,16 @@ while getopts ":CcghirvV" opt; do
   esac
 done
 shift $((OPTIND-1))
+
+$runlint && {
+  golangci-lint run -c .golangci.toml
+  st=$?
+  [[ $st -ne 0 ]] && {
+    fail "linting failed"
+  }
+  success "linting passed"
+  exit 0
+}
 
 $cover && gopts+=(-coverprofile="$covfile")
 

@@ -109,9 +109,7 @@ func withTestEnv(fn func(e MapEnv)) {
 
 // Call function in a test workflow environment.
 func withTestWf(fn func(wf *Workflow)) {
-
 	withTestEnv(func(e MapEnv) {
-
 		var (
 			dir string
 			err error
@@ -155,9 +153,7 @@ func withTestWf(fn func(wf *Workflow)) {
 
 // TestWithTestWf verifies the withTestEnv helper.
 func TestWithTestWf(t *testing.T) {
-
 	withTestWf(func(wf *Workflow) {
-
 		wd, err := os.Getwd()
 		if err != nil {
 			t.Fatal(err)

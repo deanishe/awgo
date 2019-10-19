@@ -61,7 +61,7 @@ func PadRight(str, pad string, n int) string {
 		return str
 	}
 	for {
-		str = str + pad
+		str += pad
 		if len(str) >= n {
 			return str[len(str)-n:]
 		}

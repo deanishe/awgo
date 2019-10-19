@@ -42,7 +42,6 @@ var (
 )
 
 func init() {
-
 	// Default runners
 	Executable = &ExecRunner{}
 	Script = NewScriptRunner(DefaultInterpreters)
@@ -80,7 +79,6 @@ func (rs Runners) CanRun(filename string) bool {
 
 // Cmd returns a command to run the (script) file.
 func (rs Runners) Cmd(filename string, args ...string) *exec.Cmd {
-
 	for _, r := range rs {
 		if r.CanRun(filename) {
 			return r.Cmd(filename, args...)
@@ -94,7 +92,6 @@ func (rs Runners) Cmd(filename string, args ...string) *exec.Cmd {
 // If it can't figure out how to run the file (see Runner), it
 // returns ErrUnknownFileType.
 func (rs Runners) Run(filename string, args ...string) ([]byte, error) {
-
 	fi, err := os.Stat(filename)
 	if err != nil {
 		return nil, err
@@ -105,11 +102,8 @@ func (rs Runners) Run(filename string, args ...string) ([]byte, error) {
 
 	// See if a runner will accept file
 	for _, r := range rs {
-
 		if r.CanRun(filename) {
-
 			cmd := r.Cmd(filename, args...)
-
 			return RunCmd(cmd)
 		}
 	}
@@ -137,7 +131,6 @@ func RunJS(script string, args ...string) (string, error) {
 // runOsaScript executes a script with /usr/bin/osascript.
 // It returns the output from STDOUT.
 func runOsaScript(script, lang string, args ...string) (string, error) {
-
 	argv := []string{"-l", lang, "-e", script}
 	argv = append(argv, args...)
 
@@ -162,7 +155,6 @@ func runOsaScript(script, lang string, args ...string) (string, error) {
 // The main difference to exec.Cmd.Output() is that RunCmd writes all
 // STDERR output to the log if a command fails.
 func RunCmd(cmd *exec.Cmd) ([]byte, error) {
-
 	var (
 		output         []byte
 		stdout, stderr bytes.Buffer
@@ -186,7 +178,6 @@ func RunCmd(cmd *exec.Cmd) ([]byte, error) {
 // QuoteAS converts string to an AppleScript string literal for insertion into AppleScript code.
 // It wraps the value in quotation marks, so don't insert additional ones.
 func QuoteAS(s string) string {
-
 	if s == "" {
 		return `""`
 	}
@@ -198,11 +189,12 @@ func QuoteAS(s string) string {
 	chars := []string{}
 	for i, c := range s {
 		if c == '"' {
-			if i == 0 {
+			switch i {
+			case 0:
 				chars = append(chars, `quote & "`)
-			} else if i == len(s)-1 {
+			case len(s) - 1:
 				chars = append(chars, `" & quote`)
-			} else {
+			default:
 				chars = append(chars, `" & quote & "`)
 			}
 			continue
@@ -222,7 +214,6 @@ func QuoteAS(s string) string {
 // QuoteJS converts a value into JavaScript source code.
 // It calls json.Marshal(v), and returns an empty string if an error occurs.
 func QuoteJS(v interface{}) string {
-
 	data, err := json.Marshal(v)
 	if err != nil {
 		log.Printf("couldn't convert %#v to JS: %v", v, err)
@@ -237,7 +228,6 @@ type ExecRunner struct{}
 
 // CanRun returns true if file exists and is executable.
 func (r ExecRunner) CanRun(filename string) bool {
-
 	fi, err := os.Stat(filename)
 	if err != nil || fi.IsDir() {
 		return false
@@ -249,7 +239,6 @@ func (r ExecRunner) CanRun(filename string) bool {
 
 // Cmd returns a Cmd to run executable with args.
 func (r ExecRunner) Cmd(executable string, args ...string) *exec.Cmd {
-
 	executable, err := filepath.Abs(executable)
 	if err != nil {
 		panic(err)
@@ -277,7 +266,6 @@ type ScriptRunner struct {
 
 // NewScriptRunner creates a new ScriptRunner for interpreters.
 func NewScriptRunner(interpreters map[string][]string) *ScriptRunner {
-
 	if interpreters == nil {
 		interpreters = map[string][]string{}
 	}
@@ -296,7 +284,6 @@ func NewScriptRunner(interpreters map[string][]string) *ScriptRunner {
 
 // CanRun returns true if file exists and its extension is in Interpreters.
 func (r ScriptRunner) CanRun(filename string) bool {
-
 	if fi, err := os.Stat(filename); err != nil || fi.IsDir() {
 		return false
 	}
@@ -308,7 +295,6 @@ func (r ScriptRunner) CanRun(filename string) bool {
 
 // Cmd returns a Cmd to run filename with its interpreter.
 func (r ScriptRunner) Cmd(filename string, args ...string) *exec.Cmd {
-
 	var (
 		argv    []string
 		command string
@@ -324,5 +310,4 @@ func (r ScriptRunner) Cmd(filename string, args ...string) *exec.Cmd {
 	argv = append(argv, args...)            // arguments to script
 
 	return exec.Command(command, argv...)
-
 }

@@ -6,17 +6,17 @@ disable-all = true
 enable = [
   "deadcode",
   "goconst",
+  "gocritic",
   "gofmt",
   "goimports",
+  "gosimple",
   "ineffassign",
   "scopelint",
   "staticcheck",
   "stylecheck",
   "unconvert",
   "unused",
-  # "maligned",
-  # "lll",
-  # "prealloc",
+  "whitespace",
 ]
 
 [linter-settings]

@@ -127,7 +127,7 @@ func validRelease(dls []Download) error {
 	dupes := map[string]int{}
 	for _, dl := range dls {
 		x := filepath.Ext(dl.Filename)
-		dupes[x] = dupes[x] + 1
+		dupes[x]++
 	}
 	for x, n := range dupes {
 		if n > 1 {

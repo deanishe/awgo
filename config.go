@@ -84,7 +84,6 @@ type Config struct {
 // It accepts one optional Env argument. If an Env is passed, Config
 // is initialised from that instead of the system environment.
 func NewConfig(env ...Env) *Config {
-
 	var e Env
 	if len(env) > 0 {
 		e = env[0]
@@ -103,7 +102,6 @@ func NewConfig(env ...Env) *Config {
 //
 // If a variable is set, but empty, its value is used.
 func (cfg *Config) Get(key string, fallback ...string) string {
-
 	var fb string
 
 	if len(fallback) > 0 {
@@ -129,7 +127,6 @@ func (cfg *Config) GetString(key string, fallback ...string) string {
 // tries to parse the number with strconv.ParseFloat() and truncate it to an
 // int.
 func (cfg *Config) GetInt(key string, fallback ...int) int {
-
 	var fb int
 
 	if len(fallback) > 0 {
@@ -154,7 +151,6 @@ func (cfg *Config) GetInt(key string, fallback ...int) int {
 //
 // Values are parsed with strconv.ParseFloat().
 func (cfg *Config) GetFloat(key string, fallback ...float64) float64 {
-
 	var fb float64
 
 	if len(fallback) > 0 {
@@ -179,7 +175,6 @@ func (cfg *Config) GetFloat(key string, fallback ...float64) float64 {
 //
 // Values are parsed with time.ParseDuration().
 func (cfg *Config) GetDuration(key string, fallback ...time.Duration) time.Duration {
-
 	var fb time.Duration
 
 	if len(fallback) > 0 {
@@ -204,7 +199,6 @@ func (cfg *Config) GetDuration(key string, fallback ...time.Duration) time.Durat
 //
 // Values are parsed with strconv.ParseBool().
 func (cfg *Config) GetBool(key string, fallback ...bool) bool {
-
 	var fb bool
 
 	if len(fallback) > 0 {
@@ -229,7 +223,6 @@ func (cfg *Config) GetBool(key string, fallback ...bool) bool {
 // workflow whose configuration should be changed.
 // If not specified, it defaults to the current workflow's.
 func (cfg *Config) Set(key, value string, export bool, bundleID ...string) *Config {
-
 	bid := cfg.getBundleID(bundleID...)
 	opts := map[string]interface{}{
 		"toValue":    value,
@@ -246,7 +239,6 @@ func (cfg *Config) Set(key, value string, export bool, bundleID ...string) *Conf
 // workflow whose configuration should be changed.
 // If not specified, it defaults to the current workflow's.
 func (cfg *Config) Unset(key string, bundleID ...string) *Config {
-
 	bid := cfg.getBundleID(bundleID...)
 	opts := map[string]interface{}{
 		"inWorkflow": bid,
@@ -261,7 +253,6 @@ func (cfg *Config) Unset(key string, bundleID ...string) *Config {
 // Succeed or fail, any accumulated scripts and errors are cleared when Do()
 // is called.
 func (cfg *Config) Do() error {
-
 	if len(cfg.scripts) == 0 {
 		return errors.New("no commands to run")
 	}
@@ -275,7 +266,6 @@ func (cfg *Config) Do() error {
 
 // Extract bundle ID from argument or default.
 func (cfg *Config) getBundleID(bundleID ...string) string {
-
 	if len(bundleID) > 0 {
 		return bundleID[0]
 	}
@@ -286,7 +276,6 @@ func (cfg *Config) getBundleID(bundleID ...string) string {
 
 // Add a JavaScript that takes two arguments, a string and an object.
 func (cfg *Config) addScript(script, name string, opts map[string]interface{}) *Config {
-
 	script = fmt.Sprintf(script, util.QuoteJS(scriptAppName()), util.QuoteJS(name), util.QuoteJS(opts))
 	cfg.scripts = append(cfg.scripts, script)
 

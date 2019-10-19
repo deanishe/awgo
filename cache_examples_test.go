@@ -11,7 +11,6 @@ import (
 )
 
 func ExampleCache() {
-
 	var (
 		// Cache "key" (filename) and the value to store
 		name  = "LastOpened"
@@ -62,7 +61,6 @@ func ExampleCache() {
 // LoadOrStore loads data from cache if they're fresh enough, otherwise it calls
 // the reload function for new data (which it caches).
 func ExampleCache_LoadOrStore() {
-
 	var (
 		name        = "Expiring"
 		data        = []byte("test")
@@ -83,7 +81,6 @@ func ExampleCache_LoadOrStore() {
 
 	// Called by LoadOrStore when cache is empty or has expired
 	reload := func() ([]byte, error) {
-
 		// Log call count
 		reloadCount++
 		fmt.Printf("reload #%d\n", reloadCount)
@@ -115,7 +112,7 @@ func ExampleCache_LoadOrStore() {
 	fmt.Println(string(out) == string(data)) // -> true
 
 	// Wait for cache to expire, then try again
-	time.Sleep(time.Millisecond + maxAge - time.Now().Sub(start))
+	time.Sleep(time.Millisecond + maxAge - time.Since(start))
 
 	// reload is called again
 	out, err = c.LoadOrStore(name, maxAge, reload)
@@ -138,7 +135,6 @@ func ExampleCache_LoadOrStore() {
 
 // LoadOrStoreJSON marshals JSON to/from the cache.
 func ExampleCache_LoadOrStoreJSON() {
-
 	var (
 		name   = "Host"
 		maxAge = time.Second * 5
@@ -161,7 +157,6 @@ func ExampleCache_LoadOrStoreJSON() {
 	// Normally, this function would do something that takes some time, like
 	// fetch data from the web or an application.
 	reload := func() (interface{}, error) {
-
 		fmt.Println("reload")
 
 		return &host{

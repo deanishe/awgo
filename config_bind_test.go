@@ -93,7 +93,6 @@ type testDest struct {
 }
 
 func (dst *testDest) setMulti(variables map[string]string, export bool) error {
-
 	for k, v := range variables {
 		dst.Saves[k] = v
 	}
@@ -106,7 +105,6 @@ func (dst *testDest) GetString(key string, fallback ...string) string {
 
 // Returns a test implementation of Env
 func bindTestEnv() MapEnv {
-
 	return MapEnv{
 		"ID":           "not empty",
 		"HOST":         testHostname,
@@ -114,7 +112,7 @@ func bindTestEnv() MapEnv {
 		"PORT":         fmt.Sprintf("%d", testPort),
 		"SCORE":        fmt.Sprintf("%d", testScore),
 		"SPACE":        fmt.Sprintf("%d", testFreeSpace),
-		"PING":         fmt.Sprintf("%s", testPingInterval),
+		"PING":         testPingInterval.String(),
 		"PING_AVERAGE": fmt.Sprintf("%0.1f", testPingAverage),
 	}
 }
@@ -157,7 +155,7 @@ func TestExtract(t *testing.T) {
 
 	// Change field numbers
 	for _, bind := range binds {
-		bind.FieldNum = bind.FieldNum + 1000
+		bind.FieldNum += 1000
 	}
 	// Fail to load fields
 	for _, bind := range binds {
@@ -186,7 +184,6 @@ func TestConfig_To(t *testing.T) {
 
 // generated script
 func TestConfig_Do(t *testing.T) {
-
 	orig := runJS
 	defer func() { runJS = orig }()
 	mj := &mockJSRunner{}
@@ -200,7 +197,7 @@ func TestConfig_Do(t *testing.T) {
 	for k := range privTestEnv {
 		keys = append(keys, k)
 	}
-	sort.Sort(sort.StringSlice(keys))
+	sort.Strings(keys)
 	for _, k := range keys {
 		cfg.Set(k, privTestEnv[k], false)
 	}
@@ -276,14 +273,13 @@ func TestConfig_From(t *testing.T) {
 			"SPACE": fmt.Sprintf("%d", newFreeSpace),
 		}
 		three = map[string]string{
-			"PING":         fmt.Sprintf("%s", newPingInterval),
+			"PING":         newPingInterval.String(),
 			"PING_AVERAGE": fmt.Sprintf("%0.1f", newPingAverage),
 		}
 	)
 
 	// Exports v into a testDest and verifies it against x.
 	testBind := func(v interface{}, x map[string]string) {
-
 		dst := &testDest{cfg, map[string]string{}}
 
 		variables, err := cfg.bindVars(v)
@@ -324,7 +320,6 @@ func TestConfig_From(t *testing.T) {
 
 // generated script
 func TestConfig_From_script(t *testing.T) {
-
 	orig := runJS
 	defer func() { runJS = orig }()
 	mj := &mockJSRunner{}
@@ -377,7 +372,6 @@ func TestEnvVarForField(t *testing.T) {
 // for information on how fields are mapped to environment variables if
 // no variable name is specified using an `env:"name"` tag.
 func ExampleConfig_To() {
-
 	// Set some test values
 	_ = os.Setenv("USERNAME", "dave")
 	_ = os.Setenv("API_KEY", "hunter2")
@@ -513,7 +507,6 @@ func TestZeroValue(t *testing.T) {
 		typ := rv.Type()
 
 		for i := 0; i < rv.NumField(); i++ {
-
 			field := typ.Field(i)
 			value := rv.Field(i)
 
@@ -527,7 +520,6 @@ func TestZeroValue(t *testing.T) {
 		typ := rv.Type()
 
 		for i := 0; i < rv.NumField(); i++ {
-
 			field := typ.Field(i)
 			value := rv.Field(i)
 

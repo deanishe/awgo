@@ -21,11 +21,7 @@ func TestItem_Icon(t *testing.T) {
 	assert.Equal(t, IconType("fileicon"), it.icon.Type, "unexpected icon Type")
 }
 
-func p(s string) *string {
-	var v *string
-	v = &s
-	return v
-}
+func p(s string) *string { return &s }
 
 // Feedback is empty.
 func TestFeedback_IsEmpty(t *testing.T) {
@@ -520,7 +516,6 @@ func TestModifier_methods(t *testing.T) {
 
 // Sorts Feedback.Items
 func TestFeedback_Sort(t *testing.T) {
-
 	for _, td := range feedbackTitles {
 		fb := NewFeedback()
 		for _, s := range td.in {

@@ -185,9 +185,9 @@ func (c Cache) Age(name string) (time.Duration, error) {
 	p := c.path(name)
 	fi, err := os.Stat(p)
 	if err != nil {
-		return time.Duration(0), err
+		return 0, err
 	}
-	return time.Now().Sub(fi.ModTime()), nil
+	return time.Since(fi.ModTime()), nil
 }
 
 // path returns the path to a named file within cache directory.

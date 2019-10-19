@@ -54,5 +54,5 @@ import (
 //    // Output: ... long running task
 //
 func Timed(start time.Time, title string) {
-	log.Printf("%s \U000029D7 %s", time.Now().Sub(start), title)
+	log.Printf("%s \U000029D7 %s", time.Since(start), title)
 }

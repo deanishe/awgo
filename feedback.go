@@ -350,7 +350,6 @@ func (m *Modifier) Vars() map[string]string {
 // MarshalJSON serializes Item to Alfred 3's JSON format.
 // You shouldn't need to call this directly: use SendFeedback() instead.
 func (m *Modifier) MarshalJSON() ([]byte, error) {
-
 	return json.Marshal(&struct {
 		Arg       *string           `json:"arg,omitempty"`
 		Subtitle  *string           `json:"subtitle,omitempty"`
@@ -579,7 +578,6 @@ func (a *ArgVars) Send() error {
 // MarshalJSON serialises ArgVars to JSON.
 // You probably don't need to call this: use ArgVars.String() instead.
 func (a *ArgVars) MarshalJSON() ([]byte, error) {
-
 	// Return arg regardless of whether it's empty or not:
 	// we have to return *something*
 	if len(a.vars) == 0 {

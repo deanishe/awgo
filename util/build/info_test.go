@@ -34,16 +34,16 @@ func withEnv(env map[string]string, fn func()) {
 	prevSet := map[string]bool{}
 	for key, value := range env {
 		prev[key], prevSet[key] = os.LookupEnv(key)
-		os.Setenv(key, value)
+		panicOnError(os.Setenv(key, value))
 	}
 
 	fn()
 
 	for key, value := range prev {
 		if prevSet[key] {
-			os.Setenv(key, value)
+			panicOnError(os.Setenv(key, value))
 		} else {
-			os.Unsetenv(key)
+			panicOnError(os.Unsetenv(key))
 		}
 	}
 }
@@ -115,7 +115,6 @@ func TestAlfredVersion(t *testing.T) {
 }
 
 func TestDirs(t *testing.T) {
-
 	tests := []struct {
 		name    string
 		version string
@@ -190,5 +189,11 @@ func TestEnv(t *testing.T) {
 			t.Parallel()
 			assert.Equal(t, td.x, env[td.key], "unexpected value")
 		})
+	}
+}
+
+func panicOnError(err error) {
+	if err != nil {
+		panic(err)
 	}
 }

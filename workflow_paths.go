@@ -16,7 +16,6 @@ import (
 
 // Dir returns the path to the workflow's root directory.
 func (wf *Workflow) Dir() string {
-
 	wd, err := os.Getwd()
 	if err != nil {
 		panic(err)
@@ -31,7 +30,6 @@ func (wf *Workflow) Dir() string {
 
 // CacheDir returns the path to the workflow's cache directory.
 func (wf *Workflow) CacheDir() string {
-
 	if wf.cacheDir == "" {
 		wf.cacheDir = wf.Config.Get(EnvVarCacheDir)
 	}
@@ -51,7 +49,6 @@ func (wf *Workflow) ClearCache() error {
 
 // DataDir returns the path to the workflow's data directory.
 func (wf *Workflow) DataDir() string {
-
 	if wf.dataDir == "" {
 		wf.dataDir = wf.Config.Get(EnvVarDataDir)
 	}
@@ -107,7 +104,6 @@ func (wf *Workflow) OpenHelp() error {
 
 // Try to find workflow root based on presence of info.plist.
 func findWorkflowRoot(path string) string {
-
 	var (
 		dirs []string            // directories to look in for info.plist
 		seen = map[string]bool{} // avoid duplicates in dirs
@@ -115,7 +111,6 @@ func findWorkflowRoot(path string) string {
 
 	// Add path and all its parents to dirs & seen
 	queueTree := func(p string) {
-
 		p = filepath.Clean(p)
 		segs := strings.Split(p, "/")
 

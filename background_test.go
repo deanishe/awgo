@@ -21,7 +21,6 @@ func TestWorkflow_RunInBackground(t *testing.T) {
 	t.Parallel()
 
 	withTestWf(func(wf *Workflow) {
-
 		jobName := "sleep"
 
 		cmd := exec.Command("sleep", "5")

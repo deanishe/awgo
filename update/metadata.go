@@ -19,9 +19,9 @@ import (
 // URL is the location of the `metadata.json` file. Note: You *must*
 // set `downloadurl` in the `metadata.json` file to the URL
 // of your .alfredworkflow (or .alfred4workflow etc.) file.
-func Metadata(URL string) aw.Option {
+func Metadata(url string) aw.Option {
 	return func(wf *aw.Workflow) aw.Option {
-		u, _ := NewUpdater(&metadataSource{url: URL, fetch: getURL},
+		u, _ := NewUpdater(&metadataSource{url: url, fetch: getURL},
 			wf.Version(),
 			filepath.Join(wf.CacheDir(), "_aw/update"),
 		)

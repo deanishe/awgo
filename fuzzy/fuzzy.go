@@ -115,7 +115,6 @@ func (s *Sorter) Swap(i, j int) {
 
 // Sort sorts data against query.
 func (s *Sorter) Sort(query string) []*Result {
-
 	s.query = query
 
 	if isASCII(query) && s.StripDiacritics {
@@ -237,7 +236,6 @@ func (s *Sorter) Match(str string) *Result {
 			// Update best letter in key, which may be for a "next" letter
 			// or a reMatch
 			if newScore >= bestLetterScore {
-
 				if bestLetter != "" {
 					score += s.UnmatchedLetterPenalty
 				}
