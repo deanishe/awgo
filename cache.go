@@ -102,7 +102,7 @@ func (c Cache) LoadJSON(name string, v interface{}) error {
 
 // LoadOrStore loads data from cache if they exist and are newer than maxAge.
 // If data do not exist or are older than maxAge, the reload function is
-// called, and the returned data are save to the cache and also returned.
+// called, and the returned data are saved to the cache and also returned.
 //
 // If maxAge is 0, any cached data are always returned.
 func (c Cache) LoadOrStore(name string, maxAge time.Duration, reload func() ([]byte, error)) ([]byte, error) {
