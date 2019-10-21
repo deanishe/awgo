@@ -80,7 +80,7 @@ steps:
       echo "CODECOV_TOKEN not set; skipping upload"
     fi
 
-    if [[ "$CODECOV_TOKEN" != "" ]]; then
+    if [[ "$CODACY_TOKEN" != "" ]]; then
       go get github.com/schrej/godacov
       if [[ "$SYSTEM_PULLREQUEST_SOURCECOMMITID" != "" ]]; then
         COMMIT=$SYSTEM_PULLREQUEST_SOURCECOMMITID
