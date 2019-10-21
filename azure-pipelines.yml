@@ -45,7 +45,6 @@ steps:
     go version
   displayName: 'Set up Go'
 
-# Dump environment for debugging
  - script: |
      env | grep SYSTEM_ | sort
      env | grep BUILD_ | sort
