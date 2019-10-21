@@ -189,6 +189,21 @@ Application("com.runningwithcrayons.Alfred").setConfiguration("TEST_QUOTED", {"e
 	assert.Equal(t, x, mj.script, "bad script")
 }
 
+func TestConfig_From_invalid_source(t *testing.T) {
+	invalid := []interface{}{
+		"string",
+		[]string{},
+		map[string]string{},
+		int(10),
+	}
+
+	cfg := NewConfig()
+
+	for _, v := range invalid {
+		assert.EqualError(t, cfg.From(v), "not a struct", "dump accepted invalid target")
+	}
+}
+
 // Populate a struct from workflow/environment variables. See EnvVarForField
 // for information on how fields are mapped to environment variables if
 // no variable name is specified using an `env:"name"` tag.
