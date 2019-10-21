@@ -41,12 +41,12 @@ steps:
   displayName: 'Set up Go'
 
 # Dump environment for debugging
-- script: |
-     env | grep SYSTEM_ | sort
-     env | grep BUILD_ | sort
-     env | grep CI_ | sort
-  workingDirectory: '$(modulePath)'
-  displayName: Environment
+#- script: |
+#     env | grep SYSTEM_ | sort
+#     env | grep BUILD_ | sort
+#     env | grep CI_ | sort
+#  workingDirectory: '$(modulePath)'
+#  displayName: Environment
 
 - script: |
       go get -v -t -d ./...
@@ -74,24 +74,23 @@ steps:
 
 # secrets are only available set for non-fork PRs
 - script: |
-    if [[ "$CODECOV_TOKEN" != "" ]]; then
-      bash <(curl -s https://codecov.io/bash); true
-    else
+    ls -l
+    if [[ "$CODECOV_TOKEN" == "" ]]; then
       echo "CODECOV_TOKEN not set; skipping upload"
+    else
+      bash <(curl -s https://codecov.io/bash); true
     fi
 
-    if [[ "$CODACY_TOKEN" != "" ]]; then
-      go get github.com/schrej/godacov
-      if [[ "$SYSTEM_PULLREQUEST_SOURCECOMMITID" != "" ]]; then
-        COMMIT=$SYSTEM_PULLREQUEST_SOURCECOMMITID
-        echo "submitting PR commit $COMMIT ..."
-      else
-        COMMIT=$BUILD_SOURCEVERSION
-        echo "submitting master commit $COMMIT ..."
-      fi
-      godacov -r coverage.out -t "$CODACY_TOKEN" -c "$COMMIT"; true
-    else
+    if [[ "$BUILD_SOURCEBRANCHNAME" != "master" ]]; then
+      echo "skipping codacy upload for branch $BUILD_SOURCEBRANCHNAME"
+      exit 0
+    fi
+
+    if [[ "$CODACY_TOKEN" == "" ]]; then
       echo "CODACY_TOKEN not set; skipping upload"
+    else
+      echo "running: go run github.com/schrej/godacov -r coverage.out -t $CODACY_TOKEN -c $BUILD_SOURCEVERSION"
+      go run github.com/schrej/godacov -r coverage.out -t $CODACY_TOKEN -c $BUILD_SOURCEVERSION; true
     fi
   workingDirectory: '$(modulePath)'
   displayName: Coverage
