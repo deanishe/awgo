@@ -25,11 +25,6 @@ variables:
   BUILD_NUMBER: '$(Build.BuildNumber)'
   CI_PULL_REQUEST: '$(Build.SourceBranch)'
   CI_PKG_NAME: 'github.com/$(Build.Repository.Name)'
-  CI_PR_COMMIT: '$(System.PullRequest.SourceCommitId)'
-  CI_BASE_COMMIT: '$(Build.SourceVersion)'
-  CODECOV_TOKEN: '$(CodeCovToken)'
-  CODACY_TOKEN: '$(CodacyToken)'
-  # COVERALLS_TOKEN: '$(CoverallsToken)'
   modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
 
 steps:
@@ -50,8 +45,6 @@ steps:
      env | grep SYSTEM_ | sort
      env | grep BUILD_ | sort
      env | grep CI_ | sort
-     echo 'System.PullRequest.SourceCommitId=$(System.PullRequest.SourceCommitId)'
-     echo 'Build.SourceVersion=$(Build.SourceVersion)'
   workingDirectory: '$(modulePath)'
   displayName: Environment
 
@@ -78,16 +71,30 @@ steps:
 #     goveralls -coverprofile=coverage.out -service=local; true
 #   workingDirectory: '$(modulePath)'
 #   displayName: 'coveralls.io'
+
+# secrets are only available set for non-fork PRs
 - script: |
-    go get github.com/schrej/godacov
-    if [[ '$(System.PullRequest.SourceCommitId)' != "" ]]; then
-      COMMIT=$CI_PR_COMMIT
-      echo "submitting PR commit $COMMIT ..."
+    if [[ "$CODECOV_TOKEN" -ne "" ]]; then
+      bash <(curl -s https://codecov.io/bash); true
     else
-      COMMIT=$CI_BASE_COMMIT
-      echo "submitting master commit $COMMIT ..."
+      echo "CODECOV_TOKEN not set; skipping upload"
     fi
-    godacov -r coverage.out -t "$CODACY_TOKEN" -c "$COMMIT"; true
-    bash <(curl -s https://codecov.io/bash); true
+
+    if [[ "$CODECOV_TOKEN" -ne "" ]]; then
+      go get github.com/schrej/godacov
+      if [[ "$SYSTEM_PULLREQUEST_SOURCECOMMITID" != "" ]]; then
+        COMMIT=$SYSTEM_PULLREQUEST_SOURCECOMMITID
+        echo "submitting PR commit $COMMIT ..."
+      else
+        COMMIT=$BUILD_SOURCEVERSION
+        echo "submitting master commit $COMMIT ..."
+      fi
+      godacov -r coverage.out -t "$CODACY_TOKEN" -c "$COMMIT"; true
+    else
+      echo "CODACY_TOKEN not set; skipping upload"
+    fi
   workingDirectory: '$(modulePath)'
   displayName: Coverage
+  env:
+    CODACY_TOKEN: '$(Codacy.Token)'
+    CODECOV_TOKEN: '$(Codecov.Token)'
