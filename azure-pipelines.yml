@@ -74,11 +74,10 @@ steps:
 
 # secrets are only available set for non-fork PRs
 - script: |
-    ls -l
-    if [[ "$CODECOV_TOKEN" == "" ]]; then
-      echo "CODECOV_TOKEN not set; skipping upload"
-    else
+    if [[ "$CODECOV_TOKEN" != "" ]]; then
       bash <(curl -s https://codecov.io/bash); true
+    else
+      echo "CODECOV_TOKEN not set; skipping upload"
     fi
 
     if [[ "$BUILD_SOURCEBRANCHNAME" != "master" ]]; then
@@ -86,11 +85,11 @@ steps:
       exit 0
     fi
 
-    if [[ "$CODACY_TOKEN" == "" ]]; then
-      echo "CODACY_TOKEN not set; skipping upload"
-    else
+    if [[ "$CODACY_TOKEN" != "" ]]; then
       echo "running: go run github.com/schrej/godacov -r coverage.out -t $CODACY_TOKEN -c $BUILD_SOURCEVERSION"
       go run github.com/schrej/godacov -r coverage.out -t $CODACY_TOKEN -c $BUILD_SOURCEVERSION; true
+    else
+      echo "CODACY_TOKEN not set; skipping upload"
     fi
   workingDirectory: '$(modulePath)'
   displayName: Coverage
