@@ -52,8 +52,8 @@ steps:
      env | grep CI_ | sort
      echo 'System.PullRequest.SourceCommitId=$(System.PullRequest.SourceCommitId)'
      echo 'Build.SourceVersion=$(Build.SourceVersion)'
-   workingDirectory: '$(modulePath)'
-   displayName: Environment
+  workingDirectory: '$(modulePath)'
+  displayName: Environment
 
 - script: |
       go get -v -t -d ./...
