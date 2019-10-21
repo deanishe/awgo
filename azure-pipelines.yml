@@ -74,13 +74,13 @@ steps:
 
 # secrets are only available set for non-fork PRs
 - script: |
-    if [[ "$CODECOV_TOKEN" -ne "" ]]; then
+    if [[ "$CODECOV_TOKEN" != "" ]]; then
       bash <(curl -s https://codecov.io/bash); true
     else
       echo "CODECOV_TOKEN not set; skipping upload"
     fi
 
-    if [[ "$CODECOV_TOKEN" -ne "" ]]; then
+    if [[ "$CODECOV_TOKEN" != "" ]]; then
       go get github.com/schrej/godacov
       if [[ "$SYSTEM_PULLREQUEST_SOURCECOMMITID" != "" ]]; then
         COMMIT=$SYSTEM_PULLREQUEST_SOURCECOMMITID
