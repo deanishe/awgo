@@ -36,7 +36,6 @@ var (
 	testFreeSpace    int64 = 9876543210
 	testPingInterval       = time.Second * 10
 	testPingAverage        = 4.5
-	testFieldCount         = 7 // Number of visible, non-ignored fields in testHost
 )
 
 var (
@@ -84,23 +83,6 @@ type mockJSRunner struct {
 func (mj *mockJSRunner) Run(script string) error {
 	mj.script = script
 	return nil
-}
-
-// Test bindDest implementation that captures saves.
-type testDest struct {
-	Cfg   *Config
-	Saves map[string]string
-}
-
-func (dst *testDest) setMulti(variables map[string]string, export bool) error {
-	for k, v := range variables {
-		dst.Saves[k] = v
-	}
-
-	return nil
-}
-func (dst *testDest) GetString(key string, fallback ...string) string {
-	return dst.Cfg.GetString(key, fallback...)
 }
 
 // Returns a test implementation of Env
