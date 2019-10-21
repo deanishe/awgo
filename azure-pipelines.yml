@@ -25,8 +25,6 @@ variables:
   BUILD_NUMBER: '$(Build.BuildNumber)'
   CI_PULL_REQUEST: '$(Build.SourceBranch)'
   CI_PKG_NAME: 'github.com/$(Build.Repository.Name)'
-  CODECOV_TOKEN: '$(CodeCovToken)'
-  # COVERALLS_TOKEN: '$(CoverallsToken)'
   modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
 
 steps:
@@ -43,14 +41,12 @@ steps:
   displayName: 'Set up Go'
 
 # Dump environment for debugging
-# - script: |
-#     env | grep SYSTEM_ | sort
-#     env | grep BUILD_ | sort
-#     env | grep CI_ | sort
-#     echo 'System.PullRequest.SourceCommitId=$(System.PullRequest.SourceCommitId)'
-#     echo 'Build.SourceVersion=$(Build.SourceVersion)'
-#   workingDirectory: '$(modulePath)'
-#   displayName: Environment
+- script: |
+     env | grep SYSTEM_ | sort
+     env | grep BUILD_ | sort
+     env | grep CI_ | sort
+  workingDirectory: '$(modulePath)'
+  displayName: Environment
 
 - script: |
       go get -v -t -d ./...
@@ -75,16 +71,30 @@ steps:
 #     goveralls -coverprofile=coverage.out -service=local; true
 #   workingDirectory: '$(modulePath)'
 #   displayName: 'coveralls.io'
+
+# secrets are only available set for non-fork PRs
 - script: |
-    go get github.com/schrej/godacov
-    if [[ '$(System.PullRequest.SourceCommitId)' != "" ]]; then
-      COMMIT='$(System.PullRequest.SourceCommitId)'
-      echo "submitting PR commit $COMMIT ..."
+    if [[ "$CODECOV_TOKEN" != "" ]]; then
+      bash <(curl -s https://codecov.io/bash); true
     else
-      COMMIT='$(Build.SourceVersion)'
-      echo "submitting master commit $COMMIT ..."
+      echo "CODECOV_TOKEN not set; skipping upload"
     fi
-    godacov -r coverage.out -t '$(CodacyToken)' -c "$COMMIT"; true
-    bash <(curl -s https://codecov.io/bash); true
+
+    if [[ "$CODACY_TOKEN" != "" ]]; then
+      go get github.com/schrej/godacov
+      if [[ "$SYSTEM_PULLREQUEST_SOURCECOMMITID" != "" ]]; then
+        COMMIT=$SYSTEM_PULLREQUEST_SOURCECOMMITID
+        echo "submitting PR commit $COMMIT ..."
+      else
+        COMMIT=$BUILD_SOURCEVERSION
+        echo "submitting master commit $COMMIT ..."
+      fi
+      godacov -r coverage.out -t "$CODACY_TOKEN" -c "$COMMIT"; true
+    else
+      echo "CODACY_TOKEN not set; skipping upload"
+    fi
   workingDirectory: '$(modulePath)'
   displayName: Coverage
+  env:
+    CODACY_TOKEN: '$(Codacy.Token)'
+    CODECOV_TOKEN: '$(Codecov.Token)'
