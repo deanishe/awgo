@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/deanishe/go-env"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,7 +30,7 @@ var (
 	tCacheDir                 = os.ExpandEnv("$HOME/Library/Caches/com.runningwithcrayons.Alfred/Workflow Data/net.deanishe.awgo")
 	tDataDir                  = os.ExpandEnv("$HOME/Library/Application Support/Alfred/Workflow Data/net.deanishe.awgo")
 
-	testEnv = MapEnv{
+	testEnv = env.MapEnv{
 		EnvVarVersion:          tVersion,
 		EnvVarName:             tName,
 		EnvVarBundleID:         tBundleID,
@@ -86,8 +87,8 @@ func withTempDir(fn func(dir string)) {
 }
 
 // Call function with a test environment.
-func withTestEnv(fn func(e MapEnv)) {
-	e := MapEnv{
+func withTestEnv(fn func(e env.MapEnv)) {
+	e := env.MapEnv{
 		EnvVarVersion:          tVersion,
 		EnvVarName:             tName,
 		EnvVarBundleID:         tBundleID,
@@ -109,7 +110,7 @@ func withTestEnv(fn func(e MapEnv)) {
 
 // Call function in a test workflow environment.
 func withTestWf(fn func(wf *Workflow)) {
-	withTestEnv(func(e MapEnv) {
+	withTestEnv(func(e env.MapEnv) {
 		var (
 			dir string
 			err error

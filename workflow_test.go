@@ -12,6 +12,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/deanishe/go-env"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -31,7 +32,7 @@ func TestWorkflowValues(t *testing.T) {
 
 // TestInvalidEnv executes workflow in an invalid environment.
 func TestInvalidEnv(t *testing.T) {
-	assert.Panics(t, func() { NewFromEnv(MapEnv{}) })
+	assert.Panics(t, func() { NewFromEnv(env.MapEnv{}) })
 }
 
 // Options correctly alter Workflow.
