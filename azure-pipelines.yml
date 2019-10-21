@@ -89,7 +89,6 @@ steps:
         COMMIT=$BUILD_SOURCEVERSION
         echo "submitting master commit $COMMIT ..."
       fi
-      echo CODACY_TOKEN=$CODACY_TOKEN
       godacov -r coverage.out -t "$CODACY_TOKEN" -c "$COMMIT"; true
     else
       echo "CODACY_TOKEN not set; skipping upload"
