@@ -31,16 +31,6 @@ type Env interface {
 	Lookup(key string) (string, bool)
 }
 
-// MapEnv is a testing helper that makes it simple to convert a map[string]string
-// to an Env.
-type MapEnv map[string]string
-
-// Lookup implements Env. It returns values from the map.
-func (env MapEnv) Lookup(key string) (string, bool) {
-	s, ok := env[key]
-	return s, ok
-}
-
 // sysEnv implements Env based on the real environment.
 type sysEnv struct{}
 

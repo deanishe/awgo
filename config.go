@@ -6,9 +6,10 @@ package aw
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
+
+	"github.com/deanishe/go-env"
 
 	"github.com/deanishe/awgo/util"
 )
@@ -76,6 +77,7 @@ var runJS = func(script string) error {
 // to info.plist.
 type Config struct {
 	Env
+	reader  env.Reader
 	scripts []string
 }
 
@@ -83,15 +85,16 @@ type Config struct {
 //
 // It accepts one optional Env argument. If an Env is passed, Config
 // is initialised from that instead of the system environment.
-func NewConfig(env ...Env) *Config {
-	var e Env
-	if len(env) > 0 {
-		e = env[0]
+func NewConfig(e ...Env) *Config {
+	var ev Env
+	if len(e) > 0 {
+		ev = e[0]
 	} else {
-		e = sysEnv{}
+		ev = env.System
 	}
 	return &Config{
-		Env:     e,
+		Env:     ev,
+		reader:  env.New(ev),
 		scripts: []string{},
 	}
 }
@@ -102,16 +105,7 @@ func NewConfig(env ...Env) *Config {
 //
 // If a variable is set, but empty, its value is used.
 func (cfg *Config) Get(key string, fallback ...string) string {
-	var fb string
-
-	if len(fallback) > 0 {
-		fb = fallback[0]
-	}
-	s, ok := cfg.Lookup(key)
-	if !ok {
-		return fb
-	}
-	return s
+	return cfg.reader.Get(key, fallback...)
 }
 
 // GetString is a synonym for Get.
@@ -127,22 +121,7 @@ func (cfg *Config) GetString(key string, fallback ...string) string {
 // tries to parse the number with strconv.ParseFloat() and truncate it to an
 // int.
 func (cfg *Config) GetInt(key string, fallback ...int) int {
-	var fb int
-
-	if len(fallback) > 0 {
-		fb = fallback[0]
-	}
-	s, ok := cfg.Lookup(key)
-	if !ok {
-		return fb
-	}
-
-	i, err := parseInt(s)
-	if err != nil {
-		return fb
-	}
-
-	return i
+	return cfg.reader.GetInt(key, fallback...)
 }
 
 // GetFloat returns the value for envvar "key" as a float.
@@ -151,22 +130,7 @@ func (cfg *Config) GetInt(key string, fallback ...int) int {
 //
 // Values are parsed with strconv.ParseFloat().
 func (cfg *Config) GetFloat(key string, fallback ...float64) float64 {
-	var fb float64
-
-	if len(fallback) > 0 {
-		fb = fallback[0]
-	}
-	s, ok := cfg.Lookup(key)
-	if !ok {
-		return fb
-	}
-
-	n, err := strconv.ParseFloat(s, 64)
-	if err != nil {
-		return fb
-	}
-
-	return n
+	return cfg.reader.GetFloat(key, fallback...)
 }
 
 // GetDuration returns the value for envvar "key" as a time.Duration.
@@ -175,22 +139,7 @@ func (cfg *Config) GetFloat(key string, fallback ...float64) float64 {
 //
 // Values are parsed with time.ParseDuration().
 func (cfg *Config) GetDuration(key string, fallback ...time.Duration) time.Duration {
-	var fb time.Duration
-
-	if len(fallback) > 0 {
-		fb = fallback[0]
-	}
-	s, ok := cfg.Lookup(key)
-	if !ok {
-		return fb
-	}
-
-	d, err := time.ParseDuration(s)
-	if err != nil {
-		return fb
-	}
-
-	return d
+	return cfg.reader.GetDuration(key, fallback...)
 }
 
 // GetBool returns the value for envvar "key" as a boolean.
@@ -199,22 +148,7 @@ func (cfg *Config) GetDuration(key string, fallback ...time.Duration) time.Durat
 //
 // Values are parsed with strconv.ParseBool().
 func (cfg *Config) GetBool(key string, fallback ...bool) bool {
-	var fb bool
-
-	if len(fallback) > 0 {
-		fb = fallback[0]
-	}
-	s, ok := cfg.Lookup(key)
-	if !ok {
-		return fb
-	}
-
-	b, err := strconv.ParseBool(s)
-	if err != nil {
-		return fb
-	}
-
-	return b
+	return cfg.reader.GetBool(key, fallback...)
 }
 
 // Set saves a workflow variable to info.plist.
@@ -281,21 +215,3 @@ func (cfg *Config) addScript(script, name string, opts map[string]interface{}) *
 
 	return cfg
 }
-
-// parse an int, falling back to parsing it as a float
-func parseInt(s string) (int, error) {
-	i, err := strconv.ParseInt(s, 10, 32)
-	if err == nil {
-		return int(i), nil
-	}
-
-	// Try to parse as float, then convert
-	n, err := strconv.ParseFloat(s, 64)
-	if err != nil {
-		return 0, fmt.Errorf("invalid int: %v", s)
-	}
-	return int(n), nil
-}
-
-// Convert interface{} to a string.
-func stringify(v interface{}) string { return fmt.Sprintf("%v", v) }
