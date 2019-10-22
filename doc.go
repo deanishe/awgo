@@ -3,7 +3,7 @@
 
 /*
 Package aw is a "plug-and-play" workflow development library/framework for Alfred 3 & 4
-(https://www.alfredapp.com/).
+(https://www.alfredapp.com/). It requires Go 1.13 or later.
 
 It provides everything you need to create a polished and blazing-fast Alfred
 frontend for your project.
