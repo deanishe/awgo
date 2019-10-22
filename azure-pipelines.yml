@@ -80,13 +80,7 @@ steps:
       echo "CODECOV_TOKEN not set; skipping upload"
     fi
 
-    if [[ "$BUILD_SOURCEBRANCHNAME" != "master" ]]; then
-      echo "skipping codacy upload for branch $BUILD_SOURCEBRANCHNAME"
-      exit 0
-    fi
-
     if [[ "$CODACY_TOKEN" != "" ]]; then
-      echo "running: go run github.com/schrej/godacov -r coverage.out -t $CODACY_TOKEN -c $BUILD_SOURCEVERSION"
       go run github.com/schrej/godacov -r coverage.out -t $CODACY_TOKEN -c $BUILD_SOURCEVERSION; true
     else
       echo "CODACY_TOKEN not set; skipping upload"
