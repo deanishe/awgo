@@ -15,7 +15,7 @@ code is not run) if its keyword is passed in a user query.
 
 To use Magic Actions, it's imperative that your workflow call Workflow.Args().
 
-Calls to Workflow.args() check the workflow's arguments (os.args[1:])
+Calls to Workflow.Args() check the workflow's arguments (os.Args[1:])
 for the magic prefix ("workflow:" by default), and hijack control of the
 workflow if found.
 
