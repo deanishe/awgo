@@ -112,7 +112,7 @@ func TestGlobs(t *testing.T) {
 func TestExport(t *testing.T) {
 	t.Parallel()
 
-	for _, src := range []string{"./testdata/workflow", "./testdata/workflow-symlinked"} {
+	for _, src := range []string{"testdata/workflow", "testdata/workflow-symlinked"} {
 		src := src
 		t.Run(src, func(t *testing.T) {
 			env := map[string]string{
@@ -138,11 +138,51 @@ func TestExport(t *testing.T) {
 
 					cmd := exec.Command("unzip", path, "-d", xdir)
 					require.Nil(t, cmd.Run(), "unzip failed")
-					require.Nil(t, compareDirs(src, xdir), "src and unzipped workflow differ")
+					compareDirs(t, src, xdir)
 				})
 			})
 		})
 	}
+}
+
+func TestUnexportedVariables(t *testing.T) {
+	t.Parallel()
+	src := "testdata/workflow-unexported"
+	t.Run(src, func(t *testing.T) {
+		env := map[string]string{
+			"alfred_version":     "4.0.3",
+			"alfred_preferences": "./testbuild",
+		}
+		withEnv(env, func() {
+			withTempDir(func(dir string) {
+				var (
+					xdir = filepath.Join(dir, "extracted")
+					path string
+					err  error
+				)
+				require.Nil(t, os.Mkdir(xdir, 0700), "create build dir failed")
+
+				path, err = Export(src, dir)
+				require.Nil(t, err, "export failed")
+				_, err = os.Stat(path)
+				require.Nil(t, err, "stat workflow failed")
+
+				assert.Equal(t, "AwGo-1.2.0.alfredworkflow", filepath.Base(path),
+					"unexpected workflow name")
+
+				cmd := exec.Command("unzip", path, "-d", xdir)
+				require.Nil(t, cmd.Run(), "unzip failed")
+
+				cmd = exec.Command("/usr/libexec/PlistBuddy",
+					filepath.Join(xdir, "info.plist"),
+					"-c", "Print :variables:unexported_var")
+				data, err := cmd.CombinedOutput()
+				require.Nil(t, err, "read info.plist failed")
+				require.Equal(t, "\n", string(data),
+					"unexpected value for unexported_var")
+			})
+		})
+	})
 }
 
 type fileInfo struct {
@@ -155,9 +195,7 @@ type fileInfo struct {
 
 func TestCompareDirs(t *testing.T) {
 	t.Parallel()
-	if err := compareDirs("./testdata/workflow", "./testdata/workflow-symlinked"); err != nil {
-		t.Error(err)
-	}
+	compareDirs(t, "./testdata/workflow", "./testdata/workflow-symlinked")
 }
 
 func fileStats(path string) (fileInfo, error) {
@@ -192,7 +230,7 @@ func fileStats(path string) (fileInfo, error) {
 	return info, nil
 }
 
-func compareDirs(dir1, dir2 string) error {
+func compareDirs(t *testing.T, dir1, dir2 string) {
 	var (
 		files1, files2 []fileInfo
 		err            error
@@ -224,24 +262,13 @@ func compareDirs(dir1, dir2 string) error {
 	}
 
 	if files1, err = read(dir1); err != nil {
-		return fmt.Errorf("read dir %q: %v", dir1, err)
+		assert.Fail(t, "read dir %q: %v", dir1, err)
 	}
 	if files2, err = read(dir2); err != nil {
-		return fmt.Errorf("read dir %q: %v", dir2, err)
+		assert.Fail(t, "read dir %q: %v", dir2, err)
 	}
 
-	if len(files1) != len(files2) {
-		return fmt.Errorf("unequal sizes (%d vs %d)", len(files1), len(files2))
-	}
-
-	for i, f1 := range files1 {
-		f2 := files2[i]
-		if f1 != f2 {
-			return fmt.Errorf("item %d unequal: (%v vs %v)", i, f1, f2)
-		}
-	}
-
-	return nil
+	assert.Equal(t, files1, files2, "original and extracted workflow differ")
 }
 
 func compareFiles(path1, path2 string) error {

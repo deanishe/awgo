@@ -8,10 +8,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/bmatcuk/doublestar"
+	"howett.net/plist"
 
 	"github.com/deanishe/awgo/util"
 )
@@ -29,6 +33,16 @@ func Export(src, dest string) (path string, err error) {
 	if dest == "" {
 		dest = "dist"
 	}
+
+	if src, err = tempCopy(src); err != nil {
+		return
+	}
+	defer os.RemoveAll(src)
+
+	if err = removeUnexportedVariables(filepath.Join(src, "info.plist")); err != nil {
+		return
+	}
+
 	var info *Info
 	if info, err = NewInfo(InfoPlist(filepath.Join(src, "info.plist"))); err != nil {
 		return
@@ -56,6 +70,47 @@ func Export(src, dest string) (path string, err error) {
 	}()
 
 	err = zipFiles(zip.NewWriter(z), src)
+	return
+}
+
+// recursively copy directory to a temporary directory and return path.
+func tempCopy(dir string) (tmpdir string, err error) {
+	if tmpdir, err = ioutil.TempDir("", "alfred-workflow-"); err != nil {
+		return
+	}
+	if tmpdir, err = filepath.EvalSymlinks(tmpdir); err != nil {
+		return
+	}
+	if !strings.HasSuffix(dir, "/") {
+		dir += "/"
+	}
+	err = exec.Command("/usr/bin/rsync", "-aq", "--copy-links", dir, tmpdir+"/").Run()
+	return
+}
+
+// remove values for variables marked as unexported
+func removeUnexportedVariables(iplist string) (err error) {
+	t := struct {
+		Names []string `plist:"variablesdontexport"`
+	}{}
+
+	var data []byte
+	if data, err = ioutil.ReadFile(iplist); err != nil {
+		return
+	}
+
+	if _, err = plist.Unmarshal(data, &t); err != nil {
+		return
+	}
+
+	for _, s := range t.Names {
+		cmd := exec.Command("/usr/libexec/PlistBuddy", iplist,
+			"-c", "Set :variables:"+s+` ""`)
+		if err = cmd.Run(); err != nil {
+			return
+		}
+	}
+
 	return
 }
 

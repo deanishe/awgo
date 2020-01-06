@@ -31,5 +31,9 @@
 		<key>unexported_var</key>
 		<string>unexported_value</string>
 	</dict>
+	<key>variablesdontexport</key>
+	<array>
+		<string>unexported_var</string>
+	</array>
 </dict>
 </plist>
