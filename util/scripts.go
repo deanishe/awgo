@@ -23,8 +23,8 @@ var (
 	Script     Runner // run script files with commands from Interpreters
 
 	// DefaultInterpreters maps script file extensions to interpreters.
-	// Used by the Script Runner (and by extension Run()) to to
-	// determine how to run files that aren't executable.
+	// Used by the Script Runner (and by extension Run()) to determine
+	// how to run files that aren't executable.
 	DefaultInterpreters = map[string][]string{
 		".py":          {"/usr/bin/python"},
 		".rb":          {"/usr/bin/ruby"},
@@ -155,10 +155,7 @@ func runOsaScript(script, lang string, args ...string) (string, error) {
 // The main difference to exec.Cmd.Output() is that RunCmd writes all
 // STDERR output to the log if a command fails.
 func RunCmd(cmd *exec.Cmd) ([]byte, error) {
-	var (
-		output         []byte
-		stdout, stderr bytes.Buffer
-	)
+	var stdout, stderr bytes.Buffer
 
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -170,9 +167,7 @@ func RunCmd(cmd *exec.Cmd) ([]byte, error) {
 		return nil, err
 	}
 
-	output = stdout.Bytes()
-
-	return output, nil
+	return stdout.Bytes(), nil
 }
 
 // QuoteAS converts string to an AppleScript string literal for insertion into AppleScript code.
