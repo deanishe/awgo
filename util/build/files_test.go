@@ -110,8 +110,6 @@ func TestGlobs(t *testing.T) {
 }
 
 func TestExport(t *testing.T) {
-	t.Parallel()
-
 	for _, src := range []string{"testdata/workflow", "testdata/workflow-symlinked"} {
 		src := src
 		t.Run(src, func(t *testing.T) {
@@ -146,7 +144,6 @@ func TestExport(t *testing.T) {
 }
 
 func TestUnexportedVariables(t *testing.T) {
-	t.Parallel()
 	src := "testdata/workflow-unexported"
 	t.Run(src, func(t *testing.T) {
 		env := map[string]string{
