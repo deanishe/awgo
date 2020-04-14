@@ -3,7 +3,7 @@ module github.com/deanishe/awgo
 go 1.12
 
 require (
-	github.com/bmatcuk/doublestar v1.1.5
+	github.com/bmatcuk/doublestar v1.2.4
 	github.com/deanishe/go-env v0.4.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.4.0
