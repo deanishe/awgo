@@ -23,6 +23,8 @@ import (
 var rxVersion = regexp.MustCompile(`^\d+`)
 
 var (
+	// Alfred's standard preferences folder, which is where the preferences bundle
+	// is stored when the user isn't syncing their settings between machines
 	defaultSyncDirV3 = os.ExpandEnv("${HOME}/Library/Application Support/Alfred 3")
 	defaultSyncDirV4 = os.ExpandEnv("${HOME}/Library/Application Support/Alfred")
 )
@@ -38,8 +40,7 @@ func LibDir(dir string) Option {
 	}
 }
 
-// InfoPlist tells New to parse a specific info.plist file.
-// Default is ./info.plist.
+// InfoPlist tells New to parse a specific info.plist file. Default is ./info.plist.
 func InfoPlist(path string) Option {
 	return func(info *Info) {
 		info.ipPath = path
@@ -82,12 +83,12 @@ type Info struct {
 }
 
 // NewInfo creates a new Info. Workflow info is read from Alfred environment
-// variables (if set), and from info.plist is the working directory and
+// variables (if set), and from info.plist in the working directory and
 // Alfred's configuration files. These paths may be changed using the
-// the LibDir and InfoPlist Options.
+// the LibDir and InfoPlist Options. Settings from info.plist take priority
+// over those from environment variables.
 //
-// It returns an error if info.plist or the configuration files cannot
-// be found.
+// It returns an error if info.plist or the configuration files cannot be found.
 func NewInfo(option ...Option) (*Info, error) {
 	info := &Info{
 		dir:    os.ExpandEnv("${HOME}/Library"),
@@ -220,13 +221,13 @@ func (info *Info) readPlist() error {
 	if _, err = plist.Unmarshal(data, &p); err != nil {
 		return err
 	}
-	if info.Name == "" {
+	if p.Name != "" {
 		info.Name = p.Name
 	}
-	if info.Version == "" {
+	if p.Version != "" {
 		info.Version = p.Version
 	}
-	if info.BundleID == "" {
+	if p.BundleID != "" {
 		info.BundleID = p.BundleID
 	}
 	return nil
@@ -240,12 +241,16 @@ func expand(path string) string {
 	return path
 }
 
+// get path to Alfred's sync folder (parent of Alfred.alfredpreferences) from
+// environment or Alfred's config files
 func findSyncFolder(v int, dir string) (string, error) {
 	if s := os.Getenv("alfred_preferences"); s != "" {
 		return filepath.Dir(s), nil
 	}
 
 	var (
+		// Alfred 4+ has a dedicated prefs.json file, but earlier versions store
+		// the setting in Alfred Preference's version-specific prefs file
 		prefsJSON  = filepath.Join(dir, "Application Support/Alfred/prefs.json")
 		prefsPlist = filepath.Join(dir, "Preferences/com.runningwithcrayons.Alfred-Preferences-3.plist")
 		err        error

@@ -60,18 +60,35 @@ func TestWorkflowInfo(t *testing.T) {
 	assert.Equal(t, bundleID, info.BundleID, "unexpected bundle ID")
 	assert.Equal(t, version, info.Version, "unexpected version")
 
-	// Read workflow data from info.plist
-	env := map[string]string{
-		"alfred_workflow_bundleid": "",
-		"alfred_workflow_name":     "",
-		"alfred_workflow_version":  "",
-	}
-	withEnv(env, func() {
-		info, err := NewInfo(LibDir(rootDirV4), testPlist)
-		require.Nil(t, err, "NewInfo failed")
-		assert.Equal(t, name, info.Name, "unexpected name")
-		assert.Equal(t, bundleID, info.BundleID, "unexpected bundle ID")
-		assert.Equal(t, version, info.Version, "unexpected version")
+	t.Run("read info.plist", func(t *testing.T) {
+		// Read workflow data from info.plist
+		env := map[string]string{
+			"alfred_workflow_bundleid": "",
+			"alfred_workflow_name":     "",
+			"alfred_workflow_version":  "",
+		}
+		withEnv(env, func() {
+			info, err := NewInfo(LibDir(rootDirV4), testPlist)
+			require.Nil(t, err, "NewInfo failed")
+			assert.Equal(t, name, info.Name, "unexpected name")
+			assert.Equal(t, bundleID, info.BundleID, "unexpected bundle ID")
+			assert.Equal(t, version, info.Version, "unexpected version")
+		})
+	})
+
+	t.Run("info.plist has priority over env", func(t *testing.T) {
+		env := map[string]string{
+			"alfred_workflow_bundleid": "net.deanishe.wrong-bundleid",
+			"alfred_workflow_name":     "Wrong Name",
+			"alfred_workflow_version":  "0.0.1",
+		}
+		withEnv(env, func() {
+			info, err := NewInfo(LibDir(rootDirV4), testPlist)
+			require.Nil(t, err, "NewInfo failed")
+			assert.Equal(t, name, info.Name, "unexpected name")
+			assert.Equal(t, bundleID, info.BundleID, "unexpected bundle ID")
+			assert.Equal(t, version, info.Version, "unexpected version")
+		})
 	})
 }
 
