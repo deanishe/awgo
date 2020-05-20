@@ -40,14 +40,6 @@ steps:
     go version
   displayName: 'Set up Go'
 
-# Dump environment for debugging
-#- script: |
-#     env | grep SYSTEM_ | sort
-#     env | grep BUILD_ | sort
-#     env | grep CI_ | sort
-#  workingDirectory: '$(modulePath)'
-#  displayName: Environment
-
 - script: |
       go get -v -t -d ./...
   workingDirectory: '$(modulePath)'
@@ -63,27 +55,3 @@ steps:
     ./run-tests.sh -ic ./...
   workingDirectory: '$(modulePath)'
   displayName: Run Tests
-
-# secrets are only available set for non-fork PRs
-# - script: |
-#     if [[ "$CODECOV_TOKEN" != "" ]]; then
-#       bash <(curl -s https://codecov.io/bash); true
-#     else
-#       echo "CODECOV_TOKEN not set; skipping upload"
-#     fi
-#   displayName: Codecov
-#   workingDirectory: '$(modulePath)'
-#   env:
-#     CODECOV_TOKEN: '$(Codecov.Token)'
-
-# secrets are only available set for non-fork PRs
-# - script: |
-#     if [[ "$CODACY_TOKEN" != "" ]]; then
-#       go run github.com/schrej/godacov -r coverage.out -t $CODACY_TOKEN -c $BUILD_SOURCEVERSION; true
-#     else
-#       echo "CODACY_TOKEN not set; skipping upload"
-#     fi
-#   workingDirectory: '$(modulePath)'
-#   displayName: Codacy
-#   env:
-#     CODACY_TOKEN: '$(Codacy.Token)'

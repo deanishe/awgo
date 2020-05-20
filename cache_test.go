@@ -72,53 +72,57 @@ func TestCache_Store(t *testing.T) {
 func TestCache_LoadOrStore(t *testing.T) {
 	t.Parallel()
 
-	s := "this is a test"
-	var reloadCalled bool
-	reload := func() ([]byte, error) {
-		reloadCalled = true
-		return []byte(s), nil
-	}
-
 	withTempDir(func(dir string) {
-		c := NewCache(dir)
-		n := "test.txt"
-		maxAge := time.Second
+		var (
+			s            = "this is a test"
+			reloadCalled bool
+			c            = NewCache(dir)
+			n            = "test.txt"
+			maxAge       = time.Second
+		)
 
-		// Sanity checks
-		p := c.path(n)
-		assert.False(t, util.PathExists(p), "cache file already exists")
+		reload := func() ([]byte, error) {
+			reloadCalled = true
+			return []byte(s), nil
+		}
 
-		// Cache empty
-		data, err := c.LoadOrStore(n, maxAge, reload)
-		assert.Nil(t, err, "load/store cached data failed")
-		assert.Equal(t, []byte(s), data, "unexpected cache data")
-		assert.True(t, reloadCalled, "reload not called")
-		assert.False(t, c.Expired(n, maxAge), "cache expired")
+		loadOrStore := func(maxAge time.Duration) {
+			data, err := c.LoadOrStore(n, maxAge, reload)
+			require.Nil(t, err, "load/store cached data failed")
+			require.Equal(t, []byte(s), data, "unexpected cache data")
+		}
 
-		// Load cached data
-		reloadCalled = false
-		data, err = c.LoadOrStore(n, maxAge, reload)
-		assert.Nil(t, err, "load/store cached data failed")
-		assert.Equal(t, []byte(s), data, "unexpected cache data")
-		assert.False(t, reloadCalled, "reload called")
+		t.Run("sanity check", func(t *testing.T) {
+			assert.False(t, util.PathExists(c.path(n)), "cache file already exists")
+		})
 
-		// Load with 0 maxAge
-		reloadCalled = false
-		data, err = c.LoadOrStore(n, 0, reload)
-		assert.Nil(t, err, "load/store cached data failed")
-		assert.Equal(t, []byte(s), data, "unexpected cache data")
-		assert.False(t, reloadCalled, "reload called")
+		t.Run("empty cache", func(t *testing.T) {
+			loadOrStore(maxAge)
+			assert.True(t, reloadCalled, "reload not called")
+			assert.False(t, c.Expired(n, maxAge), "cache expired")
+		})
 
-		time.Sleep(time.Second)
+		t.Run("load cached data", func(t *testing.T) {
+			reloadCalled = false
+			loadOrStore(maxAge)
+			assert.False(t, reloadCalled, "reload called")
+		})
 
-		assert.True(t, c.Expired(n, maxAge), "cache not expired")
+		t.Run("reload on 0 maxAge", func(t *testing.T) {
+			reloadCalled = false
+			loadOrStore(0)
+			assert.False(t, reloadCalled, "reload called")
 
-		// Reload data
-		reloadCalled = false
-		data, err = c.LoadOrStore(n, maxAge, reload)
-		assert.Nil(t, err, "load/store cached data failed")
-		assert.Equal(t, []byte(s), data, "unexpected cache data")
-		assert.True(t, reloadCalled, "reload not called")
+			time.Sleep(time.Second)
+			assert.True(t, c.Expired(n, maxAge), "cache not expired")
+		})
+
+		t.Run("reload", func(t *testing.T) {
+			// Reload data
+			reloadCalled = false
+			loadOrStore(maxAge)
+			assert.True(t, reloadCalled, "reload not called")
+		})
 	})
 }
 
@@ -172,57 +176,58 @@ func TestCache_StoreJSON(t *testing.T) {
 func TestCache_LoadOrStoreJSON(t *testing.T) {
 	t.Parallel()
 
-	var reloadCalled bool
-	var a, b *TestData
-
-	reload := func() (interface{}, error) {
-		reloadCalled = true
-		return &TestData{"one", "two"}, nil
-	}
-
 	withTempDir(func(dir string) {
-		n := "test.json"
-		c := NewCache(dir)
-		maxAge := time.Second
+		var (
+			n            = "test.json"
+			c            = NewCache(dir)
+			maxAge       = time.Second
+			reloadCalled bool
+			a            = &TestData{"one", "two"}
+			b            = &TestData{}
+		)
 
-		// Sanity checks
-		require.False(t, util.PathExists(c.path(n)), "cache file already exists")
+		reload := func() (interface{}, error) {
+			reloadCalled = true
+			return &TestData{"one", "two"}, nil
+		}
 
-		a = &TestData{"one", "two"}
-		b = &TestData{}
-		// Cache empty
-		assert.Nil(t, c.LoadOrStoreJSON(n, maxAge, reload, b), "load/store failed")
-		assert.Equal(t, a, b, "unexpected cache data")
-		assert.True(t, reloadCalled, "reload not called")
-		assert.False(t, c.Expired(n, maxAge), "cache expired")
+		loadOrStore := func(maxAge time.Duration) {
+			require.Nil(t, c.LoadOrStoreJSON(n, maxAge, reload, b), "load/store failed")
+			require.Equal(t, a, b, "unexpected cache data")
+		}
 
-		// Load cached data
-		reloadCalled = false
-		a = &TestData{"one", "two"}
-		b = &TestData{}
-		assert.Nil(t, c.LoadOrStoreJSON(n, maxAge, reload, b), "load/store failed")
-		assert.Equal(t, a, b, "unexpected cache data")
-		assert.False(t, reloadCalled, "reload called")
+		t.Run("sanity check", func(t *testing.T) {
+			require.False(t, util.PathExists(c.path(n)), "cache file already exists")
+		})
+
+		t.Run("cache empty", func(t *testing.T) {
+			loadOrStore(maxAge)
+			assert.True(t, reloadCalled, "reload not called")
+			assert.False(t, c.Expired(n, maxAge), "cache expired")
+		})
+
+		t.Run("load cached data", func(t *testing.T) {
+			reloadCalled = false
+			loadOrStore(maxAge)
+			assert.False(t, reloadCalled, "reload called")
+		})
 
 		// Load with 0 maxAge
-		reloadCalled = false
-		a = &TestData{"one", "two"}
-		b = &TestData{}
-		assert.Nil(t, c.LoadOrStoreJSON(n, 0, reload, b), "load/store failed")
-		assert.Equal(t, a, b, "unexpected cache data")
-		assert.False(t, reloadCalled, "reload was called")
+		t.Run("load with maxAge=0", func(t *testing.T) {
+			reloadCalled = false
+			loadOrStore(0)
+			assert.False(t, reloadCalled, "reload was called")
 
-		time.Sleep(time.Second)
-
-		assert.True(t, c.Expired(n, maxAge), "cache has not expired")
+			time.Sleep(time.Second)
+			assert.True(t, c.Expired(n, maxAge), "cache has not expired")
+		})
 
 		// Reload data
-		reloadCalled = false
-		a = &TestData{"one", "two"}
-		b = &TestData{}
-		assert.Nil(t, c.LoadOrStoreJSON(n, maxAge, reload, b), "load/store failed")
-		assert.Equal(t, a, b, "unexpected cache data")
-		assert.True(t, reloadCalled, "reload not called")
+		t.Run("reload data", func(t *testing.T) {
+			reloadCalled = false
+			loadOrStore(maxAge)
+			assert.True(t, reloadCalled, "reload not called")
+		})
 	})
 }
 
@@ -255,17 +260,18 @@ func TestSession_Load(t *testing.T) {
 
 	withTempDir(func(dir string) {
 		var (
-			sid   = NewSessionID()
-			s     = NewSession(dir, sid)
+			s     = NewSession(dir, NewSessionID())
 			data  = []byte("this is a test")
 			data2 []byte
 			n     = "test.txt"
+			p     = s.cache.path(s.name(n))
 			err   error
 		)
 
 		// Sanity checks
-		p := s.cache.path(s.name(n))
-		require.False(t, util.PathExists(p), "cache file already exists")
+		t.Run("sanity check", func(t *testing.T) {
+			require.False(t, util.PathExists(p), "cache file already exists")
+		})
 
 		// Delete non-existent store
 		assert.Nil(t, s.Store(n, nil), "error clearing cache")
@@ -300,8 +306,7 @@ func TestSession_Load(t *testing.T) {
 func TestSession_LoadOrStore(t *testing.T) {
 	withTempDir(func(dir string) {
 		var (
-			sid    = NewSessionID()
-			s      = NewSession(dir, sid)
+			s      = NewSession(dir, NewSessionID())
 			data   = []byte("this is a test")
 			data2  []byte
 			n      = "test.txt"
@@ -314,21 +319,28 @@ func TestSession_LoadOrStore(t *testing.T) {
 			return data, nil
 		}
 
+		loadOrStore := func() {
+			data2, err = s.LoadOrStore(n, reload)
+			require.Nil(t, err, "LoadOrStore return error")
+			require.Equal(t, data, data2, "returned data != reload data")
+		}
+
 		// Sanity checks
-		p := s.cache.path(s.name(n))
-		require.False(t, util.PathExists(p), "cache already exists")
+		t.Run("sanity check", func(t *testing.T) {
+			require.False(t, util.PathExists(s.cache.path(s.name(n))), "cache already exists")
+		})
 
 		// LoadOrStore API
-		data2, err = s.LoadOrStore(n, reload)
-		assert.Nil(t, err, "LoadOrStore return error")
-		assert.Equal(t, data, data2, "returned data != reload data")
-		assert.True(t, called, "reload not called")
+		t.Run("data cached", func(t *testing.T) {
+			loadOrStore()
+			assert.True(t, called, "reload not called")
+		})
 
-		called = false
-		data2, err = s.LoadOrStore(n, reload)
-		assert.Nil(t, err, "LoadOrStore return error")
-		assert.Equal(t, data, data2, "returned data != reload data")
-		assert.False(t, called, "reload called")
+		t.Run("load cached data", func(t *testing.T) {
+			called = false
+			loadOrStore()
+			assert.False(t, called, "reload called")
+		})
 	})
 }
 
@@ -337,8 +349,7 @@ func TestSession_LoadJSON(t *testing.T) {
 
 	withTempDir(func(dir string) {
 		var (
-			sid   = NewSessionID()
-			s     = NewSession(dir, sid)
+			s     = NewSession(dir, NewSessionID())
 			data  = map[string]string{"foo": "bar"}
 			data2 map[string]string
 			n     = "test.txt"
@@ -382,8 +393,7 @@ func TestSession_LoadJSON(t *testing.T) {
 func TestSession_LoadOrStoreJSON(t *testing.T) {
 	withTempDir(func(dir string) {
 		var (
-			sid    = NewSessionID()
-			s      = NewSession(dir, sid)
+			s      = NewSession(dir, NewSessionID())
 			data   = map[string]string{"foo": "bar"}
 			data2  map[string]string
 			n      = "test.txt"
@@ -396,44 +406,46 @@ func TestSession_LoadOrStoreJSON(t *testing.T) {
 			return data, nil
 		}
 
+		loadOrStore := func() {
+			err = s.LoadOrStoreJSON(n, reload, &data2)
+			require.Nil(t, err, "LoadOrStore return error")
+			require.Equal(t, data, data2, "returned data != reload data")
+		}
+
 		// Sanity checks
-		p := s.cache.path(s.name(n))
-		require.False(t, util.PathExists(p), "cache file already exists")
+		t.Run("sanity check", func(t *testing.T) {
+			require.False(t, util.PathExists(s.cache.path(s.name(n))), "cache file already exists")
+		})
 
 		// LoadOrStore API
-		err = s.LoadOrStoreJSON(n, reload, &data2)
-		assert.Nil(t, err, "LoadOrStore return error")
-		assert.Equal(t, data, data2, "returned data != reload data")
-		assert.True(t, called, "reload not called")
+		t.Run("cache data", func(t *testing.T) {
+			loadOrStore()
+			assert.True(t, called, "reload not called")
+		})
 
-		called = false
-		err = s.LoadOrStoreJSON(n, reload, &data2)
-		assert.Nil(t, err, "LoadOrStore return error")
-		assert.Equal(t, data, data2, "returned data != reload data")
-		assert.False(t, called, "reload called")
+		t.Run("load cache", func(t *testing.T) {
+			called = false
+			loadOrStore()
+			assert.False(t, called, "reload called")
+		})
 	})
 }
 
 func TestSession_Clear(t *testing.T) {
 	withTempDir(func(dir string) {
 		var (
-			sid1 = NewSessionID()
-			sid2 = NewSessionID()
 			data = []byte("this is a test")
 			n    = "test.txt"
-			err  error
 		)
 
 		// "old" session
-		s := NewSession(dir, sid1)
-		err = s.Store(n, data)
-		assert.Nil(t, err, "store failed")
+		s := NewSession(dir, NewSessionID())
+		assert.Nil(t, s.Store(n, data), "store failed")
 		assert.True(t, s.Exists(n), "cached data do not exist")
 
 		// "new" session
-		s = NewSession(dir, sid2)
-		err = s.Clear(false)
-		assert.Nil(t, err, "clear failed")
+		s = NewSession(dir, NewSessionID())
+		assert.Nil(t, s.Clear(false), "clear failed")
 		assert.False(t, s.Exists(n), "expired data still exist")
 	})
 }

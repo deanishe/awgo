@@ -132,35 +132,19 @@ func TestUpdaterPreOnly(t *testing.T) {
 // TestUpdateInterval tests caching of LastCheck.
 func TestUpdateInterval(t *testing.T) {
 	t.Parallel()
-	t.Run("UpdateIntervalOnSuccess", testUpdateIntervalSuccess)
-	t.Run("UpdateIntervalOnFailure", testUpdateIntervalFail)
-}
-
-func testUpdateIntervalSuccess(t *testing.T) {
-	t.Parallel()
-	withTempDir(func(dir string) {
-		u, err := NewUpdater(testSource{}, "0.2.2", dir)
-		require.Nil(t, err, "create updater failed")
-
-		// UpdateInterval is set
-		assert.True(t, u.LastCheck.IsZero(), "LastCheck is not zero")
-		assert.True(t, u.CheckDue(), "update check is not due")
-
-		// LastCheck is updated
-		assert.Nil(t, u.CheckForUpdate(), "fetch releases failed")
-		assert.False(t, u.LastCheck.IsZero(), "LastCheck is zero")
-		assert.False(t, u.CheckDue(), "update check is due")
-
-		// Changing UpdateInterval
-		u.updateInterval = time.Nanosecond
-		assert.True(t, u.CheckDue(), "update check is not due")
+	t.Run("UpdateIntervalOnSuccess", func(t *testing.T) {
+		t.Parallel()
+		testUpdateInterval(testSource{}, false, t)
+	})
+	t.Run("UpdateIntervalOnFailure", func(t *testing.T) {
+		t.Parallel()
+		testUpdateInterval(testFailSource{}, true, t)
 	})
 }
 
-func testUpdateIntervalFail(t *testing.T) {
-	t.Parallel()
+func testUpdateInterval(src Source, fail bool, t *testing.T) {
 	withTempDir(func(dir string) {
-		u, err := NewUpdater(testFailSource{}, "0.2.2", dir)
+		u, err := NewUpdater(src, "0.2.2", dir)
 		require.Nil(t, err, "create updater failed")
 
 		// UpdateInterval is set
@@ -168,7 +152,11 @@ func testUpdateIntervalFail(t *testing.T) {
 		assert.True(t, u.CheckDue(), "update check is not due")
 
 		// LastCheck is updated
-		assert.NotNil(t, u.CheckForUpdate(), "fetch releases succeeded")
+		if fail {
+			assert.NotNil(t, u.CheckForUpdate(), "fetch releases succeeded")
+		} else {
+			assert.Nil(t, u.CheckForUpdate(), "fetch releases failed")
+		}
 		assert.False(t, u.LastCheck.IsZero(), "LastCheck is zero")
 		assert.False(t, u.CheckDue(), "update check is due")
 
@@ -260,7 +248,7 @@ func TestHTTPClient(t *testing.T) {
 		defer ts.Close()
 
 		f, err := ioutil.TempFile("", "awgo-*-test")
-		require.Nil(t, err, "read tempfile failed")
+		require.Nil(t, err, "create tempfile failed")
 		defer panicOnError(f.Close())
 
 		err = download(ts.URL, f.Name())

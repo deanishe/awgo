@@ -1,4 +1,4 @@
-name: Tests and coverage
+name: Build
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   run:
-    name: Unit tests
+    name: Run unit tests
     runs-on: macos-latest
     steps:
 
@@ -40,7 +40,7 @@ jobs:
     - name: Codacy
       run: |
         go install github.com/schrej/godacov
-        godacov -r coverage.out -t ${{ secrets.CODACY_TOKEN }} -c ${{ github.sha }}; true
+        godacov -r coverage.out -t ${{ secrets.CODACY_TOKEN }} -c ${{ github.sha }}
 
     - name: Coveralls
       uses: shogo82148/actions-goveralls@v1.2.4

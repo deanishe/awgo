@@ -14,8 +14,6 @@ import (
 )
 
 func TestExecutableRunner(t *testing.T) {
-	t.Parallel()
-
 	data := []struct {
 		in    string
 		valid bool
@@ -35,11 +33,8 @@ func TestExecutableRunner(t *testing.T) {
 	}
 
 	r := ExecRunner{}
-
 	for _, td := range data {
-		td := td // capture variable
-		t.Run(fmt.Sprintf("CanRun(%s)", td.in), func(t *testing.T) {
-			t.Parallel()
+		t.Run(fmt.Sprintf("CanRunExecutable(%s)", td.in), func(t *testing.T) {
 			assert.Equal(t, td.valid, r.CanRun(td.in), "unexpected validity")
 
 			// Also test runners
@@ -54,8 +49,6 @@ func TestExecutableRunner(t *testing.T) {
 }
 
 func TestScriptRunner(t *testing.T) {
-	t.Parallel()
-
 	tests := []struct {
 		in    string
 		valid bool
@@ -66,8 +59,8 @@ func TestScriptRunner(t *testing.T) {
 		{"testdata/jxa.js", true},
 		{"testdata/python.py", true},
 		// ScriptRunner can't run executables
-		{"testdata/bash_exe", false},
-		{"testdata/python_exe", false},
+		{"testdata/bashx", false},
+		{"testdata/pythonx", false},
 		// Not scripts
 		{"testdata/non-executable", false},
 		{"testdata/non-existent", false},
@@ -77,31 +70,25 @@ func TestScriptRunner(t *testing.T) {
 
 	r := ScriptRunner{DefaultInterpreters}
 	for _, td := range tests {
-		td := td // capture variable
-		t.Run(fmt.Sprintf("CanRun(%s)", td.in), func(t *testing.T) {
-			t.Parallel()
+		t.Run(fmt.Sprintf("CanRunScript(%s)", td.in), func(t *testing.T) {
 			assert.Equal(t, td.valid, r.CanRun(td.in), "unexpected validity")
 		})
 	}
 }
 
 func TestRun(t *testing.T) {
-	t.Parallel()
-
 	scripts := []string{
 		"testdata/applescript.applescript",
 		"testdata/applescript.scpt",
 		"testdata/bash.sh",
-		"testdata/bash_exe",
+		"testdata/bashx",
 		"testdata/jxa.js",
 		"testdata/python.py",
-		"testdata/python_exe",
+		"testdata/pythonx",
 	}
 
 	for _, script := range scripts {
-		script := script // capture variable
 		t.Run(fmt.Sprintf("Run(%s)", script), func(t *testing.T) {
-			t.Parallel()
 			x := filepath.Base(script)
 
 			// test Run
@@ -118,8 +105,6 @@ func TestRun(t *testing.T) {
 }
 
 func TestNoRun(t *testing.T) {
-	t.Parallel()
-
 	tests := []struct {
 		in      string
 		unknown bool
@@ -133,10 +118,7 @@ func TestNoRun(t *testing.T) {
 	}
 
 	for _, td := range tests {
-		td := td // capture variable
-		t.Run(fmt.Sprintf("Run(%s)", td.in), func(t *testing.T) {
-			t.Parallel()
-
+		t.Run(fmt.Sprintf("NoRun(%s)", td.in), func(t *testing.T) {
 			_, err := Run(td.in, "blah")
 			assert.NotNil(t, err, "ran invalid script %q", td.in)
 			if td.unknown {
@@ -160,8 +142,6 @@ func TestNoRun(t *testing.T) {
 
 // TestNewScriptRunner verifies that ScriptRunner accepts the correct filetypes.
 func TestNewScriptRunner(t *testing.T) {
-	t.Parallel()
-
 	data := []struct {
 		good, bad int
 		m         map[string][]string
@@ -182,17 +162,14 @@ func TestNewScriptRunner(t *testing.T) {
 		"testdata/applescript.applescript",
 		"testdata/applescript.scpt",
 		"testdata/bash.sh",
-		"testdata/bash_exe",
+		"testdata/bashx",
 		"testdata/jxa.js",
 		"testdata/python.py",
-		"testdata/python_exe",
+		"testdata/pythonx",
 	}
 
 	for i, td := range data {
-		td := td // capture variable
 		t.Run(fmt.Sprintf("ScriptRunner(%d)", i), func(t *testing.T) {
-			t.Parallel()
-
 			r := NewScriptRunner(td.m)
 			var good, bad int
 
@@ -211,8 +188,6 @@ func TestNewScriptRunner(t *testing.T) {
 
 // TestQuoteJS verifies QuoteJS quoting.
 func TestQuoteJS(t *testing.T) {
-	t.Parallel()
-
 	data := []struct {
 		in  interface{}
 		out string

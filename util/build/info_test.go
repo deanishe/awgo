@@ -13,18 +13,19 @@ import (
 )
 
 var (
-	rootDirV3     = "./testdata/v3"
-	rootDirV4     = "./testdata/v4"
-	syncDirV3     = os.ExpandEnv("${HOME}/Library/Application Support/Alfred 3")
-	prefsBundleV3 = os.ExpandEnv("${HOME}/Library/Application Support/Alfred 3/Alfred.alfredpreferences")
-	wfDirV3       = os.ExpandEnv("${HOME}/Library/Application Support/Alfred 3/Alfred.alfredpreferences/workflows")
-	cacheDirV3    = os.ExpandEnv("${HOME}/Library/Caches/com.runningwithcrayons.Alfred-3/Workflow Data")
-	dataDirV3     = os.ExpandEnv("${HOME}/Library/Application Support/Alfred 3/Workflow Data")
-	syncDirV4     = os.ExpandEnv("${HOME}/Library/Application Support/Alfred")
-	prefsBundleV4 = os.ExpandEnv("${HOME}/Library/Application Support/Alfred/Alfred.alfredpreferences")
-	wfDirV4       = os.ExpandEnv("${HOME}/Library/Application Support/Alfred/Alfred.alfredpreferences/workflows")
-	cacheDirV4    = os.ExpandEnv("${HOME}/Library/Caches/com.runningwithcrayons.Alfred/Workflow Data")
-	dataDirV4     = os.ExpandEnv("${HOME}/Library/Application Support/Alfred/Workflow Data")
+	rootDirV3      = "./testdata/v3"
+	rootDirV4      = "./testdata/v4"
+	rootDirInvalid = "./testdata/invalid"
+	syncDirV3      = os.ExpandEnv("${HOME}/Library/Application Support/Alfred 3")
+	prefsBundleV3  = os.ExpandEnv("${HOME}/Library/Application Support/Alfred 3/Alfred.alfredpreferences")
+	wfDirV3        = os.ExpandEnv("${HOME}/Library/Application Support/Alfred 3/Alfred.alfredpreferences/workflows")
+	cacheDirV3     = os.ExpandEnv("${HOME}/Library/Caches/com.runningwithcrayons.Alfred-3/Workflow Data")
+	dataDirV3      = os.ExpandEnv("${HOME}/Library/Application Support/Alfred 3/Workflow Data")
+	syncDirV4      = os.ExpandEnv("${HOME}/Library/Application Support/Alfred")
+	prefsBundleV4  = os.ExpandEnv("${HOME}/Library/Application Support/Alfred/Alfred.alfredpreferences")
+	wfDirV4        = os.ExpandEnv("${HOME}/Library/Application Support/Alfred/Alfred.alfredpreferences/workflows")
+	cacheDirV4     = os.ExpandEnv("${HOME}/Library/Caches/com.runningwithcrayons.Alfred/Workflow Data")
+	dataDirV4      = os.ExpandEnv("${HOME}/Library/Application Support/Alfred/Workflow Data")
 
 	testPlist = InfoPlist("./testdata/info.plist")
 )
@@ -54,11 +55,16 @@ func TestWorkflowInfo(t *testing.T) {
 		bundleID = "net.deanishe.awgo"
 		version  = "1.2.0"
 	)
-	info, err := NewInfo(LibDir(rootDirV4), testPlist)
-	require.Nil(t, err, "NewInfo failed")
-	assert.Equal(t, name, info.Name, "unexpected name")
-	assert.Equal(t, bundleID, info.BundleID, "unexpected bundle ID")
-	assert.Equal(t, version, info.Version, "unexpected version")
+
+	testInfo := func(t *testing.T) {
+		info, err := NewInfo(LibDir(rootDirV4), testPlist)
+		require.Nil(t, err, "NewInfo failed")
+		assert.Equal(t, name, info.Name, "unexpected name")
+		assert.Equal(t, bundleID, info.BundleID, "unexpected bundle ID")
+		assert.Equal(t, version, info.Version, "unexpected version")
+	}
+
+	testInfo(t)
 
 	t.Run("read info.plist", func(t *testing.T) {
 		// Read workflow data from info.plist
@@ -68,11 +74,7 @@ func TestWorkflowInfo(t *testing.T) {
 			"alfred_workflow_version":  "",
 		}
 		withEnv(env, func() {
-			info, err := NewInfo(LibDir(rootDirV4), testPlist)
-			require.Nil(t, err, "NewInfo failed")
-			assert.Equal(t, name, info.Name, "unexpected name")
-			assert.Equal(t, bundleID, info.BundleID, "unexpected bundle ID")
-			assert.Equal(t, version, info.Version, "unexpected version")
+			testInfo(t)
 		})
 	})
 
@@ -83,11 +85,7 @@ func TestWorkflowInfo(t *testing.T) {
 			"alfred_workflow_version":  "0.0.1",
 		}
 		withEnv(env, func() {
-			info, err := NewInfo(LibDir(rootDirV4), testPlist)
-			require.Nil(t, err, "NewInfo failed")
-			assert.Equal(t, name, info.Name, "unexpected name")
-			assert.Equal(t, bundleID, info.BundleID, "unexpected bundle ID")
-			assert.Equal(t, version, info.Version, "unexpected version")
+			testInfo(t)
 		})
 	})
 }
@@ -136,16 +134,24 @@ func TestDirs(t *testing.T) {
 		name    string
 		version string
 		dir     string
+		plist   Option
 		x       int
+		fail    bool
 	}{
-		{"default", "", rootDirV4, 4},
-		{"v4", "4", rootDirV4, 4},
-		{"v3", "3", rootDirV3, 3},
-		{"v3 (v4 dir)", "3", rootDirV4, 3},
+		{"default", "", rootDirV4, testPlist, 4, false},
+		{"v4", "4", rootDirV4, testPlist, 4, false},
+		{"v4 (version=0)", "", rootDirV4, testPlist, 4, false},
+		{"v3", "3", rootDirV3, testPlist, 3, false},
+		{"v3 (v4 dir)", "3", rootDirV4, testPlist, 3, false},
+		// invalid input
+		{"non-existent info.plist", "", rootDirV4, InfoPlist("./invalid"), 0, true},
+		{"invalid info.plist", "", rootDirV4, InfoPlist("./testdata/invalid.plist"), 0, true},
+		{"non-existent info.plist", "", "./invalid", testPlist, 0, true},
+		{"invalid prefs.json", "", rootDirInvalid, testPlist, 0, true},
+		{"invalid Alfred Preferences prefs", "3", rootDirInvalid, testPlist, 0, true},
 	}
 
 	for _, td := range tests {
-		td := td
 		t.Run(td.name, func(t *testing.T) {
 			withEnv(map[string]string{
 				"alfred_version": td.version,
@@ -153,29 +159,28 @@ func TestDirs(t *testing.T) {
 				"alfred_workflow_data":  "",
 				"alfred_workflow_cache": "",
 			}, func() {
-				info, err := NewInfo(LibDir(td.dir), testPlist)
-				require.Nil(t, err, "NewInfo failed")
+				info, err := NewInfo(LibDir(td.dir), td.plist)
 
-				var (
-					syncX  = syncDirV4
-					prefsX = prefsBundleV4
-					wfDirX = wfDirV4
-					cacheX = cacheDirV4
-					dataX  = dataDirV4
-				)
-				if td.x == 3 {
-					syncX = syncDirV3
-					prefsX = prefsBundleV3
-					wfDirX = wfDirV3
-					cacheX = cacheDirV3
-					dataX = dataDirV3
+				if td.fail {
+					assert.NotNil(t, err, td.name)
+					return
 				}
 
-				assert.Equal(t, syncX, info.AlfredSyncDir, "unexpected AlfredSyncDir")
-				assert.Equal(t, prefsX, info.AlfredPrefsBundle, "unexpected PrefsBundle")
-				assert.Equal(t, wfDirX, info.AlfredWorkflowDir, "unexpected AlfredWorkflowDir")
-				assert.Equal(t, cacheX, info.AlfredCacheDir, "unexpected AlfredCacheDir")
-				assert.Equal(t, dataX, info.AlfredDataDir, "unexpected AlfredDataDir")
+				require.Nil(t, err, "NewInfo failed")
+
+				if td.x == 3 {
+					assert.Equal(t, syncDirV3, info.AlfredSyncDir, "unexpected AlfredSyncDir")
+					assert.Equal(t, prefsBundleV3, info.AlfredPrefsBundle, "unexpected PrefsBundle")
+					assert.Equal(t, wfDirV3, info.AlfredWorkflowDir, "unexpected AlfredWorkflowDir")
+					assert.Equal(t, cacheDirV3, info.AlfredCacheDir, "unexpected AlfredCacheDir")
+					assert.Equal(t, dataDirV3, info.AlfredDataDir, "unexpected AlfredDataDir")
+				} else {
+					assert.Equal(t, syncDirV4, info.AlfredSyncDir, "unexpected AlfredSyncDir")
+					assert.Equal(t, prefsBundleV4, info.AlfredPrefsBundle, "unexpected PrefsBundle")
+					assert.Equal(t, wfDirV4, info.AlfredWorkflowDir, "unexpected AlfredWorkflowDir")
+					assert.Equal(t, cacheDirV4, info.AlfredCacheDir, "unexpected AlfredCacheDir")
+					assert.Equal(t, dataDirV4, info.AlfredDataDir, "unexpected AlfredDataDir")
+				}
 			})
 		})
 	}

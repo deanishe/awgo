@@ -15,73 +15,66 @@ import (
 	aw "github.com/deanishe/awgo"
 )
 
-const ghBaseURL = "https://api.github.com/repos/"
-
+// matches filename of a compiled Alfred workflow
 var rxWorkflowFile = regexp.MustCompile(`\.alfred(\d+)?workflow$`)
 
 // GitHub is a Workflow Option. It sets a Workflow Updater for the specified GitHub repo.
 // Repo name should be of the form "username/repo", e.g. "deanishe/alfred-ssh".
 func GitHub(repo string) aw.Option {
+	return newOption(&source{
+		URL:   "https://api.github.com/repos/" + repo,
+		fetch: getURL,
+	})
+}
+
+// create new Updater option from Source.
+func newOption(src Source) aw.Option {
 	return func(wf *aw.Workflow) aw.Option {
-		u, _ := NewUpdater(
-			&githubSource{Repo: repo, fetch: getURL},
-			wf.Version(),
-			filepath.Join(wf.CacheDir(), "_aw/update"),
-		)
+		u, _ := NewUpdater(src, wf.Version(), filepath.Join(wf.CacheDir(), "_aw/update"))
 		return aw.Update(u)(wf)
 	}
 }
 
-type githubSource struct {
-	Repo  string
+type source struct {
+	URL   string
 	dls   []Download
 	fetch func(URL string) ([]byte, error)
 }
 
 // Downloads implements Source.
-func (src *githubSource) Downloads() ([]Download, error) {
-	if src.dls == nil {
-		src.dls = []Download{}
-		// rels := []*Release{}
-		js, err := src.fetch(src.url())
-		if err != nil {
-			// log.Printf("error: fetch GitHub releases: %s", err)
-			return nil, err
-		}
-		// log.Printf("%d bytes of JSON", len(js))
-		if src.dls, err = parseGitHubReleases(js); err != nil {
-			// log.Printf("error: parse GitHub releases: %s", err)
-			return nil, err
-		}
+func (src *source) Downloads() ([]Download, error) {
+	if src.dls != nil {
+		return src.dls, nil
 	}
-	log.Printf("%d download(s) in repo %s", len(src.dls), src.Repo)
+
+	src.dls = []Download{}
+	js, err := src.fetch(src.URL)
+	if err != nil {
+		return nil, err
+	}
+	if src.dls, err = parseReleases(js); err != nil {
+		return nil, err
+	}
+
 	return src.dls, nil
 }
 
-// url returns URL of releases list.
-func (src *githubSource) url() string { return fmt.Sprintf("%s%s/releases", ghBaseURL, src.Repo) }
-
-// ghRelease is the data model for GitHub releases JSON.
-type ghRelease struct {
-	Name       string     `json:"name"`
-	Prerelease bool       `json:"prerelease"`
-	Assets     []*ghAsset `json:"assets"`
-	Tag        string     `json:"tag_name"`
-}
-
-// ghAsset is the data model for GitHub releases JSON.
-type ghAsset struct {
-	Name             string `json:"name"`
-	URL              string `json:"browser_download_url"`
-	MinAlfredVersion SemVer `json:"-"`
-}
-
-// parseGitHubReleases parses GitHub releases JSON.
-func parseGitHubReleases(js []byte) ([]Download, error) {
+// parse GitHub/Gitea releases JSON.
+func parseReleases(js []byte) ([]Download, error) {
 	var (
 		dls  = []Download{}
-		rels = []*ghRelease{}
+		rels = []struct {
+			Name       string `json:"name"`
+			Prerelease bool   `json:"prerelease"`
+			Assets     []struct {
+				Name             string `json:"name"`
+				URL              string `json:"browser_download_url"`
+				MinAlfredVersion SemVer `json:"-"`
+			} `json:"assets"`
+			Tag string `json:"tag_name"`
+		}{}
 	)
+
 	if err := json.Unmarshal(js, &rels); err != nil {
 		return nil, err
 	}

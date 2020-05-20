@@ -6,17 +6,15 @@ package update
 import (
 	"fmt"
 	"io/ioutil"
-	"reflect"
 	"testing"
 
 	aw "github.com/deanishe/awgo"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-// 4 valid releases, including one prerelease
-// v1.0, v2.0, v6.0, v9.0 (Alfred 4 only) and v10.0.1-beta
-// v6.0 contains 3 valid workflow files with 3 extensions:
-// .alfredworkflow, .alfred3workflow, .alfred4workflow.
-// v9.0 contains only a .alfred4workflow file.
+// 6 valid releases, including one prerelease
+// v1.0, v2.0, v6.0, v7.1.0-beta, v9.0 (Alfred 4+ only), v10.0-beta
 var testGitHubDownloads = []Download{
 	// Latest version for Alfred 4
 	{
@@ -74,131 +72,112 @@ var testGitHubDownloads = []Download{
 
 func TestParseGitHub(t *testing.T) {
 	t.Parallel()
-
-	var (
-		data = mustRead("testdata/github-releases.json")
-		dls  []Download
-		err  error
-	)
-
-	src := &githubSource{
-		Repo: "deanishe/alfred-workflow-dummy",
-		fetch: func(URL string) ([]byte, error) {
-			return ioutil.ReadFile("testdata/empty.json")
-		},
-	}
-	if dls, err = src.Downloads(); err != nil {
-		t.Fatal("parse empty JSON")
-	}
-	if len(dls) != 0 {
-		t.Fatal("downloads in empty JSON")
-	}
-
-	if dls, err = parseGitHubReleases(data); err != nil {
-		t.Fatal("parse GitHub JSON.")
-	}
-
-	if len(dls) != len(testGitHubDownloads) {
-		t.Fatalf("Wrong download count. Expected=%d, Got=%d", len(testGitHubDownloads), len(dls))
-	}
-
-	for i, w := range dls {
-		w2 := testGitHubDownloads[i]
-		if !reflect.DeepEqual(w, w2) {
-			t.Fatalf("Download mismatch at pos %d. Expected=%#v, Got=%#v", i, w2, w)
-		}
-	}
+	testParseReleases("GitHub", "testdata/github-releases.json", testGitHubDownloads, t)
 }
 
-func makeGitHubSource() *githubSource {
-	src := &githubSource{Repo: "deanishe/alfred-workflow-dummy"}
-	dls, err := parseGitHubReleases(mustRead("testdata/github-releases.json"))
-	if err != nil {
-		panic(err)
-	}
-	src.dls = dls
-	return src
+func testParseReleases(name, jsonPath string, downloads []Download, t *testing.T) {
+	t.Run(name+"parse empty releases", func(t *testing.T) {
+		t.Parallel()
+		src := &source{
+			fetch: func(URL string) ([]byte, error) {
+				return ioutil.ReadFile("testdata/empty.json")
+			},
+		}
+		dls, err := src.Downloads()
+		require.Nil(t, err, "parse empty JSON")
+		require.Equal(t, 0, len(dls), "downloads in empty JSON")
+	})
+
+	t.Run(name+" parse releases", func(t *testing.T) {
+		t.Parallel()
+		src := &source{
+			fetch: func(URL string) ([]byte, error) {
+				return ioutil.ReadFile(jsonPath)
+			},
+		}
+		dls, err := src.Downloads()
+		require.Nil(t, err, "parse %s JSON", name)
+		require.Equal(t, len(downloads), len(dls), "wrong %s download count", name)
+		require.Equal(t, downloads, dls, "%s downloads not equal", name)
+	})
 }
 
 func TestGitHubUpdater(t *testing.T) {
 	t.Parallel()
+	src := &source{
+		URL: "https://api.github.com/repos/deanishe/alfred-workflow-dummy",
+		fetch: func(URL string) ([]byte, error) {
+			return ioutil.ReadFile("testdata/github-releases.json")
+		},
+	}
+	testSourceUpdater("GitHub", src, t)
+}
+
+func testSourceUpdater(name string, src *source, t *testing.T) {
 	withTempDir(func(dir string) {
-		src := makeGitHubSource()
 		dls, err := src.Downloads()
-		if err != nil {
-			t.Fatal(err)
-		}
-		if len(dls) != len(testGitHubDownloads) {
-			t.Errorf("Wrong no. of downloads. Expected=%v, Got=%v", len(testGitHubDownloads), len(dls))
-		}
+		require.Nil(t, err, "parse %s JSON", name)
+		assert.Equal(t, len(testGitHubDownloads), len(dls), "wrong no. of %s downloads", name)
 
-		// invalid versions
-		if _, err := NewUpdater(src, "", dir); err == nil {
-			t.Errorf("Accepted empty version")
-		}
-		if _, err := NewUpdater(src, "stan", dir); err == nil {
-			t.Errorf("Accepted invalid version")
-		}
+		t.Run(name+" invalid versions", func(t *testing.T) {
+			for _, s := range []string{"", "stan"} {
+				_, err := NewUpdater(src, s, dir)
+				assert.NotNil(t, err, "accepted invalid version %q", s)
+			}
+		})
 
-		u, err := NewUpdater(src, "0.2.2", dir)
-		if err != nil {
-			t.Fatalf("create updater: %v", err)
-		}
+		var u *Updater
+		t.Run(name+" updater", func(t *testing.T) {
+			u, err = NewUpdater(src, "0.2.2", dir)
+			require.Nil(t, err, "create updater")
+			require.Nil(t, u.CheckForUpdate(), "retrieve releases")
+		})
 
-		// Update releases
-		if err := u.CheckForUpdate(); err != nil {
-			t.Fatalf("Couldn't retrieve releases: %s", err)
-		}
+		t.Run(name+" updater info cached", func(t *testing.T) {
+			// Check info is cached
+			u2, err := NewUpdater(src, "0.2.2", dir)
+			require.Nil(t, err, "create updater")
 
-		// Check info is cached
-		u2, err := NewUpdater(src, "0.2.2", dir)
-		if err != nil {
-			t.Fatalf("create updater: %v", err)
-		}
-		if u2.CurrentVersion != u.CurrentVersion {
-			t.Errorf("Differing versions. Expected=%v, Got=%v", u.CurrentVersion, u2.CurrentVersion)
-		}
-		if !u2.LastCheck.Equal(u.LastCheck) {
-			t.Errorf("Differing LastCheck. Expected=%v, Got=%v", u.LastCheck, u2.LastCheck)
-		}
+			assert.Equal(t, u2.CurrentVersion, u.CurrentVersion, "differing versions")
+			assert.True(t, u2.LastCheck.Equal(u.LastCheck), "differing LastCheck")
+		})
 
-		testUpdater("github", u, t)
+		t.Run(name+" updater", func(t *testing.T) {
+			testUpdater(name, u, t)
+		})
 	})
 }
 
 func testUpdater(name string, u *Updater, t *testing.T) {
-	// v9.0 is latest stable version
 	u.CurrentVersion = mustVersion("6")
-	u.AlfredVersion = SemVer{}
-	if !u.UpdateAvailable() {
-		t.Errorf("%s: No update available for defaults", name)
+
+	tests := []struct {
+		name           string
+		currentVersion string
+		alfredVersion  string
+		prereleases    bool
+		x              bool
+	}{
+		// v9.0 is latest stable version
+		{"sanity check", "6", "", false, true},
+		// v6.0 is the latest stable version for Alfred 3
+		{"update for Alfred 3 not available", "6", "3", false, false},
+		// Prerelease v10.0-beta is newer
+		{"pre-release for Alfred 3 available", "6", "3", true, true},
+		// v9.0 is the latest stable version for Alfred 4
+		{"stable update for Alfred 4 available", "6", "4", false, true},
+		{"no update for Alfred 4 available", "9", "4", false, false},
+		// v10.0-beta is the latest pre-release version
+		{"pre-release update for Alfred 4 available", "9", "4", true, true},
 	}
 
-	// v6.0 is the latest stable version for Alfred 3
-	u.AlfredVersion = mustVersion("3")
-	if u.UpdateAvailable() {
-		t.Errorf("%s: Unexpectedly found update", name)
-	}
-	// Prerelease v10.0-beta is newer
-	u.Prereleases = true
-	if !u.UpdateAvailable() {
-		t.Errorf("%s: No update found", name)
-	}
-
-	// v9.0 is the latest stable version for Alfred 4
-	u.Prereleases = false
-	u.AlfredVersion = mustVersion("4")
-	if !u.UpdateAvailable() {
-		t.Errorf("%s: No stable update for Alfred 4 found", name)
-	}
-	u.CurrentVersion = mustVersion("9")
-	if u.UpdateAvailable() {
-		t.Errorf("%s: Unexpectedly found update for Alfred 4", name)
-	}
-	// v10.0-beta is the latest pre-release version
-	u.Prereleases = true
-	if !u.UpdateAvailable() {
-		t.Errorf("%s: No pre-release update for Alfred 4 found", name)
+	for _, td := range tests {
+		t.Run(name+" "+td.name, func(t *testing.T) {
+			u.CurrentVersion = mustVersion(td.currentVersion)
+			u.AlfredVersion = mustVersion(td.alfredVersion)
+			u.Prereleases = td.prereleases
+			assert.Equal(t, td.x, u.UpdateAvailable(), td.name+" failed")
+		})
 	}
 }
 
@@ -207,30 +186,16 @@ func TestUnconfiguredUpdater(t *testing.T) {
 	t.Parallel()
 
 	wf := aw.New()
-	if err := wf.ClearCache(); err != nil {
-		t.Fatal(fmt.Sprintf("couldn't clear cache: %v", err))
-	}
-	if wf.UpdateCheckDue() != false {
-		t.Fatal("Unconfigured workflow wants to update")
-	}
-	if wf.UpdateAvailable() != false {
-		t.Fatal("Unconfigured workflow wants to update")
-	}
-	if err := wf.CheckForUpdate(); err == nil {
-		t.Fatal("Unconfigured workflow didn't error on update check")
-	}
-	if err := wf.InstallUpdate(); err == nil {
-		t.Fatal("Unconfigured workflow didn't error on update install")
-	}
+	assert.Nil(t, wf.ClearCache(), "failed to clear cache")
+	assert.False(t, wf.UpdateCheckDue(), "unconfigured workflow wants to update")
+	assert.False(t, wf.UpdateAvailable(), "unconfigured workflow has available update")
+	assert.NotNil(t, wf.CheckForUpdate(), "unconfigured workflow didn't error on update")
+	assert.NotNil(t, wf.InstallUpdate(), "unconfigured workflow didn't error on update install")
 
 	// Once more with an updater
 	wf = aw.New(GitHub("deanishe/alfred-ssh"))
-	if wf.UpdateCheckDue() != true {
-		t.Fatal("Workflow doesn't want to update")
-	}
-	if err := wf.ClearCache(); err != nil {
-		t.Fatal(err)
-	}
+	assert.True(t, wf.UpdateCheckDue(), "workflow doesn't want to update")
+	assert.Nil(t, wf.ClearCache(), "failed to clear cache")
 }
 
 // Configure Workflow to update from a GitHub repo.

@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	aw "github.com/deanishe/awgo"
 )
@@ -73,36 +72,7 @@ var testGiteaDownloads = []Download{
 
 func TestParseGitea(t *testing.T) {
 	t.Parallel()
-
-	var (
-		data = mustRead("testdata/gitea-releases.json")
-		dls  []Download
-		err  error
-	)
-
-	src := &giteaSource{
-		Repo: "deanishe/alfred-workflow-dummy",
-		fetch: func(URL string) ([]byte, error) {
-			return ioutil.ReadFile("testdata/empty.json")
-		}}
-	dls, err = src.Downloads()
-	require.Nil(t, err, "parse empty JSON failed")
-	assert.Equal(t, 0, len(dls), "releases in empty JSON")
-
-	dls, err = parseGiteaReleases(data)
-	require.Nil(t, err, "parse Gitea JSON failed")
-	assert.Equal(t, testGiteaDownloads, dls, "unexpected downloads")
-}
-
-func makeGiteaSource() *giteaSource {
-	src := &giteaSource{Repo: "git.deanishe.net/deanishe/nonexistent"}
-
-	dls, err := parseGiteaReleases(mustRead("testdata/gitea-releases.json"))
-	if err != nil {
-		panic(err)
-	}
-	src.dls = dls
-	return src
+	testParseReleases("GitHub", "testdata/gitea-releases.json", testGiteaDownloads, t)
 }
 
 func TestGiteaURL(t *testing.T) {
@@ -126,40 +96,21 @@ func TestGiteaURL(t *testing.T) {
 		td := td
 		t.Run(td.repo, func(t *testing.T) {
 			t.Parallel()
-			src := &giteaSource{Repo: td.repo}
-			assert.Equal(t, td.url, src.url(), "unexpected URL")
+			assert.Equal(t, td.url, giteaURL(td.repo), "unexpected URL")
 		})
 	}
 }
 
 func TestGiteaUpdater(t *testing.T) {
 	t.Parallel()
-	withTempDir(func(dir string) {
-		src := makeGiteaSource()
-		dls, err := src.Downloads()
-		require.Nil(t, err, "src.Downloads() failed")
-		assert.Equal(t, testGiteaDownloads, dls, "unexpected downloads")
+	src := &source{
+		URL: "https://git.deanishe.net/deanishe/alfred-workflow-dummy",
+		fetch: func(URL string) ([]byte, error) {
+			return ioutil.ReadFile("testdata/gitea-releases.json")
+		},
+	}
 
-		// invalid versions
-		_, err = NewUpdater(src, "", dir)
-		assert.NotNil(t, err, "accepted empty version")
-		_, err = NewUpdater(src, "stan", dir)
-		assert.NotNil(t, err, "accepted invalid version")
-
-		u, err := NewUpdater(src, "0.2.2", dir)
-		require.Nil(t, err, "create updater failed")
-
-		// Update releases
-		err = u.CheckForUpdate()
-		require.Nil(t, err, "retrieve releases failed")
-
-		// Check info is cached
-		u2, err := NewUpdater(src, "0.2.2", dir)
-		require.Nil(t, err, "create updater failed")
-		assert.Equal(t, u.CurrentVersion, u2.CurrentVersion, "differing versions")
-		assert.True(t, u2.LastCheck.Equal(u.LastCheck), "differing LastCheck")
-		testUpdater("gitea", u, t)
-	})
+	testSourceUpdater("Gitea", src, t)
 }
 
 // Configure Workflow to update from a Gitea repo.
