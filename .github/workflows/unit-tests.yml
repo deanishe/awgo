@@ -1,0 +1,49 @@
+name: Tests and coverage
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  run:
+    name: Unit tests
+    runs-on: macos-latest
+    steps:
+
+    - name: Set up Go 1.14
+      uses: actions/setup-go@v2
+      with:
+        go-version: ^1.14
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: Get dependencies
+      run: go get -v -t -d ./...
+
+    - name: Lint Go source code
+      run: |
+        go install golang.org/x/lint/golint
+        golint -set_exit_status ./...
+
+    - name: Run unit tests
+      run: zsh run-tests.sh -ic ./...
+
+    - name: Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        file: coverage.out
+
+    - name: Codacy
+      run: |
+        go install github.com/schrej/godacov
+        godacov -r coverage.out -t ${{ secrets.CODACY_TOKEN }} -c ${{ github.sha }}; true
+
+    - name: Coveralls
+      uses: shogo82148/actions-goveralls@v1.2.4
+      with:
+        path-to-profile: coverage.out
+        parallel: false

@@ -16,7 +16,7 @@ trigger:
       - bin/*
 
 pool:
-  vmImage: 'macOS-10.13'
+  vmImage: 'macOS-latest'
 
 variables:
   GOBIN:  '$(GOPATH)/bin' # Go binaries path
@@ -54,8 +54,8 @@ steps:
   displayName: Fetch Code
 
 - script: |
-    curl -fsSL https://github.com/golangci/golangci-lint/releases/download/v1.20.1/golangci-lint-1.20.1-darwin-amd64.tar.gz | tar -C '$(GOBIN)' -xz --strip-components=1 --include='*golangci-lint'
-    golangci-lint run -c .golangci.toml
+    go install golang.org/x/lint/golint
+    golint -set_exit_status ./...
   workingDirectory: '$(modulePath)'
   displayName: Lint
 
@@ -64,29 +64,26 @@ steps:
   workingDirectory: '$(modulePath)'
   displayName: Run Tests
 
-# Coveralls doesn't work with Azure
-# - displayName: Coveralls
-#   script: |
-#     go get github.com/mattn/goveralls
-#     goveralls -coverprofile=coverage.out -service=local; true
+# secrets are only available set for non-fork PRs
+# - script: |
+#     if [[ "$CODECOV_TOKEN" != "" ]]; then
+#       bash <(curl -s https://codecov.io/bash); true
+#     else
+#       echo "CODECOV_TOKEN not set; skipping upload"
+#     fi
+#   displayName: Codecov
 #   workingDirectory: '$(modulePath)'
-#   displayName: 'coveralls.io'
+#   env:
+#     CODECOV_TOKEN: '$(Codecov.Token)'
 
 # secrets are only available set for non-fork PRs
-- script: |
-    if [[ "$CODECOV_TOKEN" != "" ]]; then
-      bash <(curl -s https://codecov.io/bash); true
-    else
-      echo "CODECOV_TOKEN not set; skipping upload"
-    fi
-
-    if [[ "$CODACY_TOKEN" != "" ]]; then
-      go run github.com/schrej/godacov -r coverage.out -t $CODACY_TOKEN -c $BUILD_SOURCEVERSION; true
-    else
-      echo "CODACY_TOKEN not set; skipping upload"
-    fi
-  workingDirectory: '$(modulePath)'
-  displayName: Coverage
-  env:
-    CODACY_TOKEN: '$(Codacy.Token)'
-    CODECOV_TOKEN: '$(Codecov.Token)'
+# - script: |
+#     if [[ "$CODACY_TOKEN" != "" ]]; then
+#       go run github.com/schrej/godacov -r coverage.out -t $CODACY_TOKEN -c $BUILD_SOURCEVERSION; true
+#     else
+#       echo "CODACY_TOKEN not set; skipping upload"
+#     fi
+#   workingDirectory: '$(modulePath)'
+#   displayName: Codacy
+#   env:
+#     CODACY_TOKEN: '$(Codacy.Token)'
