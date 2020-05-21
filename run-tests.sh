@@ -154,7 +154,6 @@ export alfred_workflow_cache="${testdir}/cache"
 
 st=0
 $runtests && {
-#  go test $gopts $pkgs
   go test -cover -json $gopts $pkgs | go run github.com/mfridman/tparse
 #  gotestsum -- $gopts $pkgs
   st=$?
@@ -182,13 +181,6 @@ $opencover && {
     go tool cover -html="$covfile"
   }
 }
-
-# $cover && installed gocov && {
-#   gocov convert "$covfile" > "$covjson"
-#   installed gocov-html && {
-#     gocov-html > "$covhtml" < "$covjson"
-#   }
-# }
 
 exit 0
 

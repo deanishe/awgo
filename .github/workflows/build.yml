@@ -22,7 +22,9 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Get dependencies
-      run: go get -v -t -d ./...
+      run: |
+        go get -v -t -d ./...
+        go get -v -d github.com/mfridman/tparse
 
     - name: Lint Go source code
       run: |
@@ -42,8 +44,16 @@ jobs:
         go install github.com/schrej/godacov
         godacov -r coverage.out -t ${{ secrets.CODACY_TOKEN }} -c ${{ github.sha }}
 
+    # - name: Coveralls
+    #   uses: shogo82148/actions-goveralls@v1.2.4
+    #   with:
+    #     github-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
+    #     path-to-profile: coverage.out
+    #     parallel: false
+
     - name: Coveralls
-      uses: shogo82148/actions-goveralls@v1.2.4
-      with:
-        path-to-profile: coverage.out
-        parallel: false
+      env:
+        COVERALLS_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+      run: |
+        go install github.com/mattn/goveralls
+        goveralls -coverprofile coverage.out -reponame deanishe/awgo
