@@ -109,7 +109,7 @@ func TestAlfredVersion(t *testing.T) {
 	}
 
 	for _, td := range tests {
-		td := td
+		td := td // pin variable
 		t.Run(fmt.Sprintf("dir=%q, env=%q", td.dir, td.envvar), func(t *testing.T) {
 			withEnv(map[string]string{
 				"alfred_version": td.envvar,
@@ -152,6 +152,7 @@ func TestDirs(t *testing.T) {
 	}
 
 	for _, td := range tests {
+		td := td // pin variable
 		t.Run(td.name, func(t *testing.T) {
 			withEnv(map[string]string{
 				"alfred_version": td.version,
@@ -206,7 +207,7 @@ func TestEnv(t *testing.T) {
 	}
 	env := info.Env()
 	for _, td := range tests {
-		td := td
+		td := td // pin variable
 		t.Run(td.key, func(t *testing.T) {
 			t.Parallel()
 			assert.Equal(t, td.x, env[td.key], "unexpected value")

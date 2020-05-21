@@ -172,6 +172,7 @@ func testUpdater(name string, u *Updater, t *testing.T) {
 	}
 
 	for _, td := range tests {
+		td := td // pin variable
 		t.Run(name+" "+td.name, func(t *testing.T) {
 			u.CurrentVersion = mustVersion(td.currentVersion)
 			u.AlfredVersion = mustVersion(td.alfredVersion)
