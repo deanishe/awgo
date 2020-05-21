@@ -5,6 +5,7 @@ package aw
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"log"
@@ -13,7 +14,6 @@ import (
 	"testing"
 
 	"github.com/deanishe/go-env"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 

@@ -4,7 +4,7 @@
 package aw
 
 import (
-	"fmt"
+	"errors"
 	"os"
 	"testing"
 	"time"
@@ -236,11 +236,11 @@ func TestCache_reloadError(t *testing.T) {
 	t.Parallel()
 
 	reloadB := func() ([]byte, error) {
-		return nil, fmt.Errorf("an error")
+		return nil, errors.New("an error")
 	}
 
 	reloadJSON := func() (interface{}, error) {
-		return nil, fmt.Errorf("an error")
+		return nil, errors.New("an error")
 	}
 
 	withTempDir(func(dir string) {

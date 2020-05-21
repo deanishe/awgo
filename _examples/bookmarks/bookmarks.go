@@ -112,7 +112,7 @@ func loadBookmarks() (Bookmarks, error) {
 		// Ignore invalid URLs
 		u, err := url.Parse(e.URL)
 		if err != nil {
-			log.Printf("couldn't parse URL \"%s\" (%s): %v", e.URL, title, err)
+			log.Printf("couldn't parse URL %q (%s): %v", e.URL, title, err)
 			continue
 		}
 

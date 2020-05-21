@@ -460,7 +460,7 @@ func (fb *Feedback) Send() error {
 	}
 	output, err := json.MarshalIndent(fb, "", "  ")
 	if err != nil {
-		return fmt.Errorf("Error generating JSON : %v", err)
+		return fmt.Errorf("Error generating JSON : %w", err)
 	}
 
 	os.Stdout.Write(output)

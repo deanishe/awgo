@@ -34,7 +34,7 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/deanishe/awgo"
+	aw "github.com/deanishe/awgo"
 	"github.com/deanishe/awgo/fuzzy"
 )
 
@@ -138,7 +138,7 @@ func run() {
 	// Filter results against query if user entered one
 	if query != "" {
 		res := wf.Filter(query)
-		log.Printf("[main] %d/%d repos match \"%s\"", len(res), len(repos), query)
+		log.Printf("[main] %d/%d repos match %q", len(res), len(repos), query)
 	}
 
 	// Convenience method that shows a warning if there are no results to show.

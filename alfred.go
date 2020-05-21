@@ -95,7 +95,7 @@ func (a *Alfred) Action(path ...string) error {
 	for _, p := range path {
 		p, err := filepath.Abs(p)
 		if err != nil {
-			return fmt.Errorf("[action] couldn't make path absolute (%s): %v", p, err)
+			return fmt.Errorf("make absolute path %q: %w", p, err)
 		}
 
 		paths = append(paths, p)

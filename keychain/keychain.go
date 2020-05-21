@@ -7,13 +7,12 @@ package keychain
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os/exec"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 // Specific errors returned by the API.
@@ -41,7 +40,9 @@ func (kc *Keychain) Get(account string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if s = parseSecret(s); s == "" {
+
+	s = parseKeychainPassword(s)
+	if s == "" {
 		return "", ErrNotFound
 	}
 	return s, nil
@@ -50,9 +51,9 @@ func (kc *Keychain) Get(account string) (string, error) {
 // Set password in user's Keychain. If the account already exists, it is replaced.
 func (kc *Keychain) Set(account, password string) error {
 	_, err := kc.run("add-generic-password", account, "-w", password)
-	if err == errDuplicate {
+	if errors.Is(err, errDuplicate) {
 		if err := kc.Delete(account); err != nil {
-			return err
+			return fmt.Errorf("delete existing password: %w", err)
 		}
 		_, err = kc.run("add-generic-password", account, "-w", password)
 	}
@@ -71,10 +72,10 @@ func (kc *Keychain) run(command, account string, args ...string) (string, error)
 	cmd := exec.Command("/usr/bin/security", args...)
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("connect to STDERR: %w", err)
 	}
 	if err := cmd.Start(); err != nil {
-		return "", err
+		return "", fmt.Errorf("run command: %w", err)
 	}
 	data, _ := ioutil.ReadAll(stderr)
 	err = cmd.Wait()
@@ -85,7 +86,7 @@ func (kc *Keychain) run(command, account string, args ...string) (string, error)
 		case 45:
 			return "", errDuplicate
 		}
-		return "", fmt.Errorf("%v: %s", err, string(data))
+		return "", fmt.Errorf("%s: %w", string(data), err)
 	}
 	s := strings.TrimSpace(string(data))
 	return s, nil
@@ -101,7 +102,7 @@ func (kc *Keychain) run(command, account string, args ...string) (string, error)
 //     password: 0x74C3AB73745F73C3A96372C3A974  "t\303\253st_s\303\251cr\303\251t"
 //
 // where the first field is 0x + hex-encoded secret.
-func parseSecret(s string) string {
+func parseKeychainPassword(s string) string {
 	i := strings.Index(s, "password: ")
 	if i < 0 {
 		return ""

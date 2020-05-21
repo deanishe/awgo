@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strings"
 
 	aw "github.com/deanishe/awgo"
 )
@@ -102,7 +103,7 @@ func parseReleases(js []byte) ([]Download, error) {
 			}
 			all = append(all, w)
 		}
-		if err := validRelease(all); err != nil {
+		if err := isValidRelease(all); err != nil {
 			log.Printf("ignored release %s: %v", r.Tag, err)
 			continue
 		}
@@ -112,17 +113,17 @@ func parseReleases(js []byte) ([]Download, error) {
 	return dls, nil
 }
 
-// Reject releases that contain multiple files with the same extension.
-func validRelease(dls []Download) error {
+// Reject releases that are empty or contain multiple files with the same extension.
+func isValidRelease(dls []Download) error {
 	if len(dls) == 0 {
 		return errors.New("empty slice")
 	}
-	dupes := map[string]int{}
+	counts := map[string]int{}
 	for _, dl := range dls {
-		x := filepath.Ext(dl.Filename)
-		dupes[x]++
+		x := strings.ToLower(filepath.Ext(dl.Filename))
+		counts[x]++
 	}
-	for x, n := range dupes {
+	for x, n := range counts {
 		if n > 1 {
 			return fmt.Errorf("multiple files with extension %q", x)
 		}
