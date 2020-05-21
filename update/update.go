@@ -153,7 +153,7 @@ type Updater struct {
 func NewUpdater(src Source, currentVersion, cacheDir string) (*Updater, error) {
 	v, err := NewSemVer(currentVersion)
 	if err != nil {
-		return nil, fmt.Errorf("invalid version %q: %v", currentVersion, err)
+		return nil, fmt.Errorf("invalid version %q: %w", currentVersion, err)
 	}
 	if cacheDir == "" {
 		return nil, errors.New("empty cacheDir")

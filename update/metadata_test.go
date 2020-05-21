@@ -4,10 +4,10 @@
 package update
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 
 	aw "github.com/deanishe/awgo"

@@ -4,6 +4,7 @@
 package aw
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -23,14 +24,19 @@ type ErrJobExists struct {
 }
 
 // Error implements error interface.
-func (a ErrJobExists) Error() string {
-	return fmt.Sprintf(`job "%s" already running with PID %d`, a.Name, a.Pid)
+func (err ErrJobExists) Error() string {
+	return fmt.Sprintf(`job "%s" already running with PID %d`, err.Name, err.Pid)
 }
 
-// IsJobExists returns true if error is of type ErrJobExists.
-func IsJobExists(err error) bool {
-	_, ok := err.(ErrJobExists)
+// Is returns true if target is of type ErrJobExists.
+func (err ErrJobExists) Is(target error) bool {
+	_, ok := target.(ErrJobExists)
 	return ok
+}
+
+// IsJobExists returns true if error is of type or wraps ErrJobExists.
+func IsJobExists(err error) bool {
+	return errors.Is(err, ErrJobExists{})
 }
 
 // RunInBackground executes cmd in the background. It returns an
@@ -47,7 +53,7 @@ func (wf *Workflow) RunInBackground(jobName string, cmd *exec.Cmd) error {
 	// Prevent process from being killed when parent is
 	cmd.SysProcAttr.Setpgid = true
 	if err := cmd.Start(); err != nil {
-		return err
+		return fmt.Errorf("execute command %v: %w", cmd, err)
 	}
 
 	return wf.savePid(jobName, cmd.Process.Pid)

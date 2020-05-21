@@ -76,7 +76,7 @@ func (c Cache) StoreJSON(name string, v interface{}) error {
 	}
 	data, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
-		return fmt.Errorf("couldn't marshal JSON: %v", err)
+		return fmt.Errorf("marshal JSON: %w", err)
 	}
 	return c.Store(name, data)
 }
@@ -95,7 +95,7 @@ func (c Cache) LoadJSON(name string, v interface{}) error {
 	p := c.path(name)
 	data, err := ioutil.ReadFile(p)
 	if err != nil {
-		return err
+		return fmt.Errorf("read file: %w", err)
 	}
 	return json.Unmarshal(data, v)
 }
@@ -117,7 +117,7 @@ func (c Cache) LoadOrStore(name string, maxAge time.Duration, reload func() ([]b
 	if load {
 		data, err := reload()
 		if err != nil {
-			return nil, fmt.Errorf("couldn't reload data: %v", err)
+			return nil, fmt.Errorf("reload data: %w", err)
 		}
 		if err := c.Store(name, data); err != nil {
 			return nil, err
@@ -149,11 +149,11 @@ func (c Cache) LoadOrStoreJSON(name string, maxAge time.Duration, reload func() 
 	if load {
 		i, err := reload()
 		if err != nil {
-			return fmt.Errorf("couldn't reload data: %v", err)
+			return fmt.Errorf("reload data: %w", err)
 		}
 		data, err = json.MarshalIndent(i, "", "  ")
 		if err != nil {
-			return fmt.Errorf("couldn't marshal data to JSON: %v", err)
+			return fmt.Errorf("marshal data to JSON: %w", err)
 		}
 		if err := c.Store(name, data); err != nil {
 			return err
@@ -161,7 +161,7 @@ func (c Cache) LoadOrStoreJSON(name string, maxAge time.Duration, reload func() 
 	} else {
 		data, err = c.Load(name)
 		if err != nil {
-			return fmt.Errorf("couldn't load cached data: %v", err)
+			return fmt.Errorf("load cached data: %w", err)
 		}
 	}
 	// TODO: Is there any way to directly return i without marshalling and unmarshalling it?
@@ -239,7 +239,7 @@ func (s Session) Clear(current bool) error {
 
 	files, err := ioutil.ReadDir(s.cache.Dir)
 	if err != nil {
-		return fmt.Errorf("couldn't read directory (%s): %v", s.cache.Dir, err)
+		return fmt.Errorf("read directory (%s): %w", s.cache.Dir, err)
 	}
 	for _, fi := range files {
 		if !strings.HasPrefix(fi.Name(), prefix) {

@@ -80,19 +80,19 @@ func NewSemVer(s string) (SemVer, error) {
 	}
 	major, err := strconv.ParseUint(parts[0], 10, 64)
 	if err != nil {
-		return SemVer{}, fmt.Errorf("invalid major version %q: %s", parts[0], err)
+		return SemVer{}, fmt.Errorf("invalid major version %q: %w", parts[0], err)
 	}
 
 	// Minor
 	minor, err = strconv.ParseUint(parts[1], 10, 64)
 	if err != nil {
-		return SemVer{}, fmt.Errorf("invalid minor version %q: %s", parts[1], err)
+		return SemVer{}, fmt.Errorf("invalid minor version %q: %w", parts[1], err)
 	}
 
 	// Patch
 	patch, err = strconv.ParseUint(parts[2], 10, 64)
 	if err != nil {
-		return SemVer{}, fmt.Errorf("invalid patch version %q: %s", parts[2], err)
+		return SemVer{}, fmt.Errorf("invalid patch version %q: %w", parts[2], err)
 	}
 
 	return SemVer{
