@@ -21,6 +21,7 @@ const (
 	scriptTrigger   = "Application(%s).runTrigger(%s, %s);"
 	scriptSetConfig = "Application(%s).setConfiguration(%s, %s);"
 	scriptRmConfig  = "Application(%s).removeConfiguration(%s, %s);"
+	scriptReload    = "Application(%s).reloadWorkflow(%s);"
 )
 
 /*
@@ -52,12 +53,9 @@ type Alfred struct {
 // It accepts one optional Env argument. If an Env is passed, Alfred
 // is initialised from that instead of the system environment.
 func NewAlfred(env ...Env) *Alfred {
-	var e Env
-
+	var e Env = sysEnv{}
 	if len(env) > 0 {
 		e = env[0]
-	} else {
-		e = sysEnv{}
 	}
 
 	return &Alfred{Env: e}
@@ -110,11 +108,9 @@ func (a *Alfred) Action(path ...string) error {
 // workflow whose trigger should be run.
 // If not specified, it defaults to the current workflow's.
 func (a *Alfred) RunTrigger(name, query string, bundleID ...string) error {
-	var bid string
+	bid, _ := a.Lookup(EnvVarBundleID)
 	if len(bundleID) > 0 {
 		bid = bundleID[0]
-	} else {
-		bid, _ = a.Lookup(EnvVarBundleID)
 	}
 
 	opts := map[string]interface{}{
@@ -126,6 +122,19 @@ func (a *Alfred) RunTrigger(name, query string, bundleID ...string) error {
 	}
 
 	return a.runScript(scriptTrigger, name, opts)
+}
+
+// ReloadWorkflow tells Alfred to reload a workflow from disk.
+//
+// It accepts one optional bundleID argument, which is the bundle ID of the
+// workflow to reload. If not specified, it defaults to the current workflow's.
+func (a *Alfred) ReloadWorkflow(bundleID ...string) error {
+	bid, _ := a.Lookup(EnvVarBundleID)
+	if len(bundleID) > 0 {
+		bid = bundleID[0]
+	}
+
+	return a.runScript(scriptReload, bid)
 }
 
 func (a *Alfred) runScript(script string, arg ...interface{}) error {
