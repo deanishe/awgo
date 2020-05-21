@@ -10,7 +10,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os/exec"
 	"strings"
 )
@@ -35,17 +34,12 @@ func New(service string) *Keychain {
 }
 
 // Get password from user's Keychain. Returns ErrNotFound if specified account doesn't exist.
-func (kc *Keychain) Get(account string) (string, error) {
-	s, err := kc.run("find-generic-password", account, "-g")
-	if err != nil {
-		return "", err
+func (kc *Keychain) Get(account string) (password string, err error) {
+	if password, err = kc.run("find-generic-password", account, "-g"); err != nil {
+		return
 	}
-
-	s = parseKeychainPassword(s)
-	if s == "" {
-		return "", ErrNotFound
-	}
-	return s, nil
+	password, err = parseKeychainPassword(password)
+	return
 }
 
 // Set password in user's Keychain. If the account already exists, it is replaced.
@@ -77,19 +71,20 @@ func (kc *Keychain) run(command, account string, args ...string) (string, error)
 	if err := cmd.Start(); err != nil {
 		return "", fmt.Errorf("run command: %w", err)
 	}
+
 	data, _ := ioutil.ReadAll(stderr)
-	err = cmd.Wait()
-	if err != nil {
+	if err := cmd.Wait(); err != nil {
 		switch cmd.ProcessState.ExitCode() {
 		case 44:
 			return "", ErrNotFound
 		case 45:
 			return "", errDuplicate
+		default:
+			return "", fmt.Errorf("%s: %w", string(data), err)
 		}
-		return "", fmt.Errorf("%s: %w", string(data), err)
 	}
-	s := strings.TrimSpace(string(data))
-	return s, nil
+
+	return strings.TrimSpace(string(data)), nil
 }
 
 // Extract password from /usr/bin/security output.
@@ -102,29 +97,32 @@ func (kc *Keychain) run(command, account string, args ...string) (string, error)
 //     password: 0x74C3AB73745F73C3A96372C3A974  "t\303\253st_s\303\251cr\303\251t"
 //
 // where the first field is 0x + hex-encoded secret.
-func parseKeychainPassword(s string) string {
+func parseKeychainPassword(s string) (string, error) {
 	i := strings.Index(s, "password: ")
 	if i < 0 {
-		return ""
+		return "", ErrNotFound
 	}
-	s = s[10:]
+
+	s = s[10:] // remove "password: " prefix
+
+	// ASCII password
 	if strings.HasPrefix(s, `"`) {
-		return s[1 : len(s)-1]
+		return s[1 : len(s)-1], nil
 	}
+
+	// hex-encoded password
 	if strings.HasPrefix(s, "0x") {
 		i = strings.Index(s, " ")
 		if i < 0 {
-			log.Println("error: parse output")
-			return ""
+			return "", errors.New("parse output")
 		}
 		s = s[2:i]
 		data, err := hex.DecodeString(s)
 		if err != nil {
-			log.Printf("error: decode secret: %v", err)
-			return ""
+			return "", fmt.Errorf("hex-decode password: %w", err)
 		}
-		return string(data)
+		return string(data), nil
 	}
 
-	return ""
+	return "", ErrNotFound
 }

@@ -59,28 +59,34 @@ func TestParse(t *testing.T) {
 	t.Parallel()
 
 	data := []struct {
-		in string
-		pw string
+		in    string
+		pw    string
+		valid bool
 	}{
 		// ascii passwords
-		{in: `password: "hunter2"`, pw: "hunter2"},
-		{in: `password: "hunter two"`, pw: "hunter two"},
+		{`password: "hunter2"`, "hunter2", true},
+		{`password: "hunter two"`, "hunter two", true},
 		// unicode passwords
-		{in: `password: 0x74C3AB73745F73C3A96372C3A974  "t\303\253st_s\303\251cr\303\251t"`, pw: "tëst_sécrét"},
-		{in: `password: 0x68C3BC6E74657232  "h\303\274nter2"`, pw: "hünter2"},
+		{`password: 0x74C3AB73745F73C3A96372C3A974  "t\303\253st_s\303\251cr\303\251t"`, "tëst_sécrét", true},
+		{`password: 0x68C3BC6E74657232  "h\303\274nter2"`, "hünter2", true},
 
 		// invalid
-		{in: ``, pw: ""},
-		{in: `password: `, pw: ""},
-		{in: `password: 0x"`, pw: ""},
-		{in: `password: 0xinvalid`, pw: ""},
+		{``, "", false},
+		{`password: `, "", false},
+		{`password: 0x"`, "", false},
+		{`password: 0xinvalid`, "", false},
 	}
 
 	for _, td := range data {
 		td := td
 		t.Run(td.in, func(t *testing.T) {
 			t.Parallel()
-			assert.Equal(t, td.pw, parseKeychainPassword(td.in), "unexpected password")
+			pw, err := parseKeychainPassword(td.in)
+			if td.valid {
+				assert.Equal(t, td.pw, pw, "unexpected password")
+			} else {
+				assert.NotNil(t, err, "invalid password accepted")
+			}
 		})
 	}
 }
