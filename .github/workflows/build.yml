@@ -24,12 +24,9 @@ jobs:
     - name: Get dependencies
       run: |
         go get -v -t -d ./...
-        go get -v -d github.com/mfridman/tparse
 
     - name: Lint Go source code
-      run: |
-        go install golang.org/x/lint/golint
-        golint -set_exit_status ./...
+      run: zsh run-tests.sh -vl
 
     - name: Run unit tests
       run: zsh run-tests.sh -ic ./...
@@ -56,4 +53,4 @@ jobs:
         COVERALLS_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
       run: |
         go install github.com/mattn/goveralls
-        goveralls -coverprofile coverage.out -reponame deanishe/awgo
+        goveralls -coverprofile coverage.out -service github

@@ -4,7 +4,6 @@ root="$( git rev-parse --show-toplevel )"
 testdir="${root}/testenv"
 iplist="${root}/info.plist"
 covfile="${root}/coverage.out"
-covjson="${root}/coverage.json"
 covhtml="${root}/coverage.html"
 
 verbose=false
@@ -14,8 +13,11 @@ opencover=false
 usegocov=false
 cover=false
 mkip=false
+colour=false
 vopt=
 gopts=()
+
+test -t 1 && colour=true
 
 # log <arg>... | Echo arguments to STDERR
 log() {
@@ -28,32 +30,24 @@ installed() {
   return $?
 }
 
-# info <arg>.. | Write args to STDERR if VERBOSE is true
-info() {
-  $verbose && log $(print -P "%F{blue}.. %f") "$@"
-  return 0
-}
-
-# success <arg>.. | Write green "ok" and args to STDERR if VERBOSE is true
+# success <arg>... | Write message in green to STDOUT
 success() {
-  # $verbose && log $(print -P "%F{green}ok %f") "$@"
-  log $(print -P "%F{green}#####################################%f")
-  log $(print -P "%F{green}# $@ %f")
-  log $(print -P "%F{green}#####################################%f")
-  return 0
+  $verbose || return 0
+  $colour && {
+    print -P "%F{green}$@ %f"
+  } || echo "[OK]  $@"
 }
 
-# error <arg>.. | Write red "error" and args to STDERR
+# error <arg>... | Write message in red to STDERR
 error() {
-  log $(print -P '%F{red}err%f') "$@"
+  $colour && {
+    print -P "%F{red}$@ %f" >&2
+  } || echo "[ERR] $@" >&2
 }
 
-# fail <arg>.. | Write red "error" and args to STDERR, then exit with status 1
+# fail <arg>... | Write message in red to STDERR, then exit with status 1
 fail() {
-  log $(print -P "%F{red}#####################################%f")
-  log $(print -P "%F{red}# $@ %f")
-  log $(print -P "%F{red}#####################################%f")
-  # error "$@"
+  error "$@"
   exit 1
 }
 
@@ -64,25 +58,26 @@ run-tests.sh [options] [<module>...]
 Run unit tests in a workflow-like environment.
 
 Usage:
-    run-tests.sh [-v|-V] [-c] [-C] [-i] [-g]
-    run-tests.sh -l
+    run-tests.sh [-v|-V] [-t] [-c|-g] [-C] [-i]
+    run-tests.sh [-t] -l
     run-tests.sh [-g] -r
     run-tests.sh -h
 
 Options:
-    -c      Write coverage report
-    -C      Open HTML coverage report
-    -l      Lint project
-    -r      Just open coverage report
-    -g      Use gocov for coverage report (implies -c)
-    -i      Create a dummy info.plist
-    -h      Show this help message and exit
-    -v      Be verbose
-    -V      Be even more verbose
+    -c      write coverage report
+    -C      open HTML coverage report
+    -l      lint project
+    -r      just open coverage report
+    -g      use gocov for coverage report (implies -c)
+    -i      create a dummy info.plist
+    -t      force terminal (coloured) output
+    -h      show this help message and exit
+    -v      be verbose
+    -V      be even more verbose
 EOF
 }
 
-while getopts ":CcghilrvV" opt; do
+while getopts ":CcghilrtvV" opt; do
   case $opt in
     c)
       cover=true
@@ -106,6 +101,9 @@ while getopts ":CcghilrvV" opt; do
       opencover=true
       runtests=false
       ;;
+    t)
+      colour=true
+      ;;
     V)
       gopts+=(-v)
       verbose=true
@@ -126,19 +124,28 @@ done
 shift $((OPTIND-1))
 
 $runlint && {
-  golangci-lint run -c .golangci.toml
-  st=$?
-  [[ $st -ne 0 ]] && {
-    fail "linting failed"
+  diff=($(gofmt -s -l **/*.go))
+  test -z "$diff" || {
+    for s in $diff; do error "bad formatting: $s"; done
+    fail "gofmt -s found incorrectly formatted files"
   }
-  success "linting passed"
+  success "all files formatted correctly"
+
+  go run golang.org/x/lint/golint -set_exit_status ./...
+  [[ $? -eq 0 ]] || fail "linting with golint failed"
+  success "golint found no issues"
+
+  go run github.com/golangci/golangci-lint/cmd/golangci-lint run -c .golangci.toml
+  [[ $? -eq 0 ]] || fail "linting with golangci-lint failed"
+  success "golangci-lint found no issues"
   exit 0
 }
 
 $cover && gopts+=(-coverprofile="$covfile")
 
 command mkdir $vopt -p "${testdir}"/{data,cache}
-$mkip && touch $vopt "$iplist"
+$mkip touch $vopt "$iplist"
+trap "test -f \"$iplist\" && rm -f \"$iplist\"; test -d \"$testdir\" && rm -rf \"$testdir\";" EXIT INT TERM
 
 cd "$root"
 source "env.sh"
@@ -146,36 +153,25 @@ export alfred_version=
 export alfred_workflow_data="${testdir}/data"
 export alfred_workflow_cache="${testdir}/cache"
 
-[[ $#@ -eq 0 ]] && {
-  pkgs=(./...)
-} || {
-  pkgs=($@)
-}
+pkgs=(./...)
+[[ $#@ -eq 0 ]] || pkgs=($@)
 
 st=0
 $runtests && {
   go test -cover -json $gopts $pkgs | go run github.com/mfridman/tparse
 #  gotestsum -- $gopts $pkgs
   st=$?
-
-  [[ $st -eq 0 ]] && {
-    success "passed"
-  }
-  command rm $vopt -rf "$testdir"/*
+  [[ $st -eq 0 ]] && success "unit tests passed"
 }
-
-test -f "$iplist" && command rm $vopt -f "$iplist"
 
 cd -
 
-[[ $st -ne 0 ]] && {
-  fail "failed"
-}
+[[ $st -ne 0 ]] && fail "unit tests failed"
 
 $opencover && {
   $usegocov && {
-    gocov convert "$covfile" > "$covjson"
-    gocov-html > "$covhtml" < "$covjson"
+    go run github.com/axw/gocov/gocov convert "$covfile" \
+    | go run github.com/matm/gocov-html > "$covhtml"
     open "$covhtml"
   } || {
     go tool cover -html="$covfile"

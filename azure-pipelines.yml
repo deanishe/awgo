@@ -46,8 +46,7 @@ steps:
   displayName: Fetch Code
 
 - script: |
-    go install golang.org/x/lint/golint
-    golint -set_exit_status ./...
+    ./run-tests.sh -l
   workingDirectory: '$(modulePath)'
   displayName: Lint
 

@@ -34,6 +34,7 @@ func TestExecutableRunner(t *testing.T) {
 
 	r := ExecRunner{}
 	for _, td := range data {
+		td := td // pin variable
 		t.Run(fmt.Sprintf("CanRunExecutable(%s)", td.in), func(t *testing.T) {
 			assert.Equal(t, td.valid, r.CanRun(td.in), "unexpected validity")
 
@@ -70,6 +71,7 @@ func TestScriptRunner(t *testing.T) {
 
 	r := ScriptRunner{DefaultInterpreters}
 	for _, td := range tests {
+		td := td // pin variable
 		t.Run(fmt.Sprintf("CanRunScript(%s)", td.in), func(t *testing.T) {
 			assert.Equal(t, td.valid, r.CanRun(td.in), "unexpected validity")
 		})
@@ -88,6 +90,7 @@ func TestRun(t *testing.T) {
 	}
 
 	for _, script := range scripts {
+		script := script // pin variable
 		t.Run(fmt.Sprintf("Run(%s)", script), func(t *testing.T) {
 			x := filepath.Base(script)
 
@@ -118,6 +121,7 @@ func TestNoRun(t *testing.T) {
 	}
 
 	for _, td := range tests {
+		td := td // pin variable
 		t.Run(fmt.Sprintf("NoRun(%s)", td.in), func(t *testing.T) {
 			_, err := Run(td.in, "blah")
 			assert.NotNil(t, err, "ran invalid script %q", td.in)
@@ -169,6 +173,7 @@ func TestNewScriptRunner(t *testing.T) {
 	}
 
 	for i, td := range data {
+		td := td // pin variable
 		t.Run(fmt.Sprintf("ScriptRunner(%d)", i), func(t *testing.T) {
 			r := NewScriptRunner(td.m)
 			var good, bad int
