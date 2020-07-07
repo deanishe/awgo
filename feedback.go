@@ -18,7 +18,7 @@ import (
 // item action in Alfred (in combination with ↩). It is passed
 // to Item.NewModifier().
 //
-// Alfred 3 only permits one modifier at a time, but on Alfred 4+
+// Alfred 3 only permits one modifier at a time, but in Alfred 4+
 // you can combine them arbitrarily.
 type ModKey string
 
