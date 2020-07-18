@@ -23,7 +23,7 @@ var rxWorkflowFile = regexp.MustCompile(`\.alfred(\d+)?workflow$`)
 // Repo name should be of the form "username/repo", e.g. "deanishe/alfred-ssh".
 func GitHub(repo string) aw.Option {
 	return newOption(&source{
-		URL:   "https://api.github.com/repos/" + repo,
+		URL:   "https://api.github.com/repos/" + repo + "/releases",
 		fetch: getURL,
 	})
 }
