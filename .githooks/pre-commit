@@ -1,0 +1,11 @@
+#!/bin/zsh -e
+
+root="$( git rev-parse --show-toplevel )"
+
+# make sure example workflows aren't disabled
+find "${root}/_examples" -type f -name 'info.plist' -exec /usr/libexec/PlistBuddy -c 'Set :disabled false' {} \;
+
+# lint
+"${root}/run-tests.sh" -lv
+
+go mod tidy -v
