@@ -25,8 +25,16 @@ jobs:
       run: |
         go get -v -t -d ./...
 
+    - name: Install linters
+      run: |
+        go get golang.org/x/lint/golint
+        go get github.com/golangci/golangci-lint/cmd/golangci-lint
+
     - name: Lint Go source code
       run: zsh run-tests.sh -vl
+
+    - name: Install test dependencies
+      run: go get github.com/mfridman/tparse
 
     - name: Run unit tests
       run: zsh run-tests.sh -ic ./...

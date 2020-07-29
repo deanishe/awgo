@@ -46,9 +46,20 @@ steps:
   displayName: Fetch Code
 
 - script: |
+    go get golang.org/x/lint/golint
+    go get github.com/golangci/golangci-lint/cmd/golangci-lint
+  workingDirectory: '$(modulePath)'
+  displayName: Install Linters
+
+- script: |
     ./run-tests.sh -l
   workingDirectory: '$(modulePath)'
   displayName: Lint
+
+- script: |
+    go get github.com/mfridman/tparse
+  workingDirectory: '$(modulePath)'
+  displayName: Install Test Dependences
 
 - script: |
     ./run-tests.sh -ic ./...

@@ -1,12 +1,13 @@
 #!/usr/bin/env zsh
 
-root="$( git rev-parse --show-toplevel )"
+root="$( git rev-parse --show-toplevel 2>/dev/null )"
 testdir="${root}/testenv"
 iplist="${root}/info.plist"
 covfile="${root}/coverage.out"
 covhtml="${root}/coverage.html"
 
 verbose=false
+runinstall=false
 runlint=false
 runtests=true
 opencover=false
@@ -28,6 +29,18 @@ log() {
 installed() {
   hash "$1" &>/dev/null
   return $?
+}
+
+# install <import-address> | Install Go program if it's not already installed
+install() {
+  local p=$1
+  local name=${p:t}
+  installed "$name" || {
+    log "installing $name ..."
+    GO111MODULE=off go get -u $gopts $p
+    [[ $? -eq 0 ]] || fail "install $name failed"
+    success "installed $name"
+  }
 }
 
 # success <arg>... | Write message in green to STDOUT
@@ -110,7 +123,6 @@ while getopts ":CcghilrtvV" opt; do
       vopt='-v'
       ;;
     v)
-      gopts+=(-v)
       verbose=true
       ;;
     h)
@@ -131,11 +143,13 @@ $runlint && {
   }
   success "all files formatted correctly"
 
-  go run golang.org/x/lint/golint -set_exit_status ./...
+  install golang.org/x/lint/golint
+  golint -set_exit_status ./...
   [[ $? -eq 0 ]] || fail "linting with golint failed"
   success "golint found no issues"
 
-  go run github.com/golangci/golangci-lint/cmd/golangci-lint run -c .golangci.toml
+  install github.com/golangci/golangci-lint/cmd/golangci-lint
+  golangci-lint run -c .golangci.toml
   [[ $? -eq 0 ]] || fail "linting with golangci-lint failed"
   success "golangci-lint found no issues"
   exit 0
@@ -158,7 +172,8 @@ pkgs=(./...)
 
 st=0
 $runtests && {
-  go test -cover -json $gopts $pkgs | go run github.com/mfridman/tparse
+  install github.com/mfridman/tparse
+  go test -cover -json $gopts $pkgs | tparse
 #  gotestsum -- $gopts $pkgs
   st=$?
   [[ $st -eq 0 ]] && success "unit tests passed"
@@ -170,8 +185,9 @@ cd -
 
 $opencover && {
   $usegocov && {
-    go run github.com/axw/gocov/gocov convert "$covfile" \
-    | go run github.com/matm/gocov-html > "$covhtml"
+    install github.com/axw/gocov/gocov
+    install github.com/matm/gocov-html
+    gocov convert "$covfile" | gocov-html > "$covhtml"
     open "$covhtml"
   } || {
     go tool cover -html="$covfile"
