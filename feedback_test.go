@@ -68,16 +68,19 @@ func TestItem_MarshalJSON(t *testing.T) {
 		{in: &Item{title: "title", valid: true},
 			x: `{"title":"title","valid":true}`},
 		// With arg
-		{in: &Item{title: "title", arg: p("arg1")},
+		{in: &Item{title: "title", arg: []string{"arg1"}},
 			x: `{"title":"title","arg":"arg1","valid":false}`},
 		// Empty arg
-		{in: &Item{title: "title", arg: p("")},
+		{in: &Item{title: "title", arg: []string{""}},
 			x: `{"title":"title","arg":"","valid":false}`},
+		// Multiple args
+		{in: &Item{title: "title", arg: []string{"one", "two"}},
+			x: `{"title":"title","arg":["one","two"],"valid":false}`},
 		// Arg contains escapes
-		{in: &Item{title: "title", arg: p("\x00arg\x00")},
+		{in: &Item{title: "title", arg: []string{"\x00arg\x00"}},
 			x: `{"title":"title","arg":"\u0000arg\u0000","valid":false}`},
 		// Valid with arg
-		{in: &Item{title: "title", arg: p("arg1"), valid: true},
+		{in: &Item{title: "title", arg: []string{"arg1"}, valid: true},
 			x: `{"title":"title","arg":"arg1","valid":true}`},
 		// With icon
 		{in: &Item{title: "title",
@@ -104,7 +107,7 @@ func TestItem_MarshalJSON(t *testing.T) {
 		{in: &Item{title: "title", copytext: p("copy"), largetype: p("large")},
 			x: `{"title":"title","valid":false,"text":{"copy":"copy","largetype":"large"}}`},
 		// With arg and variable
-		{in: &Item{title: "title", arg: p("value"), vars: map[string]string{"foo": "bar"}},
+		{in: &Item{title: "title", arg: []string{"value"}, vars: map[string]string{"foo": "bar"}},
 			x: `{"title":"title","arg":"value","valid":false,"variables":{"foo":"bar"}}`},
 		// With match
 		{in: &Item{title: "title", match: p("one two three")},
@@ -135,9 +138,11 @@ func TestModifier_MarshalJSON(t *testing.T) {
 		// Empty item
 		{in: &Modifier{}, x: `{}`},
 		// With arg
-		{in: &Modifier{arg: p("title")}, x: `{"arg":"title"}`},
+		{in: &Modifier{arg: []string{"title"}}, x: `{"arg":"title"}`},
 		// Empty arg
-		{in: &Modifier{arg: p("")}, x: `{"arg":""}`},
+		{in: &Modifier{arg: []string{""}}, x: `{"arg":""}`},
+		// Multiple args
+		{in: &Modifier{arg: []string{"one", "two"}}, x: `{"arg":["one","two"]}`},
 		// With subtitle
 		{in: &Modifier{subtitle: p("sub here")}, x: `{"subtitle":"sub here"}`},
 		// valid
@@ -146,14 +151,14 @@ func TestModifier_MarshalJSON(t *testing.T) {
 		{in: &Modifier{icon: &Icon{"icon.png", ""}}, x: `{"icon":{"path":"icon.png"}}`},
 		// With all
 		{in: &Modifier{
-			arg:      p("title"),
+			arg:      []string{"title"},
 			subtitle: p("sub here"),
 			valid:    true,
 		},
 			x: `{"arg":"title","subtitle":"sub here","valid":true}`},
 		// With variable
 		{in: &Modifier{
-			arg:      p("title"),
+			arg:      []string{"title"},
 			subtitle: p("sub here"),
 			valid:    true,
 			vars:     map[string]string{"foo": "bar"},
@@ -180,17 +185,16 @@ func TestArgVars_MarshalJSON(t *testing.T) {
 		x  string
 	}{
 		// Empty
-		{in: &ArgVars{},
-			x: `""`},
+		{in: &ArgVars{}, x: `""`},
 		// With arg
-		{in: &ArgVars{arg: p("title")},
-			x: `"title"`},
+		{in: &ArgVars{arg: []string{"title"}}, x: `"title"`},
+		// With multiple args
+		{in: &ArgVars{arg: []string{"one", "two"}},
+			x: `{"alfredworkflow":{"arg":["one","two"]}}`},
 		// With non-ASCII arg
-		{in: &ArgVars{arg: p("fübär")},
-			x: `"fübär"`},
+		{in: &ArgVars{arg: []string{"fübär"}}, x: `"fübär"`},
 		// With escapes
-		{in: &ArgVars{arg: p("\x00")},
-			x: `"\u0000"`},
+		{in: &ArgVars{arg: []string{"\x00"}}, x: `"\u0000"`},
 		// With variable
 		{in: &ArgVars{vars: map[string]string{"foo": "bar"}},
 			x: `{"alfredworkflow":{"variables":{"foo":"bar"}}}`},
@@ -198,7 +202,7 @@ func TestArgVars_MarshalJSON(t *testing.T) {
 		{in: &ArgVars{vars: map[string]string{"foo": "bar", "ducky": "fuzz"}},
 			x: `{"alfredworkflow":{"variables":{"ducky":"fuzz","foo":"bar"}}}`},
 		// Multiple variables and arg
-		{in: &ArgVars{arg: p("title"), vars: map[string]string{"foo": "bar", "ducky": "fuzz"}},
+		{in: &ArgVars{arg: []string{"title"}, vars: map[string]string{"foo": "bar", "ducky": "fuzz"}},
 			x: `{"alfredworkflow":{"arg":"title","variables":{"ducky":"fuzz","foo":"bar"}}}`},
 	}
 
@@ -222,22 +226,23 @@ func TestArgVars_String(t *testing.T) {
 		x  string
 	}{
 		// Empty
-		{in: &ArgVars{},
-			x: ""},
+		{in: &ArgVars{}, x: ""},
 		// With arg
-		{in: &ArgVars{arg: p("title")},
-			x: "title"},
+		{in: &ArgVars{arg: []string{"title"}}, x: "title"},
+		// With multiple args
+		{in: &ArgVars{arg: []string{"one", "two"}},
+			x: `{"alfredworkflow":{"arg":["one","two"]}}`},
 		// With non-ASCII
-		{in: &ArgVars{arg: p("fübär")},
+		{in: &ArgVars{arg: []string{"fübär"}},
 			x: "fübär"},
 		// With escapes
-		{in: &ArgVars{arg: p("\x00")},
+		{in: &ArgVars{arg: []string{"\x00"}},
 			x: "\x00"},
 	}
 
-	for _, td := range tests {
+	for i, td := range tests {
 		td := td // capture variable
-		t.Run(fmt.Sprintf("StringifyArg(%#v)", td.in), func(t *testing.T) {
+		t.Run(fmt.Sprintf("StringifyArg(%d)", i), func(t *testing.T) {
 			t.Parallel()
 			v, err := td.in.String()
 			assert.Nil(t, err, "stringify ArgVars failed")
@@ -442,7 +447,7 @@ func TestItem_methods(t *testing.T) {
 		match        = "match"
 		uid          = "uid"
 		autocomplete = "autocomplete"
-		arg          = "arg"
+		arg          = []string{"arg"}
 		valid        = true
 		copytext     = "copytext"
 		largetype    = "largetype"
@@ -466,7 +471,7 @@ func TestItem_methods(t *testing.T) {
 		Match(match).
 		UID(uid).
 		Autocomplete(autocomplete).
-		Arg(arg).
+		Arg(arg...).
 		Valid(valid).
 		Copytext(copytext).
 		Largetype(largetype).
@@ -477,7 +482,7 @@ func TestItem_methods(t *testing.T) {
 	assert.Equal(t, match, *it.match, "Bad match")
 	assert.Equal(t, uid, *it.uid, "Bad UID")
 	assert.Equal(t, autocomplete, *it.autocomplete, "Bad autocomplete")
-	assert.Equal(t, arg, *it.arg, "Bad arg")
+	assert.Equal(t, arg, it.arg, "Bad arg")
 	assert.Equal(t, valid, valid, "Bad valid")
 	assert.Equal(t, copytext, *it.copytext, "Bad copytext")
 	assert.Equal(t, largetype, *it.largetype, "Bad largetext")
@@ -487,7 +492,7 @@ func TestItem_methods(t *testing.T) {
 func TestModifier_methods(t *testing.T) {
 	var (
 		key      = ModCmd
-		arg      = "arg"
+		arg      = []string{"arg"}
 		subtitle = "subtitle"
 		valid    = true
 		icon     = IconAccount
@@ -502,12 +507,12 @@ func TestModifier_methods(t *testing.T) {
 
 	m.Key = key
 	m.Subtitle(subtitle).
-		Arg(arg).
+		Arg(arg...).
 		Valid(valid).
 		Icon(icon)
 
 	assert.Equal(t, key, m.Key, "Bad key")
-	assert.Equal(t, arg, *m.arg, "Bad arg")
+	assert.Equal(t, arg, m.arg, "Bad arg")
 	assert.Equal(t, subtitle, *m.subtitle, "Bad subtitle")
 	assert.Equal(t, valid, m.valid, "Bad valid")
 	assert.Equal(t, icon.Type, m.icon.Type, "Bad icon type")
