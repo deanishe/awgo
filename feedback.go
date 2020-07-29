@@ -43,7 +43,7 @@ type Item struct {
 	match        *string
 	uid          *string
 	autocomplete *string
-	arg          *string
+	arg          []string
 	valid        bool
 	file         bool
 	copytext     *string
@@ -75,17 +75,17 @@ func (it *Item) Match(s string) *Item {
 	return it
 }
 
-// Arg sets Item's arg, the value passed as {query} to the next workflow action.
-func (it *Item) Arg(s string) *Item {
-	it.arg = &s
+// Arg sets Item's arg, the value(s) passed as {query} to the next workflow action.
+// Multiple values are allowed in Alfred 4.1 and later.
+func (it *Item) Arg(s ...string) *Item {
+	it.arg = s
 	return it
 }
 
 // UID sets Item's unique ID, which is used by Alfred to remember your choices.
 // Use a blank string to force results to appear in the order you add them.
 //
-// You can also use the SuppressUIDs() Option to (temporarily) suppress
-// output of UIDs.
+// You can also use the SuppressUIDs() Option to (temporarily) suppress output of UIDs.
 func (it *Item) UID(s string) *Item {
 	if it.noUID {
 		return it
@@ -233,12 +233,12 @@ func (it *Item) MarshalJSON() ([]byte, error) {
 	}
 
 	// Serialise Item
-	return json.Marshal(&struct {
+	v := struct {
 		Title     string               `json:"title"`
 		Subtitle  *string              `json:"subtitle,omitempty"`
 		Match     *string              `json:"match,omitempty"`
 		Auto      *string              `json:"autocomplete,omitempty"`
-		Arg       *string              `json:"arg,omitempty"`
+		Arg       interface{}          `json:"arg,omitempty"`
 		UID       *string              `json:"uid,omitempty"`
 		Valid     bool                 `json:"valid"`
 		Type      string               `json:"type,omitempty"`
@@ -252,7 +252,6 @@ func (it *Item) MarshalJSON() ([]byte, error) {
 		Subtitle:  it.subtitle,
 		Match:     it.match,
 		Auto:      it.autocomplete,
-		Arg:       it.arg,
 		UID:       it.uid,
 		Valid:     it.valid,
 		Type:      typ,
@@ -261,7 +260,14 @@ func (it *Item) MarshalJSON() ([]byte, error) {
 		Quicklook: ql,
 		Variables: it.vars,
 		Mods:      it.mods,
-	})
+	}
+	// serialise single arg as string
+	if len(it.arg) == 1 {
+		v.Arg = it.arg[0]
+	} else if len(it.arg) > 1 {
+		v.Arg = it.arg
+	}
+	return json.Marshal(v)
 }
 
 // itemText encapsulates the copytext and largetext values for a result Item.
@@ -283,7 +289,7 @@ type Modifier struct {
 	// The modifier key, e.g. "cmd", "alt".
 	// With Alfred 4+, modifiers can be combined, e.g. "cmd+alt", "ctrl+shift+cmd"
 	Key      ModKey
-	arg      *string
+	arg      []string
 	subtitle *string
 	valid    bool
 	icon     *Icon
@@ -312,9 +318,9 @@ func newModifier(key ...ModKey) *Modifier {
 	return &Modifier{Key: ModKey(s), vars: map[string]string{}}
 }
 
-// Arg sets the arg for the Modifier.
-func (m *Modifier) Arg(s string) *Modifier {
-	m.arg = &s
+// Arg sets the arg for the Modifier. Multiple values are allowed in Alfred 4.1 and later.
+func (m *Modifier) Arg(s ...string) *Modifier {
+	m.arg = s
 	return m
 }
 
@@ -350,19 +356,27 @@ func (m *Modifier) Vars() map[string]string {
 // MarshalJSON serializes Item to Alfred 3's JSON format.
 // You shouldn't need to call this directly: use SendFeedback() instead.
 func (m *Modifier) MarshalJSON() ([]byte, error) {
-	return json.Marshal(&struct {
-		Arg       *string           `json:"arg,omitempty"`
+	v := struct {
+		Arg       interface{}       `json:"arg,omitempty"`
 		Subtitle  *string           `json:"subtitle,omitempty"`
 		Valid     bool              `json:"valid,omitempty"`
 		Icon      *Icon             `json:"icon,omitempty"`
 		Variables map[string]string `json:"variables,omitempty"`
 	}{
-		Arg:       m.arg,
 		Subtitle:  m.subtitle,
 		Valid:     m.valid,
 		Icon:      m.icon,
 		Variables: m.vars,
-	})
+	}
+
+	// serialise single arg as string
+	if len(m.arg) == 1 {
+		v.Arg = m.arg[0]
+	} else if len(m.arg) > 1 {
+		v.Arg = m.arg
+	}
+
+	return json.Marshal(v)
 }
 
 // Feedback represents the results for an Alfred Script Filter.
@@ -520,7 +534,7 @@ func (fb *Feedback) Swap(i, j int) { fb.Items[i], fb.Items[j] = fb.Items[j], fb.
 //
 // Use ArgVars.Send() to pass variables to downstream workflow elements.
 type ArgVars struct {
-	arg  *string
+	arg  []string
 	vars map[string]string
 }
 
@@ -529,9 +543,10 @@ func NewArgVars() *ArgVars {
 	return &ArgVars{vars: map[string]string{}}
 }
 
-// Arg sets the arg/query to be passed to the next workflow action.
-func (a *ArgVars) Arg(s string) *ArgVars {
-	a.arg = &s
+// Arg sets the arg(s)/query to be passed to the next workflow action.
+// Multiple values are allowed in Alfred 4.1 and later.
+func (a *ArgVars) Arg(s ...string) *ArgVars {
+	a.arg = s
 	return a
 }
 
@@ -551,11 +566,11 @@ func (a *ArgVars) Var(k, v string) *ArgVars {
 // If any variables are set, JSON is returned. Otherwise, a plain string
 // is returned.
 func (a *ArgVars) String() (string, error) {
-	if len(a.vars) == 0 {
-		if a.arg != nil {
-			return *a.arg, nil
+	if len(a.vars) == 0 && len(a.arg) < 2 {
+		if len(a.arg) == 0 {
+			return "", nil
 		}
-		return "", nil
+		return a.arg[0], nil
 	}
 	// Vars set, so return as JSON
 	data, err := a.MarshalJSON()
@@ -567,37 +582,43 @@ func (a *ArgVars) String() (string, error) {
 
 // Send outputs arg and variables to Alfred by printing a response to STDOUT.
 func (a *ArgVars) Send() error {
-	s, err := a.String()
+	data, err := a.MarshalJSON()
 	if err != nil {
 		return err
 	}
-	_, err = fmt.Print(s)
+	_, err = fmt.Print(string(data))
 	return err
 }
 
 // MarshalJSON serialises ArgVars to JSON.
-// You probably don't need to call this: use ArgVars.String() instead.
+// You probably don't need to call this: use ArgVars.Send() instead.
 func (a *ArgVars) MarshalJSON() ([]byte, error) {
 	// Return arg regardless of whether it's empty or not:
 	// we have to return *something*
-	if len(a.vars) == 0 {
+	if len(a.vars) == 0 && len(a.arg) < 2 {
 		// Want empty string, i.e. "", not null
-		var arg string
-		if a.arg != nil {
-			arg = *a.arg
+		if len(a.arg) == 0 {
+			return []byte(`""`), nil
 		}
-		return json.Marshal(arg)
+		return json.Marshal(a.arg[0])
+	}
+
+	v := struct {
+		Arg  interface{}       `json:"arg,omitempty"`
+		Vars map[string]string `json:"variables,omitempty"`
+	}{
+		Vars: a.vars,
+	}
+
+	if len(a.arg) == 1 {
+		v.Arg = a.arg[0]
+	} else if len(a.arg) > 1 {
+		v.Arg = a.arg
 	}
 
 	return json.Marshal(&struct {
 		Root interface{} `json:"alfredworkflow"`
 	}{
-		Root: &struct {
-			Arg  *string           `json:"arg,omitempty"`
-			Vars map[string]string `json:"variables"`
-		}{
-			Arg:  a.arg,
-			Vars: a.vars,
-		},
+		Root: v,
 	})
 }
