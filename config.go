@@ -9,9 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"go.deanishe.net/env"
-
 	"github.com/deanishe/awgo/util"
+	"go.deanishe.net/env"
 )
 
 // Environment variables containing workflow and Alfred info.

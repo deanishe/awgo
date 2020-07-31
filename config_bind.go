@@ -6,7 +6,7 @@ package aw
 import (
 	"sort"
 
-	"github.com/deanishe/go-env"
+	"go.deanishe.net/env"
 )
 
 // To populates (tagged) struct v with values from the environment.
@@ -19,7 +19,7 @@ func (cfg *Config) To(v interface{}) error {
 // customised by passing in options from deanishe/go-env, such as env.IgnoreZeroValues
 // to omit any fields set to zero values.
 //
-// https://godoc.org/github.com/deanishe/go-env#DumpOption
+// https://godoc.org/go.deanishe.net/env#DumpOption
 func (cfg *Config) From(v interface{}, opt ...env.DumpOption) error {
 	variables, err := env.Dump(v, opt...)
 	if err != nil {
