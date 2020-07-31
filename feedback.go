@@ -551,6 +551,9 @@ func (a *ArgVars) Arg(s ...string) *ArgVars {
 }
 
 // Vars returns ArgVars' variables.
+// NOTE: This function only returns variables you have set with ArgVars.Var()
+// for export to Alfred during this run. To read variables from the environment,
+// use Workflow.Config.
 func (a *ArgVars) Vars() map[string]string {
 	return a.vars
 }

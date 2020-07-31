@@ -11,7 +11,7 @@ frontend for your project.
 
 Features
 
-As of AwGo 0.17, all applicable features of Alfred 4.0 are supported.
+As of AwGo 0.26, all applicable features of Alfred 4.1 are supported.
 
 The main features are:
 
@@ -185,11 +185,11 @@ matching algorithm.
 Workflow.Filter() sorts feedback Items against the provided query, removing
 those that do not match.
 
-Sorting is performed by subpackage fuzzy via the fuzzy.Sortable interface.
-
 See _examples/fuzzy for a basic demonstration, and _examples/bookmarks for a
 demonstration of implementing fuzzy.Sortable on your own structs and customising
 the fuzzy sort settings.
+
+Fuzzy matching is done by package https://godoc.org/go.deanishe.net/fuzzy
 
 
 Logging
@@ -208,11 +208,11 @@ and in this case prepends filename:linenumber: to log messages.
 Workflow settings
 
 The Config struct (which is included in Workflow as Workflow.Config) provides an
-interface to the workflow's settings from the Workflow Environment Variables panel.
-https://www.alfredapp.com/help/workflows/advanced/variables/#environment
+interface to the workflow's settings from the Workflow Environment Variables panel
+(see https://www.alfredapp.com/help/workflows/advanced/variables/#environment).
 
 Alfred exports these settings as environment variables, and you can read them
-ad-hoc with the Config.Get*() methods, and save values back to Alfred with
+ad-hoc with the Config.Get*() methods, and save values back to Alfred/info.plist with
 Config.Set().
 
 Using Config.To() and Config.From(), you can "bind" your own structs to the
@@ -234,7 +234,7 @@ settings in Alfred:
 		// handle error
 	}
 
-	// Save Options back to Alfred.
+	// Save Options back to Alfred/info.plist.
 	if err := cfg.From(opts); err != nil {
 		// handle error
 	}
@@ -247,7 +247,7 @@ Alfred actions
 
 The Alfred struct provides methods for the rest of Alfred's AppleScript
 API. Amongst other things, you can use it to tell Alfred to open, to search
-for a query, or to browse/action files & directories.
+for a query, to browse/action files & directories, or to run External Triggers.
 
 See documentation of the Alfred struct for more information.
 
