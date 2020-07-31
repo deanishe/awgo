@@ -8,7 +8,8 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/deanishe/awgo/fuzzy"
+	"go.deanishe.net/fuzzy"
+
 	"github.com/deanishe/awgo/util"
 )
 

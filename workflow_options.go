@@ -3,7 +3,7 @@
 
 package aw
 
-import "github.com/deanishe/awgo/fuzzy"
+import "go.deanishe.net/fuzzy"
 
 // Option is a configuration option for Workflow.
 // Pass one or more Options to New() or Workflow.Configure().

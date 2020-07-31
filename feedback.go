@@ -11,7 +11,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/deanishe/awgo/fuzzy"
+	"go.deanishe.net/fuzzy"
 )
 
 // ModKey is a modifier key pressed by the user to run an alternate

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/deanishe/go-env"
+	"go.deanishe.net/env"
 
 	"github.com/deanishe/awgo/util"
 )
