@@ -46,10 +46,17 @@ jobs:
         with:
           file: coverage.out
 
+      # - name: Codacy
+      #   run: |
+      #     go install github.com/schrej/godacov
+      #     godacov -r coverage.out -t ${{ secrets.CODACY_TOKEN }} -c ${{ github.sha }}
+
       - name: Codacy
-        run: |
-          go install github.com/schrej/godacov
-          godacov -r coverage.out -t ${{ secrets.CODACY_TOKEN }} -c ${{ github.sha }}
+        uses: brpaz/godacov-action@v1
+        with:
+          reportPath: coverage.out
+          codacyToken: ${{ secrets.CODACY_TOKEN }}
+          commitId: ${{ github.sha }}
 
       - name: Coveralls
         uses: shogo82148/actions-goveralls@v1
@@ -66,6 +73,7 @@ jobs:
       #     goveralls -coverprofile coverage.out -service github
 
   finish:
+    name: Coveralls upload
     needs: test
     runs-on: macos-latest
     steps:
