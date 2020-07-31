@@ -12,13 +12,13 @@ jobs:
     strategy:
       matrix:
         go-version: [1.13.x, 1.14.x]
-        platform: macos-latest
+        platform: [macos-latest]
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Install Go
         uses: actions/setup-go@v2
         with:
-          go-version: ${{ matrix.go-versio }}
+          go-version: ${{ matrix.go-version }}
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
