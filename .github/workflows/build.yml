@@ -20,10 +20,10 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
 
-      - name: Check out code into the Go module directory
+      - name: Check out code
         uses: actions/checkout@v2
 
-      - name: Get dependencies
+      - name: Fetch dependencies
         run: |
           go get -v -t -d ./...
 
@@ -52,8 +52,23 @@ jobs:
           godacov -r coverage.out -t ${{ secrets.CODACY_TOKEN }} -c ${{ github.sha }}
 
       - name: Coveralls
-        env:
-          COVERALLS_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-        run: |
-          go install github.com/mattn/goveralls
-          goveralls -coverprofile coverage.out -service github
+        uses: shogo82148/actions-goveralls@v1
+        with:
+          path-to-profile: coverage.out
+          flag-name: Go-${{ matrix.go }}
+          parallel: true
+
+      # - name: Coveralls
+      #   env:
+      #     COVERALLS_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+      #   run: |
+      #     go install github.com/mattn/goveralls
+      #     goveralls -coverprofile coverage.out -service github
+
+  finish:
+    needs: test
+    runs-on: macos-latest
+    steps:
+      - uses: shogo82148/actions-goveralls@v1
+        with:
+          parallel-finished: true
