@@ -179,7 +179,7 @@ The icon is based on the [Go Gopher][gopher] by [Renee French][renee].
 [goreport-badge]: https://goreportcard.com/badge/github.com/deanishe/awgo
 [azure-badge]: https://img.shields.io/azure-devops/build/deanishe/6cd8e4fe-7366-4485-aea6-e9d75e7757b2/1
 [azure-link]: https://dev.azure.com/deanishe/AwGo/_build
-[ghaction-badge]: https://img.shields.io/github/workflow/status/deanishe/awgo/CI
+[ghaction-badge]: https://github.com/deanishe/awgo/workflows/CI/badge.svg
 [ghaction-link]: https://github.com/deanishe/awgo/actions?query=workflow%3ACI
 [coveralls-badge]: https://coveralls.io/repos/github/deanishe/awgo/badge.svg?branch=master&v3
 [coveralls-link]: https://coveralls.io/github/deanishe/awgo?branch=master
@@ -195,5 +195,5 @@ The icon is based on the [Go Gopher][gopher] by [Renee French][renee].
 [codecov-badge]: https://codecov.io/gh/deanishe/awgo/branch/master/graph/badge.svg
 [codecov-link]: https://codecov.io/gh/deanishe/awgo
 [coveralls-badge]: https://img.shields.io/coveralls/github/deanishe/awgo/master
-[ghaction-badge]: https://github.com/deanishe/awgo/workflows/CI/badge.svg 
+[ghaction-badge]: https://img.shields.io/github/workflow/status/deanishe/awgo/CI
 -->
