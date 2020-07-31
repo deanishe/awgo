@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/deanishe/go-env"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.deanishe.net/env"
 )
 
 // testHost is the tagged struct tests load from and into.

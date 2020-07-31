@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/deanishe/go-env"
 	"github.com/stretchr/testify/assert"
+	"go.deanishe.net/env"
 )
 
 var (
