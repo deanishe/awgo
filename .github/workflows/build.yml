@@ -63,15 +63,8 @@ jobs:
         uses: shogo82148/actions-goveralls@v1
         with:
           path-to-profile: coverage.out
-          flag-name: Go-${{ matrix.go }}
+          flag-name: Go-${{ matrix.go-version }}
           parallel: true
-
-      # - name: Coveralls
-      #   env:
-      #     COVERALLS_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-      #   run: |
-      #     go install github.com/mattn/goveralls
-      #     goveralls -coverprofile coverage.out -service github
 
   finish:
     name: Coveralls upload
