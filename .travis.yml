@@ -7,11 +7,14 @@ go:
 before_install:
   - go get github.com/mattn/goveralls
   - go get github.com/schrej/godacov
+  - go get golang.org/x/lint/golint
+  - go get github.com/golangci/golangci-lint/cmd/golangci-lint
+  - go get github.com/mfridman/tparse
 
 script:
   - ./run-tests.sh -ic ./...
-  - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci; true
-  - $GOPATH/bin/godacov -t $CODACY_TOKEN -r ./coverage.out -c $TRAVIS_COMMIT; true
+  # - $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci; true
+  # - $GOPATH/bin/godacov -t $CODACY_TOKEN -r ./coverage.out -c $TRAVIS_COMMIT; true
 
-after_success:
-  - bash <(curl -s https://codecov.io/bash); true
+# after_success:
+#   - bash <(curl -s https://codecov.io/bash); true

@@ -494,8 +494,10 @@ func (fb *Feedback) Sort(query string, opts ...fuzzy.Option) []*fuzzy.Result {
 // It returns a slice of Result structs, which contain the results of the
 // fuzzy sorting.
 func (fb *Feedback) Filter(query string, opts ...fuzzy.Option) []*fuzzy.Result {
-	var items []*Item
-	var res []*fuzzy.Result
+	var (
+		items []*Item
+		res   []*fuzzy.Result
+	)
 
 	r := fb.Sort(query, opts...)
 	for i, it := range fb.Items {
@@ -524,7 +526,13 @@ func (fb *Feedback) Keywords(i int) string {
 func (fb *Feedback) Len() int { return len(fb.Items) }
 
 // Less implements sort.Interface.
-func (fb *Feedback) Less(i, j int) bool { return fb.Keywords(i) < fb.Keywords(j) }
+func (fb *Feedback) Less(i, j int) bool {
+	a, b := fb.Keywords(i), fb.Keywords(j)
+	if a == b {
+		return i < j
+	}
+	return a < b
+}
 
 // Swap implements sort.Interface.
 func (fb *Feedback) Swap(i, j int) { fb.Items[i], fb.Items[j] = fb.Items[j], fb.Items[i] }
