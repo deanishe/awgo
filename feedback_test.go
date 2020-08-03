@@ -529,7 +529,7 @@ func TestFeedback_Sort(t *testing.T) {
 		r := fb.Sort(td.q)
 		for i, it := range fb.Items {
 			assert.Equal(t, td.out[i], it.title, "unexpected title")
-			assert.Equal(t, td.m[i], r[i].Match, "unexpected title")
+			assert.Equal(t, td.m[i], r[i].Match, "unexpected match")
 		}
 	}
 }
@@ -557,6 +557,13 @@ var feedbackTitles = []struct {
 		in:  []string{"see all fellows' armpits", "Safari", "french canada", "spanish harlem"},
 		out: []string{"Safari", "see all fellows' armpits", "spanish harlem", "french canada"},
 		m:   []bool{true, true, false, false},
+	},
+	// sorting is stable
+	{
+		q:   "test",
+		in:  []string{"test #1", "test #10", "test #2", "test #3"},
+		out: []string{"test #1", "test #2", "test #3", "test #10"},
+		m:   []bool{true, true, true, true},
 	},
 }
 

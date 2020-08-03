@@ -37,7 +37,7 @@ install() {
   local name=${p:t}
   installed "$name" || {
     log "installing $name ..."
-    GO111MODULE=off go get -u $gopts $p
+    GO111MODULE=off go get -u $vopt $p
     [[ $? -eq 0 ]] || fail "install $name failed"
     success "installed $name"
   }
@@ -94,6 +94,7 @@ while getopts ":CcghilrtvV" opt; do
   case $opt in
     c)
       cover=true
+      gopts+=(-coverprofile="$covfile")
       ;;
     g)
       usegocov=true
@@ -118,7 +119,6 @@ while getopts ":CcghilrtvV" opt; do
       colour=true
       ;;
     V)
-      gopts+=(-v)
       verbose=true
       vopt='-v'
       ;;
@@ -155,8 +155,6 @@ $runlint && {
   exit 0
 }
 
-$cover && gopts+=(-coverprofile="$covfile")
-
 command mkdir $vopt -p "${testdir}"/{data,cache}
 $mkip touch $vopt "$iplist"
 trap "test -f \"$iplist\" && rm -f \"$iplist\"; test -d \"$testdir\" && rm -rf \"$testdir\";" EXIT INT TERM
@@ -173,7 +171,7 @@ pkgs=(./...)
 st=0
 $runtests && {
   install github.com/mfridman/tparse
-  go test -cover -json $gopts $pkgs | tparse
+  go test -cover -json $vopt $gopts $pkgs | tparse
 #  gotestsum -- $gopts $pkgs
   st=$?
   [[ $st -eq 0 ]] && success "unit tests passed"
