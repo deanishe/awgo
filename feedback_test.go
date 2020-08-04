@@ -561,8 +561,8 @@ var feedbackTitles = []struct {
 	// sorting is stable
 	{
 		q:   "test",
-		in:  []string{"test #1", "test #10", "test #2", "test #3"},
-		out: []string{"test #1", "test #2", "test #3", "test #10"},
+		in:  []string{"test #2", "test #1", "test #10", "test #3"},
+		out: []string{"test #2", "test #1", "test #3", "test #10"},
 		m:   []bool{true, true, true, true},
 	},
 }

@@ -29,19 +29,19 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"time"
 
 	aw "github.com/deanishe/awgo"
-	"github.com/deanishe/awgo/fuzzy"
+	"go.deanishe.net/fuzzy"
 )
 
 var (
 	cacheName   = "repos.json"      // Filename of cached repo list
 	maxResults  = 200               // Number of results sent to Alfred
-	minScore    = 10.0              // Minimum score for a result
 	maxCacheAge = 180 * time.Minute // How long to cache repo list for
 
 	// Command-line flags
@@ -54,7 +54,6 @@ var (
 )
 
 func init() {
-
 	flag.BoolVar(&doDownload, "download", false, "retrieve list of workflows from GitHub")
 
 	// Set some custom fuzzy search options
@@ -70,7 +69,6 @@ func init() {
 }
 
 func run() {
-
 	wf.Args() // call to handle any magic actions
 	flag.Parse()
 
@@ -123,13 +121,16 @@ func run() {
 			wf.SendFeedback()
 			return
 		}
-
 	}
 
 	// Add results for cached repos
 	for _, r := range repos {
+		sub := fmt.Sprintf("★ %d", r.Stars)
+		if r.Description != "" {
+			sub += " – " + r.Description
+		}
 		wf.NewItem(r.FullName()).
-			Subtitle(r.Description).
+			Subtitle(sub).
 			Arg(r.URL).
 			UID(r.FullName()).
 			Valid(true)

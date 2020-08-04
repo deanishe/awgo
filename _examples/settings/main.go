@@ -40,7 +40,6 @@ var (
 	wf  *aw.Workflow
 	// Command-line arguments
 	setKey, getKey string
-	query          string
 )
 
 func init() {
@@ -49,8 +48,8 @@ func init() {
 	flag.StringVar(&getKey, "get", "", "enter a new value")
 }
 
+// save setting to info.plist via Alfred's AppleScript API
 func runSet(key, value string) {
-
 	wf.Configure(aw.TextErrors(true))
 
 	log.Printf("saving %#v to %s ...", value, key)
@@ -66,14 +65,12 @@ func runSet(key, value string) {
 	log.Printf("saved %#v to %s", value, key)
 }
 
+// get new value for setting from user via Script Filter
 func runGet(key, value string) {
-
 	log.Printf("getting new %s ...", key)
 
 	if value != "" {
-
 		var varname string
-
 		switch key {
 		case "API key":
 			varname = "API_KEY"
@@ -91,7 +88,6 @@ func runGet(key, value string) {
 			Valid(true).
 			Var("value", value).
 			Var("varname", varname)
-
 	}
 
 	wf.WarnEmpty(fmt.Sprintf("Enter %s", key), "")
@@ -99,7 +95,6 @@ func runGet(key, value string) {
 }
 
 func run() {
-
 	wf.Args() // call to handle magic actions
 
 	// ----------------------------------------------------------------
@@ -123,13 +118,7 @@ func run() {
 	// Parse command-line flags and decide what to do
 
 	flag.Parse()
-	args := flag.Args()
-
-	if len(args) > 0 {
-		query = args[0]
-	}
-
-	log.Printf("query=%s", query)
+	query := flag.Arg(0)
 
 	if setKey != "" {
 		runSet(setKey, query)
@@ -142,7 +131,7 @@ func run() {
 	}
 
 	// ----------------------------------------------------------------
-	// Run Script action.
+	// Show available settings.
 
 	wf.NewItem("Hostname: "+srv.Hostname).
 		Subtitle("↩ to edit").
@@ -170,7 +159,6 @@ func run() {
 
 	wf.WarnEmpty("No Matching Items", "Try a different query?")
 	wf.SendFeedback()
-
 }
 
 func main() {

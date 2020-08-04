@@ -3,10 +3,60 @@
 <plist version="1.0">
 <dict>
 	<key>bundleid</key>
-	<string>net.deanishe.alfred.awgo.demo-fuzzy</string>
+	<string>net.deanishe.awgo.demo-fuzzy</string>
 	<key>connections</key>
 	<dict>
-		<key>D61073F1-262D-482D-800D-A788FD7B9F69</key>
+		<key>7305214D-8C9D-496B-A72D-948F8D548827</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>9C8A05BC-BB83-4B3B-B1B3-603AADF2DEA8</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>sourceoutputuid</key>
+				<string>941F6745-DA39-4F36-A5E2-A4545A04A509</string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>921C896B-DC08-4B14-9424-B5CEF32C5C37</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>sourceoutputuid</key>
+				<string>C46F2999-7FEB-4878-9C12-80E3CB630E25</string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>D45EC623-6D7A-4E31-B6E3-617D13D81BBD</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>9C8A05BC-BB83-4B3B-B1B3-603AADF2DEA8</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>8326D6D3-517D-43ED-A868-5B98B621E4FC</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>D45EC623-6D7A-4E31-B6E3-617D13D81BBD</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
@@ -18,11 +68,14 @@
 				<key>vitoclose</key>
 				<false/>
 			</dict>
+		</array>
+		<key>D61073F1-262D-482D-800D-A788FD7B9F69</key>
+		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>921C896B-DC08-4B14-9424-B5CEF32C5C37</string>
+				<string>7305214D-8C9D-496B-A72D-948F8D548827</string>
 				<key>modifiers</key>
-				<integer>1048576</integer>
+				<integer>0</integer>
 				<key>modifiersubtext</key>
 				<string></string>
 				<key>vitoclose</key>
@@ -33,7 +86,7 @@
 	<key>createdby</key>
 	<string>Dean Jackson</string>
 	<key>description</key>
-	<string>Filter folders in ~/</string>
+	<string>Filter contents of ~/Downloads</string>
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
@@ -43,10 +96,46 @@
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>path</key>
+				<string></string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.revealfile</string>
+			<key>uid</key>
+			<string>8326D6D3-517D-43ED-A868-5B98B621E4FC</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.hidealfred</string>
+			<key>uid</key>
+			<string>9C8A05BC-BB83-4B3B-B1B3-603AADF2DEA8</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>path</key>
+				<string></string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.browseinalfred</string>
+			<key>uid</key>
+			<string>921C896B-DC08-4B14-9424-B5CEF32C5C37</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>alfredfiltersresults</key>
 				<false/>
 				<key>alfredfiltersresultsmatchmode</key>
 				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<false/>
 				<key>argumenttrimmode</key>
 				<integer>0</integer>
 				<key>argumenttype</key>
@@ -54,7 +143,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>keyword</key>
-				<string>home</string>
+				<string>downloads</string>
 				<key>queuedelaycustom</key>
 				<integer>3</integer>
 				<key>queuedelayimmediatelyinitially</key>
@@ -64,7 +153,7 @@
 				<key>queuemode</key>
 				<integer>1</integer>
 				<key>runningsubtext</key>
-				<string>Loading folders…</string>
+				<string>Loading files…</string>
 				<key>script</key>
 				<string>./fuzzy "$1"</string>
 				<key>scriptargtype</key>
@@ -72,9 +161,9 @@
 				<key>scriptfile</key>
 				<string></string>
 				<key>subtext</key>
-				<string>All subdirectories of your home directory</string>
+				<string>All files in ~/Downloads</string>
 				<key>title</key>
-				<string>Filter folders in ~/</string>
+				<string>Filter ~/Downloads</string>
 				<key>type</key>
 				<integer>0</integer>
 				<key>withspace</key>
@@ -85,7 +174,51 @@
 			<key>uid</key>
 			<string>D61073F1-262D-482D-800D-A788FD7B9F69</string>
 			<key>version</key>
-			<integer>2</integer>
+			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>conditions</key>
+				<array>
+					<dict>
+						<key>inputstring</key>
+						<string>{var:action}</string>
+						<key>matchcasesensitive</key>
+						<false/>
+						<key>matchmode</key>
+						<integer>0</integer>
+						<key>matchstring</key>
+						<string>reveal</string>
+						<key>outputlabel</key>
+						<string>Reveal</string>
+						<key>uid</key>
+						<string>941F6745-DA39-4F36-A5E2-A4545A04A509</string>
+					</dict>
+					<dict>
+						<key>inputstring</key>
+						<string>{var:action}</string>
+						<key>matchcasesensitive</key>
+						<false/>
+						<key>matchmode</key>
+						<integer>0</integer>
+						<key>matchstring</key>
+						<string>browse</string>
+						<key>outputlabel</key>
+						<string>Browse</string>
+						<key>uid</key>
+						<string>C46F2999-7FEB-4878-9C12-80E3CB630E25</string>
+					</dict>
+				</array>
+				<key>elselabel</key>
+				<string>else</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.conditional</string>
+			<key>uid</key>
+			<string>7305214D-8C9D-496B-A72D-948F8D548827</string>
+			<key>version</key>
+			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -103,15 +236,10 @@
 			<integer>3</integer>
 		</dict>
 		<dict>
-			<key>config</key>
-			<dict>
-				<key>path</key>
-				<string></string>
-			</dict>
 			<key>type</key>
-			<string>alfred.workflow.action.browseinalfred</string>
+			<string>alfred.workflow.utility.hidealfred</string>
 			<key>uid</key>
-			<string>921C896B-DC08-4B14-9424-B5CEF32C5C37</string>
+			<string>D45EC623-6D7A-4E31-B6E3-617D13D81BBD</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -120,39 +248,65 @@
 	<string>AwGo: Fuzzy Sort Demo
 =====================
 
-Fuzzy-filter subdirectories of ~/.
+Fuzzy-filter contents of ~/Downloads.
 
-Demonstrates basic usage of fuzzy filtering using the API built into Workflow.</string>
+Demonstrates basic usage of fuzzy filtering using the API built into AwGo.</string>
 	<key>uidata</key>
 	<dict>
+		<key>7305214D-8C9D-496B-A72D-948F8D548827</key>
+		<dict>
+			<key>xpos</key>
+			<integer>270</integer>
+			<key>ypos</key>
+			<integer>175</integer>
+		</dict>
 		<key>7C574F95-18F7-4AA2-B8EF-812745DB293D</key>
 		<dict>
 			<key>xpos</key>
-			<integer>310</integer>
+			<integer>495</integer>
 			<key>ypos</key>
-			<integer>50</integer>
+			<integer>305</integer>
+		</dict>
+		<key>8326D6D3-517D-43ED-A868-5B98B621E4FC</key>
+		<dict>
+			<key>xpos</key>
+			<integer>495</integer>
+			<key>ypos</key>
+			<integer>40</integer>
 		</dict>
 		<key>921C896B-DC08-4B14-9424-B5CEF32C5C37</key>
 		<dict>
 			<key>xpos</key>
-			<integer>310</integer>
+			<integer>495</integer>
 			<key>ypos</key>
-			<integer>190</integer>
+			<integer>170</integer>
+		</dict>
+		<key>9C8A05BC-BB83-4B3B-B1B3-603AADF2DEA8</key>
+		<dict>
+			<key>xpos</key>
+			<integer>405</integer>
+			<key>ypos</key>
+			<integer>70</integer>
+		</dict>
+		<key>D45EC623-6D7A-4E31-B6E3-617D13D81BBD</key>
+		<dict>
+			<key>xpos</key>
+			<integer>405</integer>
+			<key>ypos</key>
+			<integer>335</integer>
 		</dict>
 		<key>D61073F1-262D-482D-800D-A788FD7B9F69</key>
 		<dict>
 			<key>note</key>
-			<string>Fuzzy filter the directories in ~/
-
-The alternate actions are configured in the Script Filter code/output (which is why you can't see the alternate subtitle text in the connection configuration).</string>
+			<string>Fuzzy filter contents of ~/Downloads</string>
 			<key>xpos</key>
-			<integer>60</integer>
+			<integer>55</integer>
 			<key>ypos</key>
-			<integer>50</integer>
+			<integer>170</integer>
 		</dict>
 	</dict>
 	<key>version</key>
-	<string>0.1</string>
+	<string>0.2</string>
 	<key>webaddress</key>
 	<string>https://godoc.org/github.com/deanishe/awgo</string>
 </dict>

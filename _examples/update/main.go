@@ -121,10 +121,7 @@ func init() {
 func run() {
 	wf.Args() // call to handle magic actions
 	flag.Parse()
-
-	if args := flag.Args(); len(args) > 0 {
-		query = args[0]
-	}
+	query = flag.Arg(0)
 
 	// Alternate action: Get available releases from remote.
 	if doCheck {
@@ -139,8 +136,6 @@ func run() {
 	// ----------------------------------------------------------------
 	// Script Filter
 	// ----------------------------------------------------------------
-
-	log.Printf("query=%s", query)
 
 	// Call self with "check" command if an update is due and a check
 	// job isn't already running.

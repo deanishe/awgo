@@ -435,12 +435,11 @@ func (fb *Feedback) IsEmpty() bool { return len(fb.Items) == 0 }
 func (fb *Feedback) NewItem(title string) *Item {
 	it := &Item{title: title, vars: map[string]string{}, noUID: fb.NoUIDs}
 
-	// Add top-level variables to Item. The reason for this is
-	// that Alfred drops all item- and top-level variables on the
-	// floor if a modifier has any variables set (i.e. only the
-	// modifier's variables are retained).
-	// So, add top-level variables to Item (and in turn to any Modifiers)
-	// to enforce more sensible behaviour.
+	// Add top-level variables to Item. The reason for this is that
+	// (older versions of) Alfred drops all item- and top-level variables
+	// on the floor if a modifier has any variables set (i.e. only the
+	// modifier's variables are retained). So, add top-level variables to Item
+	// (and in turn to any Modifiers) to enforce more sensible behaviour.
 	for k, v := range fb.vars {
 		it.vars[k] = v
 	}
@@ -527,11 +526,8 @@ func (fb *Feedback) Len() int { return len(fb.Items) }
 
 // Less implements sort.Interface.
 func (fb *Feedback) Less(i, j int) bool {
-	a, b := fb.Keywords(i), fb.Keywords(j)
-	if a == b {
-		return i < j
-	}
-	return a < b
+	// we only want to sort based on fuzzy match score
+	return false
 }
 
 // Swap implements sort.Interface.
