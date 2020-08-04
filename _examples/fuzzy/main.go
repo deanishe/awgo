@@ -2,17 +2,15 @@
 // MIT Licence - http://opensource.org/licenses/MIT
 
 /*
-Workflow fuzzy demonstrates AwGo's fuzzy filtering.
+Workflow fuzzy is a basic demonstration of AwGo's fuzzy filtering.
 
-It displays and filters a list of subdirectories of your home directory
-in Alfred, and allows you to open the folders in Finder or browse them
-in Alfred.
+It displays and filters the contents of your Downloads directory in Alfred,
+and allows you to open files, reveal in Finder or browse in Alfred.
 */
 package main
 
 import (
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -21,70 +19,62 @@ import (
 )
 
 var (
-	startDir     string       // Directory to read
-	minimumScore float64      // Search score cutoff
-	wf           *aw.Workflow // Our Workflow object
+	// Where we'll look for directories
+	startDir = os.ExpandEnv("${HOME}/Downloads")
+	// Our Workflow object
+	wf *aw.Workflow
 )
 
-func init() {
-	startDir = os.Getenv("HOME") // Where we'll look for directories
-	wf = aw.New()                // Initialise workflow
+type file struct {
+	Path  string
+	IsDir bool
 }
 
 // readDir returns the paths to all visible subdirectories of `dirpath`.
-func readDir(dirpath string) []string {
-
-	paths := []string{}
-	files, _ := ioutil.ReadDir(dirpath)
-
-	for _, fi := range files {
-
-		// Ignore files and hidden files
-		if !fi.IsDir() || strings.HasPrefix(fi.Name(), ".") {
+func readDir(dir string) (files []file) {
+	infos, _ := ioutil.ReadDir(dir)
+	for _, fi := range infos {
+		// ignore hidden files
+		if strings.HasPrefix(fi.Name(), ".") {
 			continue
 		}
 
-		paths = append(paths, filepath.Join(dirpath, fi.Name()))
+		files = append(files, file{filepath.Join(dir, fi.Name()), fi.IsDir()})
 	}
-
-	return paths
+	return files
 }
 
 // run executes the Script Filter.
 func run() {
-
-	var query string
-
 	// ----------------------------------------------------------------
 	// Handle CLI arguments
 	// ----------------------------------------------------------------
 
-	// You should always use wf.args() in Script Filters. It contains the
-	// same as os.args[1:], but the arguments are first parsed for AwGo's
-	// magic actions (i.e. `workflow:*` to allow the user to easily open
+	// You should always use wf.Args() in Script Filters. It contains the
+	// same as os.Args[1:], but the arguments are first parsed for AwGo's
+	// magic actions (i.e. "workflow:*" to allow the user to easily open
 	// the log or data/cache directory).
-	if args := wf.Args(); len(args) > 0 {
-		// If you're using "{query}" or "$1" (with quotes) in your
-		// Script Filter, $1 will always be set, even if to an empty
-		// string.
-		// This guard serves mostly to prevent errors when run on
-		// the command line.
-		query = args[0]
-	}
+	query := wf.Args()[0]
 
 	// ----------------------------------------------------------------
 	// Load data and create Alfred items
 	// ----------------------------------------------------------------
 
-	for _, path := range readDir(startDir) {
-
+	for _, file := range readDir(startDir) {
 		// Convenience method. Sets Item title to filename, subtitle
 		// to shortened path, arg to full path, and icon to file icon.
-		it := wf.NewFileItem(path)
+		it := wf.NewFileItem(file.Path)
 
-		// We could also set this modifier via Alfred's GUI.
-		it.NewModifier("cmd").
-			Subtitle("Browse in Alfred")
+		// Alternate actions
+		it.NewModifier(aw.ModCmd).
+			Subtitle("Reveal in Finder").
+			Var("action", "reveal")
+
+		if file.IsDir {
+			it.NewModifier(aw.ModAlt).
+				Subtitle("Browse in Alfred").
+				Var("action", "browse")
+		}
 	}
 
 	// ----------------------------------------------------------------
@@ -92,14 +82,7 @@ func run() {
 	// ----------------------------------------------------------------
 
 	if query != "" {
-
-		res := wf.Filter(query)
-
-		log.Printf("%d results match %q", len(res), query)
-
-		for i, r := range res {
-			log.Printf("%02d. score=%0.1f sortkey=%s", i+1, r.Score, wf.Feedback.Keywords(i))
-		}
+		wf.Filter(query)
 	}
 
 	// ----------------------------------------------------------------
@@ -115,6 +98,8 @@ func run() {
 }
 
 func main() {
+	// Initialise workflow
+	wf = aw.New()
 	// Call workflow via `Run` wrapper to catch any errors, log them
 	// and display an error message in Alfred.
 	wf.Run(run)

@@ -3,14 +3,16 @@
 <plist version="1.0">
 <dict>
 	<key>bundleid</key>
-	<string>net.deanishe.alfred.awgo.demo-custom</string>
+	<string>net.deanishe.awgo.demo-reading-list</string>
 	<key>connections</key>
 	<dict>
-		<key>3BF10786-C7AA-4EAF-AF73-08CFB7CA918F</key>
+		<key>1BA099BD-A04F-4304-91C6-6B6CC04BFF81</key>
+		<array/>
+		<key>F3DFD0D4-B306-48DD-A915-34D3CF427B73</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>1ECEC7CE-5E5D-4F07-A284-F5976DADCC2B</string>
+				<string>1BA099BD-A04F-4304-91C6-6B6CC04BFF81</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -23,11 +25,11 @@
 	<key>createdby</key>
 	<string>Dean Jackson</string>
 	<key>description</key>
-	<string>Filter Safari Bookmarks</string>
+	<string>Search your reading list</string>
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
-	<string>AwGo Demo: Bookmarks</string>
+	<string>AwGo Demo: Reading List</string>
 	<key>objects</key>
 	<array>
 		<dict>
@@ -44,7 +46,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>keyword</key>
-				<string>bookmarks</string>
+				<string>toread</string>
 				<key>queuedelaycustom</key>
 				<integer>3</integer>
 				<key>queuedelayimmediatelyinitially</key>
@@ -54,17 +56,17 @@
 				<key>queuemode</key>
 				<integer>1</integer>
 				<key>runningsubtext</key>
-				<string>Loading bookmarks…</string>
+				<string></string>
 				<key>script</key>
-				<string>./bookmarks "$1"</string>
+				<string>./reading-list "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
 				<string></string>
 				<key>subtext</key>
-				<string>Search your Safari bookmarks</string>
+				<string>Search books on your reading list</string>
 				<key>title</key>
-				<string>Safari Bookmarks</string>
+				<string>Reading List</string>
 				<key>type</key>
 				<integer>0</integer>
 				<key>withspace</key>
@@ -73,7 +75,7 @@
 			<key>type</key>
 			<string>alfred.workflow.input.scriptfilter</string>
 			<key>uid</key>
-			<string>3BF10786-C7AA-4EAF-AF73-08CFB7CA918F</string>
+			<string>F3DFD0D4-B306-48DD-A915-34D3CF427B73</string>
 			<key>version</key>
 			<integer>2</integer>
 		</dict>
@@ -92,40 +94,38 @@
 			<key>type</key>
 			<string>alfred.workflow.action.openurl</string>
 			<key>uid</key>
-			<string>1ECEC7CE-5E5D-4F07-A284-F5976DADCC2B</string>
+			<string>1BA099BD-A04F-4304-91C6-6B6CC04BFF81</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>AwGo: Search Safari bookmarks
-=============================
+	<string>AwGo: Reading List
+==================
 
-This workflow demonstrates implementing fuzzy.Sortable on your own structs.
-
-See file bookmarks.go.</string>
+This workflow demonstrates more complex fuzzy filtering, ordering items by status.</string>
 	<key>uidata</key>
 	<dict>
-		<key>1ECEC7CE-5E5D-4F07-A284-F5976DADCC2B</key>
+		<key>1BA099BD-A04F-4304-91C6-6B6CC04BFF81</key>
 		<dict>
 			<key>xpos</key>
-			<integer>290</integer>
+			<integer>230</integer>
 			<key>ypos</key>
-			<integer>60</integer>
+			<integer>50</integer>
 		</dict>
-		<key>3BF10786-C7AA-4EAF-AF73-08CFB7CA918F</key>
+		<key>F3DFD0D4-B306-48DD-A915-34D3CF427B73</key>
 		<dict>
 			<key>note</key>
-			<string>Filter your Safari bookmarks</string>
+			<string>Filters reading list, putting read books at the bottom.</string>
 			<key>xpos</key>
-			<integer>70</integer>
-			<key>ypos</key>
 			<integer>60</integer>
+			<key>ypos</key>
+			<integer>50</integer>
 		</dict>
 	</dict>
 	<key>version</key>
 	<string>0.1</string>
 	<key>webaddress</key>
-	<string></string>
+	<string>https://godoc.org/github.com/deanishe/awgo</string>
 </dict>
 </plist>
