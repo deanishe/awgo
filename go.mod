@@ -3,7 +3,7 @@ module github.com/deanishe/awgo
 go 1.13
 
 require (
-	github.com/bmatcuk/doublestar v1.3.1
+	github.com/bmatcuk/doublestar v1.3.2
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
