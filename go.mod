@@ -10,7 +10,7 @@ require (
 	github.com/stretchr/testify v1.6.1
 	go.deanishe.net/env v0.5.1
 	go.deanishe.net/fuzzy v1.0.0
-	golang.org/x/text v0.3.3
+	golang.org/x/text v0.3.5
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	howett.net/plist v0.0.0-20200419221736-3b63eb3a43b5
 )
