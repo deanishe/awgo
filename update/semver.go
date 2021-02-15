@@ -65,7 +65,7 @@ func NewSemVer(s string) (SemVer, error) {
 		s, pre = s[:i], s[i+1:]
 	}
 
-	parts := strings.SplitN(s, ".", -1)
+	parts := strings.Split(s, ".")
 	for len(parts) < 3 { // Pad version
 		parts = append(parts, "0")
 	}

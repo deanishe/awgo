@@ -148,6 +148,7 @@ func TestMagicDefaults(t *testing.T) {
 	})
 }
 
+// TestMagicActions checks that magic actions are triggered by their queries.
 func TestMagicActions(t *testing.T) {
 	tests := []struct {
 		in    string
@@ -156,7 +157,6 @@ func TestMagicActions(t *testing.T) {
 	}{
 		{"workflow:tes", true, false},
 		{"workflow:test", false, true},
-		//{"workflow:test", true, false, true},
 	}
 
 	for _, td := range tests {

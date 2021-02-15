@@ -102,30 +102,6 @@ func TestSymlinkOverwrite(t *testing.T) {
 			err := Symlink(li.link, li.target, true)
 			assert.Nil(t, err, "overwrite symlink")
 		}
-
-		/*
-			for _, td := range tests {
-				td := td
-				t.Run(fmt.Sprintf("link=%q, target=%q", td.link, td.target), func(t *testing.T) {
-					t.Parallel()
-					err := Symlink(td.link, td.target, td.relative)
-					if td.err {
-						assert.NotNil(t, err, "expected error")
-						return
-					}
-					assert.Nil(t, err, "unexpected error")
-					_, err = os.Stat(td.link)
-					require.Nil(t, err, "stat symlink failed")
-
-					p, err := filepath.EvalSymlinks(td.link)
-					require.Nil(t, err, "EvalSymlinks failed")
-
-					target, err := filepath.Abs(td.target)
-					require.Nil(t, err, "filepath.Abs failed")
-					assert.Equal(t, target, p, "unexpected symlink")
-				})
-			}
-		*/
 	})
 }
 
