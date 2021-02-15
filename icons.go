@@ -12,8 +12,8 @@ const (
 	// Indicates that Icon.Value is the path to an image file that should
 	// be used as the Item's icon.
 	IconTypeImage IconType = ""
-	// Icon.Value points to an object whose icon should be show in Alfred,
-	//e.g. combine with "/Applications/Safari.app" to show Safari's icon.
+	// Indicates that Icon.Value points to an object whose icon should be show
+	// in Alfred, e.g. combine with "/Applications/Safari.app" to show Safari's icon.
 	IconTypeFileIcon IconType = "fileicon"
 	// Indicates that Icon.Value is a UTI, e.g. "public.folder",
 	// which will give you the icon for a folder.

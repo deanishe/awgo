@@ -37,13 +37,14 @@ func TestItemHelpers(t *testing.T) {
 	assert.Equal(t, x, js, "unexpected File item")
 }
 
+// TestNewFileItem verifies Item creation by Workflow.NewFileItem().
 func TestNewFileItem(t *testing.T) {
 	t.Parallel()
 
 	var (
 		wf      = New()
 		ipPath  = filepath.Join(wf.Dir(), "info.plist")
-		ipShort = strings.Replace(ipPath, os.Getenv("HOME"), "~", -1)
+		ipShort = strings.ReplaceAll(ipPath, os.Getenv("HOME"), "~")
 
 		it = wf.NewFileItem(ipPath)
 	)
@@ -56,7 +57,7 @@ func TestNewFileItem(t *testing.T) {
 	assert.Equal(t, ipPath, it.icon.Value, "unexpected icon value")
 }
 
-// WarnEmpty adds an item
+// TestWarnEmpty verifies Item creation by Workflow.WarnEmpty().
 func TestWarnEmpty(t *testing.T) {
 	wf := New()
 	assert.Equal(t, 0, len(wf.Feedback.Items), "feedback not empty")

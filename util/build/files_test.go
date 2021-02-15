@@ -38,6 +38,7 @@ func withTempDir(fn func(dir string)) {
 	}()
 }
 
+// TestSymlink verifies that symlinks are created correctly.
 func TestSymlink(t *testing.T) {
 	withTempDir(func(dir string) {
 		tests := []struct {
@@ -75,6 +76,36 @@ func TestSymlink(t *testing.T) {
 	})
 }
 
+// TestSymlinkOverwrite verifies that existing symlinks are overwritten.
+func TestSymlinkOverwrite(t *testing.T) {
+	withTempDir(func(dir string) {
+		links := []struct {
+			link   string
+			target string
+			err    bool
+		}{
+			{dir + "/workflow", "testdata/workflow", false},
+			{dir + "/info.plist", "testdata/info.plist", false},
+		}
+
+		for _, li := range links {
+			err := Symlink(li.link, li.target, true)
+			assert.Nil(t, err, "symlink setup")
+		}
+
+		for _, li := range links {
+			_, err := os.Stat(li.link)
+			assert.Nil(t, err, "stat symlink")
+		}
+
+		for _, li := range links {
+			err := Symlink(li.link, li.target, true)
+			assert.Nil(t, err, "overwrite symlink")
+		}
+	})
+}
+
+// TestGlobs verifies globbing pattern matching.
 func TestGlobs(t *testing.T) {
 	t.Parallel()
 
@@ -109,6 +140,7 @@ func TestGlobs(t *testing.T) {
 	}
 }
 
+// TestExport verifies the building of a workflow.
 func TestExport(t *testing.T) {
 	for _, src := range []string{"testdata/workflow", "testdata/workflow-symlinked"} {
 		src := src
@@ -143,6 +175,7 @@ func TestExport(t *testing.T) {
 	}
 }
 
+// TestUnexportedVariables verifies that unexported variables are zeroed out on export.
 func TestUnexportedVariables(t *testing.T) {
 	src := "testdata/workflow-unexported"
 	t.Run(src, func(t *testing.T) {
@@ -190,6 +223,7 @@ type fileInfo struct {
 	Hash    string
 }
 
+// TestCompareDirs verifies directory comparison (for testing).
 func TestCompareDirs(t *testing.T) {
 	t.Parallel()
 	compareDirs(t, "./testdata/workflow", "./testdata/workflow-symlinked")

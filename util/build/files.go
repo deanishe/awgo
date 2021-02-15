@@ -249,6 +249,11 @@ func Symlink(link, target string, relative bool) error {
 		}
 	}
 
-	fmt.Printf("%s  -->  %s\n", link, path)
+	if fi, err := os.Lstat(link); err == nil && fi.Mode()&os.ModeSymlink != 0 {
+		if err := os.Remove(link); err != nil {
+			return err
+		}
+	}
+
 	return os.Symlink(path, link)
 }
