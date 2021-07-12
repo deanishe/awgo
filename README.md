@@ -4,13 +4,12 @@
 </div>
 
 
-AwGo — A Go library for Alfred workflows
-========================================
+# AwGo — A Go library for Alfred workflows #
 
 [![Build Status][ghaction-badge]][ghaction-link]
 [![Go Report Card][goreport-badge]][goreport-link]
 [![Coverage Status][coveralls-badge]][coveralls-link]
-[![GoDoc][godoc-badge]][godoc-link]
+[![Go Reference][godoc-badge]][godoc-link]
 
 <!--
 [![Build Status][azure-badge]][azure-link]
@@ -31,8 +30,7 @@ Full-featured library to build lightning-fast workflows in a jiffy.
 - [Licensing & thanks](#licensing--thanks)
 
 
-Features
---------
+## Features ##
 
 - Full support for Alfred 3 & 4
 - Bi-directional interface to [workflow's config][config]
@@ -48,8 +46,7 @@ Features
 - macOS [system icons][icons]
 
 
-Installation & usage
---------------------
+## Installation & usage ##
 
 Install AwGo with:
 
@@ -101,18 +98,16 @@ argv):
 ./program "$1"
 ```
 
-Documentation
--------------
+## Documentation ##
 
-Read the docs [on GoDoc][godoc].
+Read the docs [on pkg.go.dev][godoc].
 
 Check out the [example workflows][examples-code] ([docs][examples-docs]), which
 show how to use AwGo. Use one as a template to get your own workflow up and
 running quickly.
 
 
-Requirements
-------------
+## Requirements ##
 
 The library (and therefore the unit tests) rely on being run in a minimally
 Alfred-like environment, as they pull configuration options from the environment
@@ -132,16 +127,14 @@ And if you're using the update API, also:
 - `alfred_version` (not needed for Alfred 4+)
 
 
-Development
------------
+## Development ##
 
 To create a sufficiently Alfred-like environment, you can `source` the `env.sh`
 script in the project root or run unit tests via the `run-tests.sh` script
 (which also sets up an appropriate environment before calling `go test`).
 
 
-Licensing & thanks
-------------------
+## Licensing & thanks ##
 
 This library is released under the [MIT licence][licence]. It was built with
 [neovim][neovim] and [GoLand by JetBrains][jetbrains].
@@ -151,30 +144,30 @@ The icon is based on the [Go Gopher][gopher] by [Renee French][renee].
 
 [alfred]: https://www.alfredapp.com/
 [licence]: ./LICENCE
-[godoc]: https://godoc.org/github.com/deanishe/awgo
+[godoc]: https://pkg.go.dev/github.com/deanishe/awgo
 [gopher]: https://blog.golang.org/gopher
 [renee]: http://reneefrench.blogspot.com
-[config]: https://godoc.org/github.com/deanishe/awgo#Config
-[feedback]: https://godoc.org/github.com/deanishe/awgo#Feedback.NewItem
-[fuzzy]: https://godoc.org/github.com/deanishe/awgo/fuzzy
-[cache]: https://godoc.org/github.com/deanishe/awgo#hdr-Storing_data
-[cache-api]: https://godoc.org/github.com/deanishe/awgo#Cache
-[run]: https://godoc.org/github.com/deanishe/awgo#Run
-[keychain]: https://godoc.org/github.com/deanishe/awgo/keychain
-[scripts]: https://godoc.org/github.com/deanishe/awgo/util#hdr-Scripting
-[update]: https://godoc.org/github.com/deanishe/awgo/update
-[update-github]: https://godoc.org/github.com/deanishe/awgo/update#GitHub
-[update-gitea]: https://godoc.org/github.com/deanishe/awgo/update#Gitea
-[logging]: https://godoc.org/github.com/deanishe/awgo#hdr-Logging
-[magic]: https://godoc.org/github.com/deanishe/awgo#MagicAction
-[icons]: https://godoc.org/github.com/deanishe/awgo#Icon
+[config]: https://pkg.go.dev/github.com/deanishe/awgo#Config
+[feedback]: https://pkg.go.dev/github.com/deanishe/awgo#Feedback.NewItem
+[fuzzy]: https://pkg.go.dev/github.com/deanishe/awgo/fuzzy
+[cache]: https://pkg.go.dev/github.com/deanishe/awgo#hdr-Storing_data
+[cache-api]: https://pkg.go.dev/github.com/deanishe/awgo#Cache
+[run]: https://pkg.go.dev/github.com/deanishe/awgo#Run
+[keychain]: https://pkg.go.dev/github.com/deanishe/awgo/keychain
+[scripts]: https://pkg.go.dev/github.com/deanishe/awgo/util#hdr-Scripting
+[update]: https://pkg.go.dev/github.com/deanishe/awgo/update
+[update-github]: https://pkg.go.dev/github.com/deanishe/awgo/update#GitHub
+[update-gitea]: https://pkg.go.dev/github.com/deanishe/awgo/update#Gitea
+[logging]: https://pkg.go.dev/github.com/deanishe/awgo#hdr-Logging
+[magic]: https://pkg.go.dev/github.com/deanishe/awgo#MagicAction
+[icons]: https://pkg.go.dev/github.com/deanishe/awgo#Icon
 [examples-code]: https://github.com/deanishe/awgo/tree/master/_examples
-[examples-docs]: https://godoc.org/github.com/deanishe/awgo/_examples
+[examples-docs]: https://pkg.go.dev/github.com/deanishe/awgo/_examples
 [jetbrains]: https://www.jetbrains.com/?from=deanishe/awgo
 [neovim]: https://neovim.io/
 
-[godoc-badge]: https://godoc.org/github.com/deanishe/awgo?status.svg
-[godoc-link]: https://godoc.org/github.com/deanishe/awgo
+[godoc-badge]: https://pkg.go.dev/badge/github.com/deanishe/awgo.svg
+[godoc-link]: https://pkg.go.dev/github.com/deanishe/awgo
 [goreport-link]: https://goreportcard.com/report/github.com/deanishe/awgo
 [goreport-badge]: https://goreportcard.com/badge/github.com/deanishe/awgo
 [azure-badge]: https://img.shields.io/azure-devops/build/deanishe/6cd8e4fe-7366-4485-aea6-e9d75e7757b2/1
