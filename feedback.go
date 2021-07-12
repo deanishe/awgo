@@ -29,6 +29,13 @@ const (
 	ModFn    string = "fn"    // Alternate action for fn↩
 )
 
+// Types understood by Alfred's `action` API call and item field. Added in Alfred 4.5.
+const (
+	TypeFile = "file" // values are paths
+	TypeURL  = "url"  // values are URLs
+	TypeText = "text" // values are just text
+)
+
 // Item is a single Alfred Script Filter result.
 // Together with Feedback & Modifier, Item generates Script Filter feedback
 // for Alfred.
@@ -48,6 +55,7 @@ type Item struct {
 	ql           *string
 	vars         map[string]string
 	mods         map[string]*Modifier
+	actions      map[string][]string
 	icon         *Icon
 	noUID        bool // Suppress UID in JSON
 }
@@ -139,6 +147,27 @@ func (it *Item) Quicklook(s string) *Item {
 // See the documentation for Icon for more details.
 func (it *Item) Icon(icon *Icon) *Item {
 	it.icon = icon
+	return it
+}
+
+// Action sets the value(s) to be passed to Alfred's Universal Actions if
+// the user actions this item. Alfred will auto-detect the type of the value(s).
+//
+// Added in Alfred 4.5.
+func (it *Item) Action(value ...string) *Item { return it.ActionForType("", value...) }
+
+// ActionForType sets the value(s) to be passed to Alfred's Universal Actions if
+// the user actions this item. Type may be one of "file", "url" or "text".
+//
+// Added in Alfred 4.5.
+func (it *Item) ActionForType(typ string, value ...string) *Item {
+	if typ == "" {
+		typ = "auto"
+	}
+	if it.actions == nil {
+		it.actions = map[string][]string{}
+	}
+	it.actions[typ] = value
 	return it
 }
 
@@ -244,6 +273,7 @@ func (it *Item) MarshalJSON() ([]byte, error) {
 		Quicklook string               `json:"quicklookurl,omitempty"`
 		Variables map[string]string    `json:"variables,omitempty"`
 		Mods      map[string]*Modifier `json:"mods,omitempty"`
+		Actions   map[string][]string  `json:"action,omitempty"`
 	}{
 		Title:     it.title,
 		Subtitle:  it.subtitle,
@@ -257,6 +287,7 @@ func (it *Item) MarshalJSON() ([]byte, error) {
 		Quicklook: ql,
 		Variables: it.vars,
 		Mods:      it.mods,
+		Actions:   it.actions,
 	}
 	// serialise single arg as string
 	if len(it.arg) == 1 {

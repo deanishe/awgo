@@ -23,7 +23,7 @@ func TestItem_Icon(t *testing.T) {
 
 func p(s string) *string { return &s }
 
-// Feedback is empty.
+// TestFeedback_IsEmpty verifies empty feedback.
 func TestFeedback_IsEmpty(t *testing.T) {
 	t.Parallel()
 
@@ -115,6 +115,9 @@ func TestItem_MarshalJSON(t *testing.T) {
 		// With quicklook
 		{in: &Item{title: "title", ql: p("http://www.example.com")},
 			x: `{"title":"title","valid":false,"quicklookurl":"http://www.example.com"}`},
+		// With action
+		{in: &Item{title: "title", actions: map[string][]string{"auto": {"one", "two"}}},
+			x: `{"title":"title","valid":false,"action":{"auto":["one","two"]}}`},
 	}
 
 	for i, td := range tests {
