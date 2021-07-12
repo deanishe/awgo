@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TestAlfred verifies scripts generated for Alfred's JXA API.
 func TestAlfred(t *testing.T) {
 	a := NewAlfred()
 	defer func() {
@@ -46,6 +47,18 @@ func TestAlfred(t *testing.T) {
 	t.Run("action", func(t *testing.T) {
 		x := `Application("com.runningwithcrayons.Alfred").action(["/","/Volumes"]);`
 		assert.Nil(t, a.Action("/", "/Volumes"), "call action failed")
+		assert.Equal(t, x, a.lastScript, "action failed")
+	})
+
+	t.Run("action as file", func(t *testing.T) {
+		x := `Application("com.runningwithcrayons.Alfred").action(["/","/Volumes"], {"asType":"file"});`
+		assert.Nil(t, a.ActionAsType(TypeFile, "/", "/Volumes"), "call action on files failed")
+		assert.Equal(t, x, a.lastScript, "action failed")
+	})
+
+	t.Run("action as URL", func(t *testing.T) {
+		x := `Application("com.runningwithcrayons.Alfred").action(["https://example.com/","https://alfredapp.com/"], {"asType":"url"});`
+		assert.Nil(t, a.ActionAsType(TypeURL, "https://example.com/", "https://alfredapp.com/"), "call action on URLs failed")
 		assert.Equal(t, x, a.lastScript, "action failed")
 	})
 
@@ -92,6 +105,7 @@ func TestAlfred(t *testing.T) {
 	})
 }
 
+// TestAlfred3 verifies scripts generated for Alfred 3's JXA API.
 func TestAlfred3(t *testing.T) {
 	a := NewAlfred()
 
