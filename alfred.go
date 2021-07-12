@@ -14,14 +14,16 @@ import (
 
 // JXA scripts to call Alfred.
 const (
-	scriptSearch    = "Application(%s).search(%s);"
-	scriptAction    = "Application(%s).action(%s);"
-	scriptBrowse    = "Application(%s).browse(%s);"
-	scriptSetTheme  = "Application(%s).setTheme(%s);"
-	scriptTrigger   = "Application(%s).runTrigger(%s, %s);"
-	scriptSetConfig = "Application(%s).setConfiguration(%s, %s);"
-	scriptRmConfig  = "Application(%s).removeConfiguration(%s, %s);"
-	scriptReload    = "Application(%s).reloadWorkflow(%s);"
+	scriptSearch = "Application(%s).search(%s);"
+	scriptAction = "Application(%s).action(%s);"
+	// support "asType" option added in Alfred 4.5
+	scriptActionType = "Application(%s).action(%s, %s);"
+	scriptBrowse     = "Application(%s).browse(%s);"
+	scriptSetTheme   = "Application(%s).setTheme(%s);"
+	scriptTrigger    = "Application(%s).runTrigger(%s, %s);"
+	scriptSetConfig  = "Application(%s).setConfiguration(%s, %s);"
+	scriptRmConfig   = "Application(%s).removeConfiguration(%s, %s);"
+	scriptReload     = "Application(%s).reloadWorkflow(%s);"
 )
 
 /*
@@ -82,24 +84,48 @@ func (a *Alfred) SetTheme(name string) error {
 	return a.runScript(scriptSetTheme, name)
 }
 
-// Action tells Alfred to show File Actions for path(s).
-func (a *Alfred) Action(path ...string) error {
-	if len(path) == 0 {
+// Action tells Alfred to show Universal Actions for value(s). This calls Alfred.ActionAsType
+// with an empty type.
+func (a *Alfred) Action(value ...string) error { return a.ActionAsType("", value...) }
+
+// Types understood by Alfred's `action` API call and item field.
+const (
+	TypeFile = "file"
+	TypeURL  = "url"
+	TypeText = "text"
+)
+
+// ActionAsType tells Alfred to show Universal Actions for value(s). Type typ
+// may be one of "file", "url" or "text", or an empty string to tell Alfred
+// to guess the type.
+//
+// Added in Alfred 4.5
+func (a *Alfred) ActionAsType(typ string, value ...string) error {
+	if len(value) == 0 {
 		return nil
 	}
 
-	var paths []string
-
-	for _, p := range path {
-		p, err := filepath.Abs(p)
-		if err != nil {
-			return fmt.Errorf("make absolute path %q: %w", p, err)
+	if typ == TypeFile {
+		for i, s := range value {
+			p, err := filepath.Abs(s)
+			if err != nil {
+				return fmt.Errorf("make absolute path %q: %w", s, err)
+			}
+			value[i] = p
 		}
-
-		paths = append(paths, p)
 	}
 
-	return a.runScript(scriptAction, paths)
+	switch typ {
+	case "":
+		return a.runScript(scriptAction, value)
+	case "file", "url", "text":
+		opts := map[string]interface{}{
+			"asType": typ,
+		}
+		return a.runScript(scriptActionType, value, opts)
+	default:
+		return fmt.Errorf("unknown type: %s", typ)
+	}
 }
 
 // RunTrigger runs an External Trigger in the given workflow. Query may be empty.
