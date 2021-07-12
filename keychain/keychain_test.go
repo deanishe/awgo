@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TestKeychain verifies reading from and writing to Keychain.
 func TestKeychain(t *testing.T) {
 	t.Parallel()
 
@@ -55,6 +56,7 @@ func TestKeychain(t *testing.T) {
 	})
 }
 
+// TestParse verifies parsing of sometimes-encoded Keychain passwords.
 func TestParse(t *testing.T) {
 	t.Parallel()
 

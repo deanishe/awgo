@@ -140,12 +140,8 @@ func runOsaScript(script, lang string, args ...string) (string, error) {
 		return "", err
 	}
 
-	s := string(data)
-
 	// Remove trailing newline added by osascript
-	if strings.HasSuffix(s, "\n") {
-		s = s[0 : len(s)-1]
-	}
+	s := strings.TrimSuffix(string(data), "\n")
 
 	return s, nil
 }
