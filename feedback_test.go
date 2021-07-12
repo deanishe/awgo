@@ -23,7 +23,7 @@ func TestItem_Icon(t *testing.T) {
 
 func p(s string) *string { return &s }
 
-// Feedback is empty.
+// TestFeedback_IsEmpty verifies empty feedback.
 func TestFeedback_IsEmpty(t *testing.T) {
 	t.Parallel()
 
@@ -58,7 +58,7 @@ func TestItem_MarshalJSON(t *testing.T) {
 			x: `{"title":"title","subtitle":"subtitle","valid":false}`},
 		// Alternate subtitle
 		{in: &Item{title: "title", subtitle: p("subtitle"),
-			mods: map[ModKey]*Modifier{
+			mods: map[string]*Modifier{
 				"cmd": {
 					Key:      "cmd",
 					subtitle: p("command sub")}}},
@@ -115,6 +115,9 @@ func TestItem_MarshalJSON(t *testing.T) {
 		// With quicklook
 		{in: &Item{title: "title", ql: p("http://www.example.com")},
 			x: `{"title":"title","valid":false,"quicklookurl":"http://www.example.com"}`},
+		// With action
+		{in: &Item{title: "title", actions: map[string][]string{"auto": {"one", "two"}}},
+			x: `{"title":"title","valid":false,"action":{"auto":["one","two"]}}`},
 	}
 
 	for i, td := range tests {
@@ -309,16 +312,16 @@ func TestEmptyModifiersIgnored(t *testing.T) {
 	fb := NewFeedback()
 
 	tests := []struct {
-		keys []ModKey
+		keys []string
 		ok   bool
 	}{
-		{[]ModKey{}, false},
-		{[]ModKey{""}, false},
-		{[]ModKey{"", ""}, false},
-		{[]ModKey{"rick flair"}, false},
-		{[]ModKey{"andre the giant", ""}, false},
-		{[]ModKey{"ultimate warrior", "cmd"}, true},
-		{[]ModKey{"ctrl", "", "giant haystacks"}, true},
+		{[]string{}, false},
+		{[]string{""}, false},
+		{[]string{"", ""}, false},
+		{[]string{"rick flair"}, false},
+		{[]string{"andre the giant", ""}, false},
+		{[]string{"ultimate warrior", "cmd"}, true},
+		{[]string{"ctrl", "", "giant haystacks"}, true},
 	}
 
 	for _, td := range tests {
@@ -345,44 +348,44 @@ func TestMultipleModifiers(t *testing.T) {
 	it := fb.NewItem("title")
 
 	tests := []struct {
-		keys []ModKey
+		keys []string
 		x    string
 	}{
-		{[]ModKey{"cmd"}, "cmd"},
-		{[]ModKey{"alt"}, "alt"},
-		{[]ModKey{"opt"}, "alt"},
-		{[]ModKey{"fn"}, "fn"},
-		{[]ModKey{"shift"}, "shift"},
-		{[]ModKey{"alt", "cmd"}, "alt+cmd"},
-		{[]ModKey{"cmd", "alt"}, "alt+cmd"},
-		{[]ModKey{"cmd", "opt"}, "alt+cmd"},
-		{[]ModKey{"cmd", "opt", "ctrl"}, "alt+cmd+ctrl"},
-		{[]ModKey{"cmd", "opt", "shift"}, "alt+cmd+shift"},
+		{[]string{"cmd"}, "cmd"},
+		{[]string{"alt"}, "alt"},
+		{[]string{"opt"}, "alt"},
+		{[]string{"fn"}, "fn"},
+		{[]string{"shift"}, "shift"},
+		{[]string{"alt", "cmd"}, "alt+cmd"},
+		{[]string{"cmd", "alt"}, "alt+cmd"},
+		{[]string{"cmd", "opt"}, "alt+cmd"},
+		{[]string{"cmd", "opt", "ctrl"}, "alt+cmd+ctrl"},
+		{[]string{"cmd", "opt", "shift"}, "alt+cmd+shift"},
 		// invalid keys ignored
-		{[]ModKey{}, ""},
-		{[]ModKey{""}, ""},
-		{[]ModKey{"shift", "cmd", ""}, "cmd+shift"},
-		{[]ModKey{"shift", "ctrl", "hulk hogan"}, "ctrl+shift"},
-		{[]ModKey{"shift", "undertaker", "cmd", ""}, "cmd+shift"},
+		{[]string{}, ""},
+		{[]string{""}, ""},
+		{[]string{"shift", "cmd", ""}, "cmd+shift"},
+		{[]string{"shift", "ctrl", "hulk hogan"}, "ctrl+shift"},
+		{[]string{"shift", "undertaker", "cmd", ""}, "cmd+shift"},
 	}
 
 	for _, td := range tests {
 		td := td
 		t.Run(fmt.Sprintf("%v", td.keys), func(t *testing.T) {
 			m := it.NewModifier(td.keys...)
-			assert.Equal(t, td.x, string(m.Key), "unexpected modifier")
+			assert.Equal(t, td.x, m.Key, "unexpected modifier")
 		})
 	}
 }
 
-// Modifier creation shortcut methods
+// TestModifierShortcuts verifies creation shortcut methods.
 func TestModifierShortcuts(t *testing.T) {
 	t.Parallel()
 
 	it := &Item{}
 	tests := []struct {
 		m *Modifier
-		k ModKey
+		k string
 	}{
 		{it.Cmd(), ModCmd},
 		{it.Opt(), ModOpt},
@@ -392,7 +395,7 @@ func TestModifierShortcuts(t *testing.T) {
 	}
 
 	for _, td := range tests {
-		assert.Equal(t, td.k, td.m.Key, "Bad ModKey for %q", td.k)
+		assert.Equal(t, td.k, td.m.Key, "Bad modkey for %q", td.k)
 	}
 }
 
@@ -489,6 +492,7 @@ func TestItem_methods(t *testing.T) {
 	assert.Equal(t, qlURL, *it.ql, "Bad quicklook URL")
 }
 
+// TestModifier_methods verifies Modifier methods.
 func TestModifier_methods(t *testing.T) {
 	var (
 		key      = ModCmd
@@ -499,7 +503,7 @@ func TestModifier_methods(t *testing.T) {
 	)
 
 	m := &Modifier{}
-	assert.Equal(t, ModKey(""), m.Key, "Non-empty key")
+	assert.Equal(t, "", m.Key, "Non-empty key")
 	assert.Nil(t, m.arg, "Non-nil arg")
 	assert.Nil(t, m.subtitle, "Non-nil subtitle")
 	assert.False(t, m.valid, "Bad valid")

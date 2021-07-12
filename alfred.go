@@ -88,13 +88,6 @@ func (a *Alfred) SetTheme(name string) error {
 // with an empty type.
 func (a *Alfred) Action(value ...string) error { return a.ActionAsType("", value...) }
 
-// Types understood by Alfred's `action` API call and item field.
-const (
-	TypeFile = "file"
-	TypeURL  = "url"
-	TypeText = "text"
-)
-
 // ActionAsType tells Alfred to show Universal Actions for value(s). Type typ
 // may be one of "file", "url" or "text", or an empty string to tell Alfred
 // to guess the type.

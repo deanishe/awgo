@@ -14,22 +14,26 @@ import (
 	"go.deanishe.net/fuzzy"
 )
 
-// ModKey is a modifier key pressed by the user to run an alternate
-// item action in Alfred (in combination with ↩). It is passed
-// to Item.NewModifier().
+// Valid modifier keys pressed by the user to run an alternate
+// item action in Script Filters (in combination with ↩).
+// Passed to Item.NewModifier().
 //
 // Alfred 3 only permits one modifier at a time, but in Alfred 4+
 // you can combine them arbitrarily.
-type ModKey string
-
-// Valid modifier keys used to specify alternate actions in Script Filters.
 const (
-	ModCmd   ModKey = "cmd"   // Alternate action for ⌘↩
-	ModAlt   ModKey = "alt"   // Alternate action for ⌥↩
-	ModOpt   ModKey = "alt"   // Synonym for ModAlt
-	ModCtrl  ModKey = "ctrl"  // Alternate action for ^↩
-	ModShift ModKey = "shift" // Alternate action for ⇧↩
-	ModFn    ModKey = "fn"    // Alternate action for fn↩
+	ModCmd   string = "cmd"   // Alternate action for ⌘↩
+	ModAlt   string = "alt"   // Alternate action for ⌥↩
+	ModOpt   string = "alt"   // Synonym for ModAlt
+	ModCtrl  string = "ctrl"  // Alternate action for ^↩
+	ModShift string = "shift" // Alternate action for ⇧↩
+	ModFn    string = "fn"    // Alternate action for fn↩
+)
+
+// Types understood by Alfred's `action` API call and item field. Added in Alfred 4.5.
+const (
+	TypeFile = "file" // values are paths
+	TypeURL  = "url"  // values are URLs
+	TypeText = "text" // values are just text
 )
 
 // Item is a single Alfred Script Filter result.
@@ -50,7 +54,8 @@ type Item struct {
 	largetype    *string
 	ql           *string
 	vars         map[string]string
-	mods         map[ModKey]*Modifier
+	mods         map[string]*Modifier
+	actions      map[string][]string
 	icon         *Icon
 	noUID        bool // Suppress UID in JSON
 }
@@ -145,6 +150,27 @@ func (it *Item) Icon(icon *Icon) *Item {
 	return it
 }
 
+// Action sets the value(s) to be passed to Alfred's Universal Actions if
+// the user actions this item. Alfred will auto-detect the type of the value(s).
+//
+// Added in Alfred 4.5.
+func (it *Item) Action(value ...string) *Item { return it.ActionForType("", value...) }
+
+// ActionForType sets the value(s) to be passed to Alfred's Universal Actions if
+// the user actions this item. Type may be one of "file", "url" or "text".
+//
+// Added in Alfred 4.5.
+func (it *Item) ActionForType(typ string, value ...string) *Item {
+	if typ == "" {
+		typ = "auto"
+	}
+	if it.actions == nil {
+		it.actions = map[string][]string{}
+	}
+	it.actions[typ] = value
+	return it
+}
+
 // Var sets an Alfred variable for subsequent workflow elements.
 func (it *Item) Var(k, v string) *Item {
 	if it.vars == nil {
@@ -163,7 +189,7 @@ func (it *Item) Var(k, v string) *Item {
 // modifiers (i.e. they evaluate to ""), although a Modifier is returned,
 // it is not retained by Item and will not be sent to Alfred. An error message
 // is also logged.
-func (it *Item) NewModifier(key ...ModKey) *Modifier {
+func (it *Item) NewModifier(key ...string) *Modifier {
 	m := newModifier(key...)
 	// Add Item variables to Modifier
 	if it.vars != nil {
@@ -183,7 +209,7 @@ func (it *Item) SetModifier(m *Modifier) {
 		return
 	}
 	if it.mods == nil {
-		it.mods = map[ModKey]*Modifier{}
+		it.mods = map[string]*Modifier{}
 	}
 	it.mods[m.Key] = m
 }
@@ -246,7 +272,8 @@ func (it *Item) MarshalJSON() ([]byte, error) {
 		Icon      *Icon                `json:"icon,omitempty"`
 		Quicklook string               `json:"quicklookurl,omitempty"`
 		Variables map[string]string    `json:"variables,omitempty"`
-		Mods      map[ModKey]*Modifier `json:"mods,omitempty"`
+		Mods      map[string]*Modifier `json:"mods,omitempty"`
+		Actions   map[string][]string  `json:"action,omitempty"`
 	}{
 		Title:     it.title,
 		Subtitle:  it.subtitle,
@@ -260,6 +287,7 @@ func (it *Item) MarshalJSON() ([]byte, error) {
 		Quicklook: ql,
 		Variables: it.vars,
 		Mods:      it.mods,
+		Actions:   it.actions,
 	}
 	// serialise single arg as string
 	if len(it.arg) == 1 {
@@ -288,7 +316,7 @@ type itemText struct {
 type Modifier struct {
 	// The modifier key, e.g. "cmd", "alt".
 	// With Alfred 4+, modifiers can be combined, e.g. "cmd+alt", "ctrl+shift+cmd"
-	Key      ModKey
+	Key      string
 	arg      []string
 	subtitle *string
 	valid    bool
@@ -297,10 +325,10 @@ type Modifier struct {
 }
 
 // newModifier creates a Modifier, validating key.
-func newModifier(key ...ModKey) *Modifier {
+func newModifier(key ...string) *Modifier {
 	l := []string{}
 	for _, k := range key {
-		s := strings.TrimSpace(strings.ToLower(string(k)))
+		s := strings.TrimSpace(strings.ToLower(k))
 		if s == "opt" {
 			s = "alt"
 		}
@@ -315,7 +343,7 @@ func newModifier(key ...ModKey) *Modifier {
 	}
 	sort.Strings(l)
 	s := strings.Join(l, "+")
-	return &Modifier{Key: ModKey(s), vars: map[string]string{}}
+	return &Modifier{Key: s, vars: map[string]string{}}
 }
 
 // Arg sets the arg for the Modifier. Multiple values are allowed in Alfred 4.1 and later.
