@@ -4,6 +4,7 @@
 package util
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -109,6 +110,30 @@ func TestPad(t *testing.T) {
 		t.Run(td.str, func(t *testing.T) {
 			t.Parallel()
 			assert.Equal(t, td.x, Pad(td.str, td.pad, td.n), "unexpected output")
+		})
+	}
+}
+
+// TestPrettyPath tests PrettyPath
+func TestPrettyPath(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		in, x string
+	}{
+		{"", ""},
+		{"${HOME}", "~"},
+		{"${HOME}/", "~/"},
+		{"${HOME}/Desktop", "~/Desktop"},
+		{"${HOME}/Desktop/", "~/Desktop/"},
+		{"Desktop/${HOME}", "Desktop/${HOME}"},
+	}
+
+	for _, td := range tests {
+		td := td
+		t.Run(td.in, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, os.ExpandEnv(td.x), PrettyPath(os.ExpandEnv(td.in)), "unexpected pretty path")
 		})
 	}
 }

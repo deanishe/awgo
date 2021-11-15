@@ -39,7 +39,11 @@ func fold(s string) string {
 
 // PrettyPath replaces $HOME with ~ in path
 func PrettyPath(path string) string {
-	return strings.ReplaceAll(path, os.Getenv("HOME"), "~")
+	home := os.Getenv("HOME")
+	if strings.HasPrefix(path, home) {
+		return "~" + path[len(home):]
+	}
+	return path
 }
 
 // PadLeft pads str to length n by adding pad to its left.
