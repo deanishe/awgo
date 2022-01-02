@@ -4,6 +4,7 @@
 package aw
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -295,7 +296,7 @@ func (it *Item) MarshalJSON() ([]byte, error) {
 	} else if len(it.arg) > 1 {
 		v.Arg = it.arg
 	}
-	return json.Marshal(v)
+	return Marshal(v)
 }
 
 // itemText encapsulates the copytext and largetext values for a result Item.
@@ -404,7 +405,7 @@ func (m *Modifier) MarshalJSON() ([]byte, error) {
 		v.Arg = m.arg
 	}
 
-	return json.Marshal(v)
+	return Marshal(v)
 }
 
 // Feedback represents the results for an Alfred Script Filter.
@@ -479,7 +480,7 @@ func (fb *Feedback) NewItem(title string) *Item {
 // MarshalJSON serializes Feedback to Alfred's JSON format.
 // You shouldn't need to call this: use Send() instead.
 func (fb *Feedback) MarshalJSON() ([]byte, error) {
-	return json.Marshal(&struct {
+	return Marshal(&struct {
 		Variables map[string]string `json:"variables,omitempty"`
 		Rerun     float64           `json:"rerun,omitempty"`
 		Items     []*Item           `json:"items"`
@@ -499,7 +500,7 @@ func (fb *Feedback) Send() error {
 		log.Printf("Feedback already sent. Ignoring.")
 		return nil
 	}
-	output, err := json.MarshalIndent(fb, "", "  ")
+	output, err := MarshalIndent(fb, "", "  ")
 	if err != nil {
 		return fmt.Errorf("Error generating JSON : %w", err)
 	}
@@ -635,7 +636,7 @@ func (a *ArgVars) MarshalJSON() ([]byte, error) {
 		if len(a.arg) == 0 {
 			return []byte(`""`), nil
 		}
-		return json.Marshal(a.arg[0])
+		return Marshal(a.arg[0])
 	}
 
 	v := struct {
@@ -651,9 +652,30 @@ func (a *ArgVars) MarshalJSON() ([]byte, error) {
 		v.Arg = a.arg
 	}
 
-	return json.Marshal(&struct {
+	return Marshal(&struct {
 		Root interface{} `json:"alfredworkflow"`
 	}{
 		Root: v,
 	})
+}
+
+func Marshal(v interface{}) ([]byte, error) {
+	buffer := &bytes.Buffer{}
+	encoder := json.NewEncoder(buffer)
+	encoder.SetEscapeHTML(false)
+	err := encoder.Encode(v)
+	return buffer.Bytes(), err
+}
+
+func MarshalIndent(v interface{}, prefix, indent string) ([]byte, error) {
+	b, err := Marshal(v)
+	if err != nil {
+		return nil, err
+	}
+	var buf bytes.Buffer
+	err = json.Indent(&buf, b, prefix, indent)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }
