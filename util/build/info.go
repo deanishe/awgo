@@ -267,18 +267,8 @@ func findSyncFolder(v int, dir string) (string, error) {
 		if err = json.Unmarshal(data, &prefs); err != nil {
 			return "", err
 		}
-		if v == 0 {
-			return filepath.Dir(prefs.Current), nil
-		}
 
-		if path, ok := prefs.Versions[fmt.Sprintf("%d", v)]; ok {
-			p := expand(path)
-			if util.PathExists(p) {
-				return p, nil
-			}
-			return defaultSyncDirV4, nil
-		}
-		return "", fmt.Errorf("no syncfolder for version %d", v)
+		return filepath.Dir(prefs.Current), nil
 	}
 
 	// Look for Alfred 3 preferences plist
