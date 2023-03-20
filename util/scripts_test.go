@@ -26,7 +26,8 @@ func TestExecutableRunner(t *testing.T) {
 		{"/", false},
 		{"/bin", false},
 		// Existing paths
-		{"/usr/bin/python2.7", true}, // symlink on El Cap
+		{"/usr/bin/python2.7", false}, // Missing since macOS 12.3
+		{"/usr/bin/python3", true},    // Only included python since macOS 12.3
 		{"/bin/cp", true},
 		{"/bin/ls", true},
 		{"/bin/mv", true},
