@@ -26,7 +26,7 @@ var (
 	// Used by the Script Runner (and by extension Run()) to determine
 	// how to run files that aren't executable.
 	DefaultInterpreters = map[string][]string{
-		".py":          {"/usr/bin/python"},
+		".py":          {"/usr/bin/python3"},
 		".rb":          {"/usr/bin/ruby"},
 		".sh":          {"/bin/bash"},
 		".zsh":         {"/bin/zsh"},

@@ -337,7 +337,7 @@ func ExampleWorkflow_Warn() {
 	//       "subtitle": "Those items are boring",
 	//       "valid": false,
 	//       "icon": {
-	//         "path": "/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/AlertCautionIcon.icns"
+	//         "path": "/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/AlertCautionBadgeIcon.icns"
 	//       }
 	//     }
 	//   ]

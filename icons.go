@@ -22,7 +22,7 @@ const (
 
 // Ready-to-use icons based on macOS system icons. These icons are all found in
 //
-//     /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources
+//	/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources
 //
 // The icons are the same as found in the Alfred-Workflow library
 // for Python. Preview them here:
@@ -54,7 +54,7 @@ var (
 	IconSync      = &Icon{Value: sysIcons + "Sync.icns"}
 	IconTrash     = &Icon{Value: sysIcons + "TrashIcon.icns"}
 	IconUser      = &Icon{Value: sysIcons + "UserIcon.icns"}
-	IconWarning   = &Icon{Value: sysIcons + "AlertCautionIcon.icns"}
+	IconWarning   = &Icon{Value: sysIcons + "AlertCautionBadgeIcon.icns"}
 	IconWeb       = &Icon{Value: sysIcons + "BookmarkIcon.icns"}
 )
 
@@ -70,7 +70,7 @@ var (
 // Type = IconTypeFileIcon will treat Value as the path to a file or
 // directory and use that file's icon, e.g:
 //
-//    icon := &aw.Icon{"/Applications/Mail.app", aw.IconTypeFileIcon}
+//	icon := &aw.Icon{"/Applications/Mail.app", aw.IconTypeFileIcon}
 //
 // will display Mail.app's icon.
 //
@@ -81,7 +81,7 @@ var (
 // You can find out the UTI of a filetype by dragging one of the files
 // to a File Filter's File Types list in Alfred, or in a shell with:
 //
-//    mdls -name kMDItemContentType -raw /path/to/the/file
+//	mdls -name kMDItemContentType -raw /path/to/the/file
 //
 // This will only work on Spotlight-indexed files.
 type Icon struct {

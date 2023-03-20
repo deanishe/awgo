@@ -23,7 +23,7 @@ func TestItemHelpers(t *testing.T) {
 	)
 
 	it := wf.NewWarningItem("Warn Title", "Warn subtitle")
-	x := `{"title":"Warn Title","subtitle":"Warn subtitle","valid":false,"icon":{"path":"/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/AlertCautionIcon.icns"}}`
+	x := `{"title":"Warn Title","subtitle":"Warn subtitle","valid":false,"icon":{"path":"/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/AlertCautionBadgeIcon.icns"}}`
 	data, err = json.Marshal(it)
 	assert.Nil(t, err, "marshal Item failed")
 	js := string(data)
