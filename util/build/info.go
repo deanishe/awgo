@@ -165,11 +165,45 @@ func (info *Info) findAlfredVersion() error {
 	if info.AlfredMajorVersion != 0 {
 		return nil
 	}
-	if util.PathExists(filepath.Join(info.dir, "Application Support/Alfred/prefs.json")) {
-		info.AlfredMajorVersion = 4
+
+	var (
+		// Alfred 4+ has a dedicated prefs.json file, but earlier versions store
+		// the setting in Alfred Preference's version-specific prefs file
+		prefsJSON  = filepath.Join(info.dir, "Application Support/Alfred/prefs.json")
+		prefsPlist = filepath.Join(info.dir, "Preferences/com.runningwithcrayons.Alfred-Preferences-3.plist")
+	)
+
+	if util.PathExists(prefsJSON) {
+		var (
+			err   error
+			prefs = struct {
+				Current  string            `json:"current"`
+				Versions map[string]string `json:"syncfolders"`
+			}{}
+			data []byte
+		)
+
+		if data, err = ioutil.ReadFile(prefsJSON); err != nil {
+			return err
+		}
+
+		if err = json.Unmarshal(data, &prefs); err != nil {
+			return err
+		}
+
+		var version, maxVersion int
+		for v := range prefs.Versions {
+			version, err = strconv.Atoi(v)
+			if err != nil && version > maxVersion {
+				maxVersion = version
+			}
+		}
+
+		info.AlfredMajorVersion = maxVersion
+
 		return nil
 	}
-	if util.PathExists(filepath.Join(info.dir, "Preferences/com.runningwithcrayons.Alfred-Preferences-3.plist")) {
+	if util.PathExists(prefsPlist) {
 		info.AlfredMajorVersion = 3
 		return nil
 	}
@@ -267,18 +301,8 @@ func findSyncFolder(v int, dir string) (string, error) {
 		if err = json.Unmarshal(data, &prefs); err != nil {
 			return "", err
 		}
-		if v == 0 {
-			return filepath.Dir(prefs.Current), nil
-		}
 
-		if path, ok := prefs.Versions[fmt.Sprintf("%d", v)]; ok {
-			p := expand(path)
-			if util.PathExists(p) {
-				return p, nil
-			}
-			return defaultSyncDirV4, nil
-		}
-		return "", fmt.Errorf("no syncfolder for version %d", v)
+		return filepath.Dir(prefs.Current), nil
 	}
 
 	// Look for Alfred 3 preferences plist
